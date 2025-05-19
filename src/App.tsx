@@ -1,9 +1,16 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import HomePage from "./pages/HomePage";
+import MoviePage from "./pages/MoviePage";
+import TvSeriesPage from "./pages/TvSeriesPage";
+import AnimePage from "./pages/AnimePage";
+import RegionalPage from "./pages/RegionalPage";
+import SearchPage from "./pages/SearchPage";
+import WatchPage from "./pages/WatchPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +22,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/movies" element={<MoviePage />} />
+          <Route path="/tv-series" element={<TvSeriesPage />} />
+          <Route path="/anime" element={<AnimePage />} />
+          <Route path="/regional" element={<RegionalPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/watch/:type/:id" element={<WatchPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
