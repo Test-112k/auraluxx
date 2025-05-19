@@ -59,6 +59,13 @@ export const getDetails = (mediaType: string, id: number) => {
 };
 
 /**
+ * Get similar content for a movie or TV show
+ */
+export const getSimilar = (mediaType: string, id: number, page = 1) => {
+  return apiRequest(`/${mediaType}/${id}/similar`, { page });
+};
+
+/**
  * Get popular items by type
  */
 export const getPopular = (mediaType: string, page = 1) => {
