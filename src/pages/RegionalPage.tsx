@@ -8,7 +8,7 @@ import { getRegionalContent, countryToLanguageMap } from '@/services/tmdbApi';
 
 const RegionalPage = () => {
   const [regionalContent, setRegionalContent] = useState<any[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('US');
+  const [selectedCountry, setSelectedCountry] = useState('IN'); // Default to India
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
