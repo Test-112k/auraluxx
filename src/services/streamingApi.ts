@@ -4,25 +4,14 @@
  * Based on https://rivestream.net/embed/docs#api
  */
 
+const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
+
 // Generate embed URL for a TMDb ID
 export const getEmbedUrl = (tmdbId: string, type: 'movie' | 'tv', season?: number, episode?: number) => {
-  const baseUrl = 'https://rivestream.net/embed';
-  
-  // Build URL with query parameters
-  const url = new URL(baseUrl);
-  url.searchParams.append('type', type);
-  url.searchParams.append('id', tmdbId);
-  
-  // Add season and episode for TV shows
-  if (type === 'tv' && season !== undefined) {
-    url.searchParams.append('season', season.toString());
-    
-    if (episode !== undefined) {
-      url.searchParams.append('episode', episode.toString());
-    }
+  if (type === 'tv' && season !== undefined && episode !== undefined) {
+    return `https://rivestream.net/embed?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`;
   }
-  
-  return url.toString();
+  return `https://rivestream.net/embed?type=movie&id=${tmdbId}`;
 };
 
 // Generate iframe to embed the player
@@ -59,32 +48,10 @@ export const getStreamUrl = (
   options: StreamOptions = {}
 ) => {
   const id = formatTmdbId(tmdbId);
-  const baseUrl = 'https://rivestream.net/embed';
-  const queryParams = new URLSearchParams();
   
-  // Add required parameters
-  queryParams.append('type', type);
-  queryParams.append('id', id);
-  
-  // Add optional parameters if provided
-  if (options.server) {
-    queryParams.append('server', options.server);
+  if (type === 'tv' && options.season !== undefined && options.episode !== undefined) {
+    return `https://rivestream.net/embed?type=tv&id=${id}&season=${options.season}&episode=${options.episode}`;
   }
   
-  if (options.subLang) {
-    queryParams.append('sub_lang', options.subLang);
-  }
-  
-  // For TV shows, add season and episode
-  if (type === 'tv') {
-    if (options.season !== undefined) {
-      queryParams.append('season', String(options.season));
-      
-      if (options.episode !== undefined) {
-        queryParams.append('episode', String(options.episode));
-      }
-    }
-  }
-  
-  return `${baseUrl}?${queryParams.toString()}`;
+  return `https://rivestream.net/embed?type=movie&id=${id}`;
 };

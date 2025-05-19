@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSearch } from '@/contexts/SearchContext';
 import { getImageUrl } from '@/services/tmdbApi';
 import { getYearFromDate } from '@/utils/helpers';
-import { Loader } from 'lucide-react';
 
 const SearchDropdown = () => {
   const { results, isSearching, setIsDropdownOpen } = useSearch();
@@ -30,7 +29,7 @@ const SearchDropdown = () => {
   return (
     <div 
       ref={dropdownRef}
-      className="absolute z-50 top-full left-0 right-0 mt-1 p-2 bg-aura-dark/95 backdrop-blur-sm rounded-lg border border-white/10 shadow-lg animate-fade-in overflow-hidden"
+      className="absolute z-50 top-full left-0 right-0 mt-1 p-2 bg-aura-darkpurple/95 backdrop-blur-sm rounded-lg border border-white/10 shadow-lg animate-fade-in overflow-hidden"
     >
       {isSearching ? (
         <div className="flex justify-center py-4">

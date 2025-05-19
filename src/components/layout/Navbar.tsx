@@ -30,15 +30,18 @@ const Navbar = () => {
     };
   }, []);
 
-  // Clear search when navigating to another page but don't close mobile menu automatically
+  // Clear search when navigating to another page
   useEffect(() => {
-    clearSearch();
+    if (!location.pathname.includes('/search')) {
+      clearSearch();
+    }
   }, [location.pathname, clearSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query)}`);
+      clearSearch();
     }
   };
 
