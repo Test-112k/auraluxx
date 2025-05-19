@@ -24,6 +24,7 @@ const WatchPage = () => {
         const mediaType = type === 'movie' ? 'movie' : 'tv';
         const data = await getDetails(mediaType, Number(id));
         setDetails(data);
+        console.log("Media details:", data);
       } catch (error) {
         console.error('Error fetching details:', error);
       } finally {
@@ -129,7 +130,7 @@ const WatchPage = () => {
             frameBorder="0"
             allowFullScreen
             allow="autoplay; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
           ></iframe>
         </div>
         
@@ -247,7 +248,7 @@ const WatchPage = () => {
           />
         )}
         
-        {/* Related content by genre - we would load this from the API */}
+        {/* Related content by genre */}
         {genres.length > 0 && (
           <div className="pt-8">
             <h2 className="text-xl md:text-2xl font-bold text-white mb-8">

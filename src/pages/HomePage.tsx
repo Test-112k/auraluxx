@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import HeroSlideshow from '@/components/common/HeroSlideshow';
 import MediaSlider from '@/components/common/MediaSlider';
+import CategoryButtons from '@/components/common/CategoryButtons';
 import { 
   getTrending, 
   getPopular, 
@@ -82,6 +83,11 @@ const HomePage = () => {
   return (
     <MainLayout>
       <HeroSlideshow />
+      
+      {/* Category buttons */}
+      <div className="auraluxx-container">
+        <CategoryButtons />
+      </div>
       
       <div className="auraluxx-container py-8">
         <MediaSlider
