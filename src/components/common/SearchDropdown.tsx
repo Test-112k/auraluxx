@@ -34,7 +34,7 @@ const SearchDropdown = () => {
     >
       {isSearching ? (
         <div className="flex justify-center py-4">
-          <Loader size={20} className="text-aura-purple animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-t-aura-purple border-aura-purple/20 animate-spin"></div>
         </div>
       ) : results.length > 0 ? (
         <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">

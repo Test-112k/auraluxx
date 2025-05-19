@@ -36,6 +36,7 @@ export const generatePlayerIframe = (tmdbId: string, type: 'movie' | 'tv', title
     allowfullscreen
     allow="autoplay; encrypted-media; picture-in-picture"
     title="${title}"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
   ></iframe>`;
 };
 

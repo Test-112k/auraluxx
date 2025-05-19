@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -9,6 +10,18 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+  // Prevent body scrolling when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

@@ -8,7 +8,7 @@ import SearchDropdown from '@/components/common/SearchDropdown';
 import MobileMenu from '@/components/layout/MobileMenu';
 
 const Navbar = () => {
-  const { query, setQuery, isSearching, isDropdownOpen, setIsDropdownOpen, clearSearch, performSearch } = useSearch();
+  const { query, setQuery, isSearching, isDropdownOpen, clearSearch } = useSearch();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -30,17 +30,15 @@ const Navbar = () => {
     };
   }, []);
 
-  // Close dropdown when navigating to another page
+  // Clear search when navigating to another page but don't close mobile menu automatically
   useEffect(() => {
     clearSearch();
-    setIsMobileMenuOpen(false);
   }, [location.pathname, clearSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query)}`);
-      setIsDropdownOpen(false);
     }
   };
 
@@ -84,7 +82,6 @@ const Navbar = () => {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search movies, TV shows..."
                 className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all"
-                onFocus={() => query && performSearch(query)}
                 aria-label="Search"
               />
               {isSearching ? (

@@ -44,11 +44,11 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
       const data = await searchMulti(searchQuery);
       if (data && data.results) {
         // Filter out person results, keep only movies and TV shows
-        const filteredResults = data.results.filter(
-          (item: any) => item.media_type === 'movie' || item.media_type === 'tv'
-        );
-        setResults(filteredResults.slice(0, 8)); // Limit to 8 results for dropdown
-        setIsDropdownOpen(true);
+        const filteredResults = data.results
+          .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
+          .slice(0, 8); // Limit to 8 results for dropdown
+        setResults(filteredResults);
+        setIsDropdownOpen(filteredResults.length > 0);
       } else {
         setResults([]);
       }
@@ -69,7 +69,12 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
 
   const setQuery = (newQuery: string) => {
     setQueryValue(newQuery);
-    debouncedSearch(newQuery);
+    if (newQuery.trim()) {
+      debouncedSearch(newQuery);
+    } else {
+      setResults([]);
+      setIsDropdownOpen(false);
+    }
   };
 
   const clearSearch = () => {

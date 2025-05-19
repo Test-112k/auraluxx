@@ -1,8 +1,8 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Play } from 'lucide-react';
+import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTrending, getImageUrl } from '@/services/tmdbApi';
 import { truncateText } from '@/utils/helpers';
 
@@ -19,6 +19,9 @@ const HeroSlideshow = () => {
   const [slides, setSlides] = useState<SlideItem[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [autoplay, setAutoplay] = useState(true);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const slideshowRef = useRef<HTMLDivElement>(null);
 
   const fetchSlides = useCallback(async () => {
     setLoading(true);
@@ -38,19 +41,51 @@ const HeroSlideshow = () => {
     }
   }, []);
 
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  }, [slides.length]);
+
+  // Handle autoplay
+  useEffect(() => {
+    if (!slides.length || !autoplay) return;
+    
+    autoplayRef.current = setInterval(() => {
+      nextSlide();
+    }, 6000);
+    
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+    };
+  }, [slides, nextSlide, autoplay]);
+
+  // Pause autoplay on hover
+  const handleMouseEnter = () => setAutoplay(false);
+  const handleMouseLeave = () => setAutoplay(true);
+
+  // Load initial data
   useEffect(() => {
     fetchSlides();
   }, [fetchSlides]);
 
+  // Handle keyboard navigation
   useEffect(() => {
-    if (slides.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    
-    return () => clearInterval(interval);
-  }, [slides]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (slideshowRef.current?.contains(document.activeElement)) {
+        if (e.key === 'ArrowLeft') {
+          prevSlide();
+        } else if (e.key === 'ArrowRight') {
+          nextSlide();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nextSlide, prevSlide]);
 
   const renderSkeleton = () => (
     <div className="relative w-full h-[50vh] md:h-[70vh] bg-aura-dark/50 animate-pulse">
@@ -67,17 +102,40 @@ const HeroSlideshow = () => {
   const title = slide.title || slide.name || '';
 
   return (
-    <div className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden">
-      {/* Backdrop Image */}
-      <div className="absolute inset-0">
+    <div 
+      ref={slideshowRef}
+      className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden" 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      tabIndex={0}
+    >
+      {/* Backdrop Image with Animation */}
+      <div className="absolute inset-0 transition-opacity duration-700">
         <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-10"></div>
         <img
           src={getImageUrl(slide.backdrop_path, 'original')}
           alt={title}
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-center transition-transform duration-10000 hover:scale-105"
         />
       </div>
+
+      {/* Navigation Arrows */}
+      <button 
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft size={24} />
+      </button>
+      
+      <button 
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
+        aria-label="Next slide"
+      >
+        <ChevronRight size={24} />
+      </button>
 
       {/* Content */}
       <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 lg:px-16">
