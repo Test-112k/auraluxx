@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSearch } from '@/contexts/SearchContext';
 import SearchDropdown from '@/components/common/SearchDropdown';
 import MobileMenu from '@/components/layout/MobileMenu';
-import { getImageUrl } from '@/services/tmdbApi';
 
 const Navbar = () => {
-  const { query, setQuery, isDropdownOpen, setIsDropdownOpen, clearSearch } = useSearch();
+  const { query, setQuery, isSearching, isDropdownOpen, setIsDropdownOpen, clearSearch, performSearch } = useSearch();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -85,17 +84,25 @@ const Navbar = () => {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search movies, TV shows..."
                 className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all"
-                onFocus={() => query && setIsDropdownOpen(true)}
+                onFocus={() => query && performSearch(query)}
+                aria-label="Search"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4" />
-              {query && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
-                >
-                  <X size={16} />
-                </button>
+              {isSearching ? (
+                <Loader className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4" />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+                      aria-label="Clear search"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </>
               )}
             </form>
             {isDropdownOpen && <SearchDropdown />}
@@ -107,6 +114,7 @@ const Navbar = () => {
             size="icon"
             onClick={() => setIsMobileMenuOpen(true)}
             className="md:hidden text-white hover:bg-white/10"
+            aria-label="Open menu"
           >
             <Menu size={24} />
           </Button>

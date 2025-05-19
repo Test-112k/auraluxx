@@ -4,7 +4,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Star, Clock, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaSlider from '@/components/common/MediaSlider';
+import CategoryButtons from '@/components/common/CategoryButtons';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDetails, getImageUrl } from '@/services/tmdbApi';
 import { generatePlayerIframe } from '@/services/streamingApi';
 import { formatDate, formatRuntime, truncateText, voteToPercentage } from '@/utils/helpers';
@@ -14,6 +16,13 @@ const WatchPage = () => {
   const navigate = useNavigate();
   const [details, setDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
+  
+  // Get the number of seasons and episodes for TV series
+  const numberOfSeasons = details?.number_of_seasons || 0;
+  const currentSeasonDetails = details?.seasons?.find((s: any) => s.season_number === selectedSeason);
+  const numberOfEpisodes = currentSeasonDetails?.episode_count || 0;
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -25,6 +34,14 @@ const WatchPage = () => {
         const data = await getDetails(mediaType, Number(id));
         setDetails(data);
         console.log("Media details:", data);
+        
+        // Set initial season and episode if it's a TV show
+        if (mediaType === 'tv' && data.seasons && data.seasons.length > 0) {
+          const firstSeason = data.seasons.find((s: any) => s.season_number > 0);
+          if (firstSeason) {
+            setSelectedSeason(firstSeason.season_number);
+          }
+        }
       } catch (error) {
         console.error('Error fetching details:', error);
       } finally {
@@ -44,7 +61,13 @@ const WatchPage = () => {
     
     const mediaType = type === 'movie' ? 'movie' : 'tv';
     const title = details.title || details.name || 'Media Player';
-    return generatePlayerIframe(id, mediaType as 'movie' | 'tv', title);
+    
+    // Include season and episode for TV shows
+    if (mediaType === 'tv') {
+      return generatePlayerIframe(id, mediaType, title, selectedSeason, selectedEpisode);
+    }
+    
+    return generatePlayerIframe(id, mediaType, title);
   };
 
   // Render loading skeleton
@@ -107,6 +130,7 @@ const WatchPage = () => {
   const genres = details.genres || [];
   const credits = details.credits || { cast: [], crew: [] };
   const similarContent = details.similar?.results || [];
+  const isTvShow = type === 'tv';
 
   return (
     <MainLayout>
@@ -120,6 +144,56 @@ const WatchPage = () => {
           <ArrowLeft size={18} className="mr-2" />
           Back
         </Button>
+
+        <div className="mb-8">
+          <CategoryButtons />
+        </div>
+        
+        {/* TV Show Season/Episode Selector */}
+        {isTvShow && (
+          <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-white/70">Season</label>
+              <Select
+                value={selectedSeason.toString()}
+                onValueChange={(value) => {
+                  setSelectedSeason(parseInt(value));
+                  setSelectedEpisode(1); // Reset episode when season changes
+                }}
+              >
+                <SelectTrigger className="w-32 bg-white/10 border-white/10">
+                  <SelectValue placeholder="Season" />
+                </SelectTrigger>
+                <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
+                  {Array.from({ length: numberOfSeasons }, (_, i) => i + 1).map((season) => (
+                    <SelectItem key={season} value={season.toString()}>
+                      Season {season}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-white/70">Episode</label>
+              <Select
+                value={selectedEpisode.toString()}
+                onValueChange={(value) => setSelectedEpisode(parseInt(value))}
+              >
+                <SelectTrigger className="w-32 bg-white/10 border-white/10">
+                  <SelectValue placeholder="Episode" />
+                </SelectTrigger>
+                <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
+                  {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
+                    <SelectItem key={episode} value={episode.toString()}>
+                      Episode {episode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
         
         {/* Video Player */}
         <div className="w-full aspect-video bg-black mb-8 rounded-lg overflow-hidden">

@@ -5,14 +5,29 @@
  */
 
 // Generate embed URL for a TMDb ID
-export const getEmbedUrl = (tmdbId: string, type: 'movie' | 'tv') => {
+export const getEmbedUrl = (tmdbId: string, type: 'movie' | 'tv', season?: number, episode?: number) => {
   const baseUrl = 'https://rivestream.net/embed';
-  return `${baseUrl}/${type === 'movie' ? 'tmdb' : 'tmdb_tv'}/${tmdbId}`;
+  
+  // Build URL with query parameters
+  const url = new URL(baseUrl);
+  url.searchParams.append('type', type);
+  url.searchParams.append('id', tmdbId);
+  
+  // Add season and episode for TV shows
+  if (type === 'tv' && season !== undefined) {
+    url.searchParams.append('season', season.toString());
+    
+    if (episode !== undefined) {
+      url.searchParams.append('episode', episode.toString());
+    }
+  }
+  
+  return url.toString();
 };
 
 // Generate iframe to embed the player
-export const generatePlayerIframe = (tmdbId: string, type: 'movie' | 'tv', title: string) => {
-  const embedUrl = getEmbedUrl(tmdbId, type);
+export const generatePlayerIframe = (tmdbId: string, type: 'movie' | 'tv', title: string, season?: number, episode?: number) => {
+  const embedUrl = getEmbedUrl(tmdbId, type, season, episode);
   return `<iframe
     src="${embedUrl}"
     width="100%"
@@ -43,8 +58,12 @@ export const getStreamUrl = (
   options: StreamOptions = {}
 ) => {
   const id = formatTmdbId(tmdbId);
-  const baseUrl = `https://rivestream.net/embed/${type === 'movie' ? 'tmdb' : 'tmdb_tv'}/${id}`;
+  const baseUrl = 'https://rivestream.net/embed';
   const queryParams = new URLSearchParams();
+  
+  // Add required parameters
+  queryParams.append('type', type);
+  queryParams.append('id', id);
   
   // Add optional parameters if provided
   if (options.server) {
@@ -66,6 +85,5 @@ export const getStreamUrl = (
     }
   }
   
-  const queryString = queryParams.toString();
-  return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  return `${baseUrl}?${queryParams.toString()}`;
 };

@@ -1,7 +1,7 @@
-
 import { createContext, useState, useContext, ReactNode } from 'react';
 import { searchMulti } from '@/services/tmdbApi';
 import { debounce } from '@/utils/helpers';
+import { toast } from '@/components/ui/use-toast';
 
 interface SearchResult {
   id: number;
@@ -21,6 +21,7 @@ interface SearchContextType {
   setQuery: (query: string) => void;
   setIsDropdownOpen: (isOpen: boolean) => void;
   clearSearch: () => void;
+  performSearch: (query: string) => Promise<void>;
 }
 
 export const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -31,7 +32,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const fetchResults = async (searchQuery: string) => {
+  const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
       setIsDropdownOpen(false);
@@ -42,18 +43,29 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await searchMulti(searchQuery);
       if (data && data.results) {
-        setResults(data.results.slice(0, 8)); // Limit to 8 results for dropdown
+        // Filter out person results, keep only movies and TV shows
+        const filteredResults = data.results.filter(
+          (item: any) => item.media_type === 'movie' || item.media_type === 'tv'
+        );
+        setResults(filteredResults.slice(0, 8)); // Limit to 8 results for dropdown
         setIsDropdownOpen(true);
+      } else {
+        setResults([]);
       }
     } catch (error) {
       console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Unable to perform search. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSearching(false);
     }
   };
 
   // Debounced search to prevent too many API calls
-  const debouncedSearch = debounce(fetchResults, 300);
+  const debouncedSearch = debounce(performSearch, 300);
 
   const setQuery = (newQuery: string) => {
     setQueryValue(newQuery);
@@ -76,6 +88,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         setQuery,
         setIsDropdownOpen,
         clearSearch,
+        performSearch,
       }}
     >
       {children}
