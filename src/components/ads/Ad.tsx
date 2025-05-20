@@ -157,20 +157,21 @@ const Ad = ({ size, className = '' }: AdProps) => {
     
   }, [size]);
 
+  // Get proper aspect ratio constraint class based on ad size
   const getAdContainerClass = () => {
     switch(size) {
       case '300x250':
-        return 'w-[300px] h-[250px]';
+        return 'w-[300px] h-[250px] aspect-[300/250]';
       case '728x90':
-        return 'w-[728px] h-[90px]';
+        return 'w-[728px] h-[90px] aspect-[728/90]';
       case '160x600':
-        return 'w-[160px] h-[600px]';
+        return 'w-[160px] h-[600px] aspect-[160/600]';
       case '160x300':
-        return 'w-[160px] h-[300px]';
+        return 'w-[160px] h-[300px] aspect-[160/300]';
       case '468x60':
-        return 'w-[468px] h-[60px]';
+        return 'w-[468px] h-[60px] aspect-[468/60]';
       case '320x50':
-        return 'w-[320px] h-[50px]';
+        return 'w-[320px] h-[50px] aspect-[320/50]';
       case 'social-bar':
         return 'w-full';
       case 'native':
@@ -184,6 +185,7 @@ const Ad = ({ size, className = '' }: AdProps) => {
     <div 
       ref={adContainerRef} 
       className={`ad-container overflow-hidden ${getAdContainerClass()} ${className} hover:scale-[1.01] transition-transform duration-200`}
+      style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}
     />
   );
 };

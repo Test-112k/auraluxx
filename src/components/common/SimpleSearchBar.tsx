@@ -49,19 +49,11 @@ const SimpleSearchBar = () => {
             onClick={handleClearSearch}
             variant="ghost" 
             size="icon"
-            className="absolute right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white hover:bg-transparent"
+            className="absolute right-1 top-1/2 -translate-y-1/2 text-white/70 hover:text-white hover:bg-transparent"
           >
             <X className="h-4 w-4" />
           </Button>
         )}
-        <Button 
-          type="submit" 
-          variant="ghost" 
-          size="icon"
-          className="absolute right-1 top-1/2 -translate-y-1/2 text-white/70 hover:text-white hover:bg-transparent"
-        >
-          <Search className="h-4 w-4" />
-        </Button>
       </form>
       
       {/* Show search dropdown only when input is focused and there are results */}

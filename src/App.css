@@ -47,7 +47,7 @@
 /* Mobile video height enhancement */
 @media (max-width: 768px) {
   .video-container {
-    height: 56vw; /* 16:9 aspect ratio for width-based sizing */
+    height: 65vw; /* Enhanced aspect ratio for better mobile viewing */
   }
 }
 
@@ -59,3 +59,24 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+/* Global loading animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.loading-animation {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Ensure ad aspect ratios are preserved */
+.ad-container iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
