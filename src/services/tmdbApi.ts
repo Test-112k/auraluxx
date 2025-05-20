@@ -121,9 +121,10 @@ export const getAnimeContent = (page = 1) => {
  * Get trending anime
  */
 export const getTrendingAnime = (page = 1) => {
-  return apiRequest('/trending/tv/week', {
+  return apiRequest('/discover/tv', {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
+    sort_by: 'popularity.desc',
     page
   });
 };
@@ -136,7 +137,7 @@ export const getTopRatedAnime = (page = 1) => {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'vote_average.desc',
-    'vote_count.gte': 100, // Fixed: using string key instead of dot notation
+    'vote_count.gte': 100,
     page
   });
 };
@@ -149,7 +150,7 @@ export const getRecentAnime = (page = 1) => {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'first_air_date.desc',
-    'first_air_date.lte': new Date().toISOString().split('T')[0], // Fixed: using string key instead of dot notation
+    'first_air_date.lte': new Date().toISOString().split('T')[0],
     page
   });
 };

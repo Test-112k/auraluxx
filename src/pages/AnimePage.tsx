@@ -25,6 +25,16 @@ const AnimePage = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState('popular');
 
+  // Filter function to ensure only anime content is shown
+  const filterAnimeContent = (results: any[]) => {
+    return results.filter(item => 
+      // Filter for Japanese animation
+      (item.original_language === 'ja' && 
+      // Make sure it has a poster
+      item.poster_path)
+    );
+  };
+
   // Fetch anime data for each category
   const fetchAnimeData = useCallback(async () => {
     try {
@@ -32,8 +42,9 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, popular: true }));
       const popularData = await getAnimeContent(1);
       if (popularData?.results) {
-        setPopularAnime(popularData.results);
-        setDisplayedAnime(popularData.results);
+        const filtered = filterAnimeContent(popularData.results);
+        setPopularAnime(filtered);
+        setDisplayedAnime(filtered);
         setTotalPages(popularData.total_pages);
       }
       setCategoryLoading(prev => ({ ...prev, popular: false }));
@@ -42,7 +53,7 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, trending: true }));
       const trendingData = await getTrendingAnime(1);
       if (trendingData?.results) {
-        setTrendingAnime(trendingData.results);
+        setTrendingAnime(filterAnimeContent(trendingData.results));
       }
       setCategoryLoading(prev => ({ ...prev, trending: false }));
 
@@ -50,7 +61,7 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, topRated: true }));
       const topRatedData = await getTopRatedAnime(1);
       if (topRatedData?.results) {
-        setTopRatedAnime(topRatedData.results);
+        setTopRatedAnime(filterAnimeContent(topRatedData.results));
       }
       setCategoryLoading(prev => ({ ...prev, topRated: false }));
 
@@ -58,7 +69,7 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, recent: true }));
       const recentData = await getRecentAnime(1);
       if (recentData?.results) {
-        setRecentAnime(recentData.results);
+        setRecentAnime(filterAnimeContent(recentData.results));
       }
       setCategoryLoading(prev => ({ ...prev, recent: false }));
 
@@ -94,7 +105,8 @@ const AnimePage = () => {
       }
       
       if (data?.results) {
-        setDisplayedAnime(prev => [...prev, ...data.results]);
+        const filteredResults = filterAnimeContent(data.results);
+        setDisplayedAnime(prev => [...prev, ...filteredResults]);
         setPage(nextPage);
       }
       return true;
@@ -137,34 +149,18 @@ const AnimePage = () => {
         
         {/* Category Selection Tabs */}
         <div className="flex flex-wrap gap-3 mb-8">
-          <Button 
-            variant={selectedCategory === 'popular' ? 'default' : 'outline'} 
-            className={selectedCategory === 'popular' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
-            onClick={() => handleCategoryChange('popular')}
-          >
-            Popular
-          </Button>
-          <Button 
-            variant={selectedCategory === 'trending' ? 'default' : 'outline'} 
-            className={selectedCategory === 'trending' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
-            onClick={() => handleCategoryChange('trending')}
-          >
-            Trending
-          </Button>
-          <Button 
-            variant={selectedCategory === 'topRated' ? 'default' : 'outline'} 
-            className={selectedCategory === 'topRated' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
-            onClick={() => handleCategoryChange('topRated')}
-          >
-            Top Rated
-          </Button>
-          <Button 
-            variant={selectedCategory === 'recent' ? 'default' : 'outline'} 
-            className={selectedCategory === 'recent' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
-            onClick={() => handleCategoryChange('recent')}
-          >
-            Recent
-          </Button>
+          {['popular', 'trending', 'topRated', 'recent'].map((category) => (
+            <Button 
+              key={category}
+              variant={selectedCategory === category ? 'default' : 'outline'} 
+              className={selectedCategory === category ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
+              onClick={() => handleCategoryChange(category)}
+            >
+              {category === 'popular' ? 'Popular' : 
+               category === 'trending' ? 'Trending' :
+               category === 'topRated' ? 'Top Rated' : 'Recent'}
+            </Button>
+          ))}
         </div>
         
         {/* Featured Anime Categories (Horizontal Scrolling) */}
@@ -202,7 +198,7 @@ const AnimePage = () => {
           <div className="flex justify-center my-12">
             <LoadingSpinner size="lg" variant="purple" text="Loading anime..." />
           </div>
-        ) : (
+        ) : displayedAnime.length > 0 ? (
           <InfiniteScroll
             loadMore={loadMoreAnime}
             loading={loading}
@@ -228,6 +224,10 @@ const AnimePage = () => {
               </div>
             )}
           </InfiniteScroll>
+        ) : (
+          <div className="flex justify-center items-center py-12 text-white/60">
+            No anime found in this category
+          </div>
         )}
       </div>
     </MainLayout>

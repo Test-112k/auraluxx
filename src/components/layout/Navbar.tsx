@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, X, Loader } from 'lucide-react';
+import { Menu, Search, X, Loader, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useSearch } from '@/contexts/SearchContext';
 import SearchDropdown from '@/components/common/SearchDropdown';
 import MobileMenu from '@/components/layout/MobileMenu';
@@ -45,6 +46,9 @@ const Navbar = () => {
     }
   };
 
+  // External link to Telegram
+  const telegramUrl = "https://t.me/auralux1";
+
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
@@ -74,17 +78,26 @@ const Navbar = () => {
             <Link to="/regional" className="text-white hover:text-aura-purple transition-colors">
               Regional
             </Link>
+            <a 
+              href={telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-aura-purple transition-colors flex items-center"
+            >
+              <ExternalLink size={16} className="mr-1" />
+              Telegram
+            </a>
           </div>
 
           {/* Search Bar */}
           <div className="relative flex-1 max-w-sm mx-4">
             <form onSubmit={handleSubmit} className="relative">
-              <input
+              <Input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search movies, TV shows..."
-                className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all"
+                className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full border-white/10 focus:border-aura-purple focus:ring-aura-purple"
                 aria-label="Search"
               />
               {isSearching ? (
@@ -108,6 +121,17 @@ const Navbar = () => {
             {isDropdownOpen && <SearchDropdown />}
           </div>
 
+          {/* Telegram Icon (Mobile) */}
+          <a 
+            href={telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="md:hidden mr-2 text-white hover:text-aura-purple transition-colors"
+            aria-label="Telegram"
+          >
+            <ExternalLink size={20} />
+          </a>
+
           {/* Mobile Menu Button */}
           <Button 
             variant="ghost" 
@@ -122,7 +146,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} telegramUrl={telegramUrl} />
     </nav>
   );
 };

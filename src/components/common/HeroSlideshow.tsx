@@ -57,6 +57,8 @@ const HeroSlideshow = () => {
   useEffect(() => {
     if (!slides.length || !autoplay) return;
     
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    
     autoplayRef.current = setInterval(() => {
       nextSlide();
     }, 6000);
@@ -78,7 +80,7 @@ const HeroSlideshow = () => {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (slideshowRef.current?.contains(document.activeElement)) {
+      if (slideshowRef.current?.contains(document.activeElement) || slideshowRef.current === document.activeElement) {
         if (e.key === 'ArrowLeft') {
           prevSlide();
         } else if (e.key === 'ArrowRight') {
@@ -144,21 +146,29 @@ const HeroSlideshow = () => {
       tabIndex={0}
     >
       {/* Backdrop Image with Animation */}
-      <div className="absolute inset-0 transition-opacity duration-700">
-        <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-10"></div>
-        <img
-          src={getImageUrl(slide.backdrop_path, 'original')}
-          alt={title}
-          className="w-full h-full object-cover object-center transition-transform duration-10000 hover:scale-105"
-        />
-      </div>
+      {slides.map((slideItem, index) => (
+        <div 
+          key={slideItem.id} 
+          className={`absolute inset-0 transition-opacity duration-700 ${
+            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-10"></div>
+          <img
+            src={getImageUrl(slideItem.backdrop_path, 'original')}
+            alt={slideItem.title || slideItem.name}
+            className="w-full h-full object-cover object-center transition-transform duration-10000 hover:scale-105"
+          />
+        </div>
+      ))}
 
       {/* Navigation Arrows */}
       <button 
         onClick={prevSlide}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
         aria-label="Previous slide"
+        type="button"
       >
         <ChevronLeft size={24} />
       </button>
@@ -167,6 +177,7 @@ const HeroSlideshow = () => {
         onClick={nextSlide}
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
         aria-label="Next slide"
+        type="button"
       >
         <ChevronRight size={24} />
       </button>
@@ -205,6 +216,7 @@ const HeroSlideshow = () => {
             }`}
             onClick={() => setCurrentSlide(index)}
             aria-label={`Go to slide ${index + 1}`}
+            type="button"
           />
         ))}
       </div>

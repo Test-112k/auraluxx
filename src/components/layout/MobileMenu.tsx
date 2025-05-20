@@ -1,15 +1,16 @@
 
 import { Link } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  telegramUrl?: string;
 }
 
-const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: MobileMenuProps) => {
   // Prevent body scrolling when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -68,6 +69,16 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
         >
           Regional
         </Link>
+        <a 
+          href={telegramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all flex items-center"
+        >
+          <ExternalLink size={20} className="mr-2" />
+          Telegram
+        </a>
       </div>
 
       <div className="text-center pb-8 text-sm text-white/60">
