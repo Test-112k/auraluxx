@@ -1,19 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, X, Loader } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useSearch } from '@/contexts/SearchContext';
-import SearchDropdown from '@/components/common/SearchDropdown';
+import SimpleSearchBar from '@/components/common/SimpleSearchBar';
 import MobileMenu from '@/components/layout/MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
-  const { query, setQuery, isSearching, isDropdownOpen, clearSearch } = useSearch();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
 
@@ -32,21 +28,6 @@ const Navbar = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  // Clear search when navigating to another page
-  useEffect(() => {
-    if (!location.pathname.includes('/search')) {
-      clearSearch();
-    }
-  }, [location.pathname, clearSearch]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
-      clearSearch();
-    }
-  };
 
   // External link to Telegram
   const telegramUrl = "https://t.me/auralux1";
@@ -101,35 +82,7 @@ const Navbar = () => {
 
           {/* Search Bar */}
           <div className="relative flex-1 max-w-sm mx-4">
-            <form onSubmit={handleSubmit} className="relative">
-              <Input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search movies, TV shows..."
-                className="w-full py-2 pl-10 pr-4 bg-white/10 rounded-full border-white/10 focus:border-aura-purple focus:ring-aura-purple"
-                aria-label="Search"
-                autoComplete="off"
-              />
-              {isSearching ? (
-                <Loader className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4" />
-                  {query && (
-                    <button
-                      type="button"
-                      onClick={clearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
-                      aria-label="Clear search"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </>
-              )}
-            </form>
-            {isDropdownOpen && <SearchDropdown />}
+            <SimpleSearchBar />
           </div>
 
           {/* Telegram Icon (Mobile) */}
