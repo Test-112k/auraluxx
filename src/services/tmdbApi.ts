@@ -136,7 +136,7 @@ export const getTopRatedAnime = (page = 1) => {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'vote_average.desc',
-    vote_count.gte: 100,
+    'vote_count.gte': 100, // Fixed: using string key instead of dot notation
     page
   });
 };
@@ -149,7 +149,7 @@ export const getRecentAnime = (page = 1) => {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'first_air_date.desc',
-    first_air_date.lte: new Date().toISOString().split('T')[0],
+    'first_air_date.lte': new Date().toISOString().split('T')[0], // Fixed: using string key instead of dot notation
     page
   });
 };
