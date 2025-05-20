@@ -209,10 +209,10 @@ const AnimePage = () => {
                 <MediaCard
                   key={item.id}
                   id={item.id}
-                  title={item.name}
+                  title={item.name || item.title}
                   type="tv"
                   posterPath={item.poster_path}
-                  releaseDate={item.first_air_date}
+                  releaseDate={item.first_air_date || item.release_date}
                   voteAverage={item.vote_average}
                 />
               ))}
