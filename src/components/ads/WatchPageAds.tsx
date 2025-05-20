@@ -10,7 +10,7 @@ const WatchPageAds = () => {
   return (
     <div className="space-y-8">
       {/* Top banner ad */}
-      <div className="flex justify-center my-6 max-w-full overflow-hidden">
+      <div className="flex justify-center my-6 max-w-full overflow-hidden bg-white/5 p-2 rounded-lg">
         <Ad size="728x90" className="hidden md:block" />
         <Ad size="320x50" className="md:hidden" />
       </div>
@@ -18,7 +18,7 @@ const WatchPageAds = () => {
       {/* Side ads and rectangle ads */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left sidebar ad */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block bg-white/5 p-2 rounded-lg">
           <Ad size="160x300" className="sticky top-24" />
         </div>
         
@@ -28,24 +28,24 @@ const WatchPageAds = () => {
         </div>
         
         {/* Right sidebar ad */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block bg-white/5 p-2 rounded-lg">
           <Ad size="160x600" className="sticky top-24" />
         </div>
       </div>
       
       {/* Bottom banner ad */}
-      <div className="flex justify-center my-6">
+      <div className="flex justify-center my-6 bg-white/5 p-2 rounded-lg">
         <Ad size="728x90" className="hidden md:block" />
         <Ad size="320x50" className="md:hidden" />
       </div>
       
       {/* Native ad */}
-      <div className="my-6">
+      <div className="my-6 bg-white/5 p-3 rounded-lg">
         <Ad size="native" />
       </div>
       
       {/* Social bar */}
-      <div className="my-6">
+      <div className="my-6 bg-white/5 p-2 rounded-lg">
         <Ad size="social-bar" />
       </div>
     </div>

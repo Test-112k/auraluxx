@@ -42,7 +42,7 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
 
   return (
     <div className="flex flex-col w-full mb-8">
-      <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg shadow-black/20">
+      <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <LoadingSpinner size="lg" text="Loading video player..." />

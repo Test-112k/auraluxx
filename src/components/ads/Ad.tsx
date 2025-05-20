@@ -183,7 +183,7 @@ const Ad = ({ size, className = '' }: AdProps) => {
   return (
     <div 
       ref={adContainerRef} 
-      className={`ad-container overflow-hidden ${getAdContainerClass()} ${className}`}
+      className={`ad-container overflow-hidden ${getAdContainerClass()} ${className} hover:scale-[1.01] transition-transform duration-200`}
     />
   );
 };
