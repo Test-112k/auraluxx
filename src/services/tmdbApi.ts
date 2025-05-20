@@ -118,6 +118,43 @@ export const getAnimeContent = (page = 1) => {
 };
 
 /**
+ * Get trending anime
+ */
+export const getTrendingAnime = (page = 1) => {
+  return apiRequest('/trending/tv/week', {
+    with_genres: 16, // Animation genre id
+    with_original_language: 'ja',
+    page
+  });
+};
+
+/**
+ * Get top rated anime
+ */
+export const getTopRatedAnime = (page = 1) => {
+  return apiRequest('/discover/tv', {
+    with_genres: 16, // Animation genre id
+    with_original_language: 'ja',
+    sort_by: 'vote_average.desc',
+    vote_count.gte: 100,
+    page
+  });
+};
+
+/**
+ * Get recent anime (on air)
+ */
+export const getRecentAnime = (page = 1) => {
+  return apiRequest('/discover/tv', {
+    with_genres: 16, // Animation genre id
+    with_original_language: 'ja',
+    sort_by: 'first_air_date.desc',
+    first_air_date.lte: new Date().toISOString().split('T')[0],
+    page
+  });
+};
+
+/**
  * Get image URL
  */
 export const getImageUrl = (path: string, size = 'original') => {

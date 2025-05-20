@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTrending, getImageUrl } from '@/services/tmdbApi';
 import { truncateText } from '@/utils/helpers';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SlideItem {
   id: number;
@@ -22,6 +23,7 @@ const HeroSlideshow = () => {
   const [autoplay, setAutoplay] = useState(true);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
 
   const fetchSlides = useCallback(async () => {
     setLoading(true);
@@ -42,10 +44,12 @@ const HeroSlideshow = () => {
   }, []);
 
   const nextSlide = useCallback(() => {
+    if (!slides.length) return;
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
   const prevSlide = useCallback(() => {
+    if (!slides.length) return;
     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   }, [slides.length]);
 
@@ -87,10 +91,37 @@ const HeroSlideshow = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextSlide, prevSlide]);
 
+  // Add touch support for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    
+    const touchEndX = e.touches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    // Swipe threshold
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        nextSlide(); // Swipe left
+      } else {
+        prevSlide(); // Swipe right
+      }
+      touchStartX.current = null;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartX.current = null;
+  };
+
   const renderSkeleton = () => (
     <div className="relative w-full h-[50vh] md:h-[70vh] bg-aura-dark/50 animate-pulse">
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-t-aura-purple border-white/20 rounded-full animate-spin"></div>
+        <p className="text-white/60 mt-4">Loading featured content...</p>
       </div>
     </div>
   );
@@ -107,6 +138,9 @@ const HeroSlideshow = () => {
       className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden" 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       tabIndex={0}
     >
       {/* Backdrop Image with Animation */}

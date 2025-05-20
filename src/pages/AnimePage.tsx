@@ -1,81 +1,232 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import MediaCard from '@/components/common/MediaCard';
+import MediaSlider from '@/components/common/MediaSlider';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
-import { getAnimeContent } from '@/services/tmdbApi';
+import MediaCard from '@/components/common/MediaCard';
+import { Button } from '@/components/ui/button';
+import { getAnimeContent, getTrendingAnime, getTopRatedAnime, getRecentAnime } from '@/services/tmdbApi';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const AnimePage = () => {
-  const [animeList, setAnimeList] = useState<any[]>([]);
+  const [popularAnime, setPopularAnime] = useState<any[]>([]);
+  const [trendingAnime, setTrendingAnime] = useState<any[]>([]);
+  const [topRatedAnime, setTopRatedAnime] = useState<any[]>([]);
+  const [recentAnime, setRecentAnime] = useState<any[]>([]);
+  const [displayedAnime, setDisplayedAnime] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [categoryLoading, setCategoryLoading] = useState({
+    popular: true,
+    trending: true,
+    topRated: true,
+    recent: true
+  });
+  const [selectedCategory, setSelectedCategory] = useState('popular');
 
-  const fetchAnime = useCallback(async () => {
-    setLoading(true);
+  // Fetch anime data for each category
+  const fetchAnimeData = useCallback(async () => {
     try {
-      const data = await getAnimeContent(page);
+      // Popular Anime
+      setCategoryLoading(prev => ({ ...prev, popular: true }));
+      const popularData = await getAnimeContent(1);
+      if (popularData?.results) {
+        setPopularAnime(popularData.results);
+        setDisplayedAnime(popularData.results);
+        setTotalPages(popularData.total_pages);
+      }
+      setCategoryLoading(prev => ({ ...prev, popular: false }));
+
+      // Trending Anime
+      setCategoryLoading(prev => ({ ...prev, trending: true }));
+      const trendingData = await getTrendingAnime(1);
+      if (trendingData?.results) {
+        setTrendingAnime(trendingData.results);
+      }
+      setCategoryLoading(prev => ({ ...prev, trending: false }));
+
+      // Top Rated Anime
+      setCategoryLoading(prev => ({ ...prev, topRated: true }));
+      const topRatedData = await getTopRatedAnime(1);
+      if (topRatedData?.results) {
+        setTopRatedAnime(topRatedData.results);
+      }
+      setCategoryLoading(prev => ({ ...prev, topRated: false }));
+
+      // Recent Anime
+      setCategoryLoading(prev => ({ ...prev, recent: true }));
+      const recentData = await getRecentAnime(1);
+      if (recentData?.results) {
+        setRecentAnime(recentData.results);
+      }
+      setCategoryLoading(prev => ({ ...prev, recent: false }));
+
+      // Set overall loading to false
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching anime data:', error);
+      setLoading(false);
+    }
+  }, []);
+
+  // Load more anime for infinite scrolling
+  const loadMoreAnime = async () => {
+    if (page >= totalPages) return false;
+    
+    const nextPage = page + 1;
+    setLoading(true);
+    
+    try {
+      let data;
+      switch (selectedCategory) {
+        case 'trending':
+          data = await getTrendingAnime(nextPage);
+          break;
+        case 'topRated':
+          data = await getTopRatedAnime(nextPage);
+          break;
+        case 'recent':
+          data = await getRecentAnime(nextPage);
+          break;
+        default:
+          data = await getAnimeContent(nextPage);
+      }
       
       if (data?.results) {
-        setAnimeList(prev => [...prev, ...data.results]);
-        setTotalPages(data.total_pages);
-        setPage(page + 1);
+        setDisplayedAnime(prev => [...prev, ...data.results]);
+        setPage(nextPage);
       }
+      return true;
     } catch (error) {
-      console.error('Error fetching anime:', error);
+      console.error('Error loading more anime:', error);
+      return false;
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  };
 
-  const loadMore = async () => {
-    if (page < totalPages) {
-      await fetchAnime();
-      return true;
+  // Change the displayed anime when category changes
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setPage(1);
+    
+    switch (category) {
+      case 'trending':
+        setDisplayedAnime(trendingAnime);
+        break;
+      case 'topRated':
+        setDisplayedAnime(topRatedAnime);
+        break;
+      case 'recent':
+        setDisplayedAnime(recentAnime);
+        break;
+      default:
+        setDisplayedAnime(popularAnime);
     }
-    return false;
   };
 
   useEffect(() => {
-    fetchAnime();
-  }, []);
+    fetchAnimeData();
+  }, [fetchAnimeData]);
 
   return (
     <MainLayout>
       <div className="auraluxx-container py-24">
         <h1 className="text-3xl font-bold text-white mb-8">Anime</h1>
         
-        {loading && animeList.length === 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {Array(18).fill(0).map((_, i) => (
-              <div key={i} className="rounded-lg overflow-hidden animate-pulse">
-                <div className="aspect-[2/3] bg-white/5"></div>
-                <div className="p-2">
-                  <div className="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-white/5 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
+        {/* Category Selection Tabs */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Button 
+            variant={selectedCategory === 'popular' ? 'default' : 'outline'} 
+            className={selectedCategory === 'popular' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
+            onClick={() => handleCategoryChange('popular')}
+          >
+            Popular
+          </Button>
+          <Button 
+            variant={selectedCategory === 'trending' ? 'default' : 'outline'} 
+            className={selectedCategory === 'trending' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
+            onClick={() => handleCategoryChange('trending')}
+          >
+            Trending
+          </Button>
+          <Button 
+            variant={selectedCategory === 'topRated' ? 'default' : 'outline'} 
+            className={selectedCategory === 'topRated' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
+            onClick={() => handleCategoryChange('topRated')}
+          >
+            Top Rated
+          </Button>
+          <Button 
+            variant={selectedCategory === 'recent' ? 'default' : 'outline'} 
+            className={selectedCategory === 'recent' ? 'bg-aura-purple hover:bg-aura-purple/90' : 'text-white border-white/30'}
+            onClick={() => handleCategoryChange('recent')}
+          >
+            Recent
+          </Button>
+        </div>
+        
+        {/* Featured Anime Categories (Horizontal Scrolling) */}
+        <div className="mb-8">
+          <MediaSlider 
+            title="Trending Anime" 
+            items={trendingAnime}
+            loading={categoryLoading.trending}
+            mediaType="tv"
+          />
+          
+          <MediaSlider 
+            title="Top Rated Anime" 
+            items={topRatedAnime}
+            loading={categoryLoading.topRated}
+            mediaType="tv"
+          />
+          
+          <MediaSlider 
+            title="Recently Released" 
+            items={recentAnime}
+            loading={categoryLoading.recent}
+            mediaType="tv"
+          />
+        </div>
+
+        {/* Main Anime Grid with Infinite Scrolling */}
+        <h2 className="text-xl font-bold text-white mb-4">
+          {selectedCategory === 'popular' ? 'Popular Anime' : 
+           selectedCategory === 'trending' ? 'Trending Anime' :
+           selectedCategory === 'topRated' ? 'Top Rated Anime' : 'Recent Anime'}
+        </h2>
+        
+        {loading && displayedAnime.length === 0 ? (
+          <div className="flex justify-center my-12">
+            <LoadingSpinner size="lg" variant="purple" text="Loading anime..." />
           </div>
         ) : (
           <InfiniteScroll
-            loadMore={loadMore}
+            loadMore={loadMoreAnime}
             loading={loading}
             hasMore={page < totalPages}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {animeList.map((anime) => (
+              {displayedAnime.map((item) => (
                 <MediaCard
-                  key={anime.id}
-                  id={anime.id}
-                  title={anime.name}
+                  key={item.id}
+                  id={item.id}
+                  title={item.name}
                   type="tv"
-                  posterPath={anime.poster_path}
-                  releaseDate={anime.first_air_date}
-                  voteAverage={anime.vote_average}
+                  posterPath={item.poster_path}
+                  releaseDate={item.first_air_date}
+                  voteAverage={item.vote_average}
                 />
               ))}
             </div>
+            
+            {loading && displayedAnime.length > 0 && (
+              <div className="flex justify-center my-8">
+                <LoadingSpinner size="md" text="Loading more..." />
+              </div>
+            )}
           </InfiniteScroll>
         )}
       </div>

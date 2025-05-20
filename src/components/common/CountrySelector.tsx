@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { countryToLanguageMap } from '@/services/tmdbApi';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Country {
   iso_3166_1: string;
@@ -22,6 +23,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Flag emoji for each country
   const getCountryFlag = (countryCode: string) => {
@@ -46,6 +48,15 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -131,7 +142,12 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   // Find the selected country object
   const selectedCountryObj = countries.find(c => c.iso_3166_1 === selectedCountry);
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setSearchQuery('');
+    }
+  };
 
   const handleCountrySelect = (countryCode: string) => {
     onSelect(countryCode);
@@ -142,7 +158,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   if (isLoading) {
     return (
       <div className={`px-4 py-2 bg-white/5 rounded-md ${className}`}>
-        <div className="h-6 bg-white/10 animate-pulse rounded w-20"></div>
+        <LoadingSpinner size="sm" variant="white" />
       </div>
     );
   }
@@ -166,12 +182,13 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 right-0 w-72 bg-black/90 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-xl overflow-hidden animate-fade-in">
+        <div className="absolute z-50 mt-2 right-0 w-72 bg-aura-dark/95 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-xl overflow-hidden animate-fade-in">
           {/* Search input */}
           <div className="p-3 relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Search country by name or code"
                 value={searchQuery}
@@ -182,7 +199,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
           </div>
 
           {/* Countries grid */}
-          <div className="max-h-96 overflow-y-auto p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="max-h-96 overflow-y-auto p-3 grid grid-cols-2 md:grid-cols-2 gap-2">
             {displayedCountries.length > 0 ? (
               displayedCountries.map((country) => (
                 <button
@@ -199,7 +216,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
                 </button>
               ))
             ) : (
-              <div className="col-span-3 py-4 text-center text-white/60">
+              <div className="col-span-2 py-4 text-center text-white/60">
                 No countries found
               </div>
             )}
