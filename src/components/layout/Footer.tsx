@@ -8,8 +8,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h2 className="text-2xl font-bold text-gradient mb-4">Auraluxx</h2>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-white/70 mb-4">
               Your premium streaming destination for movies, TV series, anime and regional content.
+            </p>
+            <p className="text-sm text-white/70">
+              <strong>Notice:</strong> We do not store any media files on our servers.
             </p>
           </div>
 

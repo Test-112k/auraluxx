@@ -79,10 +79,13 @@ const RegionalPage = () => {
       <div className="auraluxx-container py-24">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <h1 className="text-3xl font-bold text-white">Regional Content</h1>
-          <CountrySelector 
-            selectedCountry={selectedCountry} 
-            onSelect={handleCountryChange} 
-          />
+          <div className="w-full md:w-auto self-end md:self-auto">
+            <CountrySelector 
+              selectedCountry={selectedCountry} 
+              onSelect={handleCountryChange} 
+              className="ml-auto"
+            />
+          </div>
         </div>
         
         {loading && regionalContent.length === 0 ? (
