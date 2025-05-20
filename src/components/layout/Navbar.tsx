@@ -86,7 +86,7 @@ const Navbar = () => {
               rel="noopener noreferrer"
               className="text-white hover:text-aura-purple transition-colors flex items-center"
             >
-              {/* Improved Telegram Logo */}
+              {/* Telegram Logo */}
               <svg 
                 className="mr-1 h-5 w-5" 
                 viewBox="0 0 24 24" 
@@ -112,7 +112,6 @@ const Navbar = () => {
                 className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full border-white/10 focus:border-aura-purple focus:ring-aura-purple"
                 aria-label="Search"
                 autoComplete="off"
-                style={{ color: 'white' }} /* Force text color */
               />
               {isSearching ? (
                 <Loader className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 h-4 w-4 animate-spin" />
@@ -143,7 +142,7 @@ const Navbar = () => {
             className="md:hidden mr-2 text-white hover:text-aura-purple transition-colors"
             aria-label="Telegram"
           >
-            {/* Improved Telegram Logo */}
+            {/* Telegram Logo */}
             <svg 
               className="h-6 w-6" 
               viewBox="0 0 24 24" 
