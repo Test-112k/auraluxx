@@ -8,7 +8,7 @@ const ContentAds = () => {
   if (!isAdEnabled) return null;
   
   return (
-    <div className="w-full space-y-10 my-10 px-4">
+    <div className="w-full space-y-10 my-10 px-4 max-w-7xl mx-auto">
       {/* Top banner */}
       <div className="flex justify-center overflow-hidden bg-white/5 p-2 rounded-lg">
         <Ad size="728x90" className="hidden md:block" />

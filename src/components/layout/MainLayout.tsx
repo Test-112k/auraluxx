@@ -18,7 +18,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <AdProvider>
         <div className="flex flex-col min-h-screen bg-aura-dark text-white">
           <Navbar />
-          <div className="flex flex-1">
+          <div className="flex flex-1 max-w-[1920px] mx-auto w-full">
             <main className="flex-grow pt-16 w-full">
               {children}
               <ContentAds />

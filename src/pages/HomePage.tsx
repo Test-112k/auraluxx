@@ -5,6 +5,8 @@ import HeroSlideshow from '@/components/common/HeroSlideshow';
 import MediaSlider from '@/components/common/MediaSlider';
 import CategoryButtons from '@/components/common/CategoryButtons';
 import { Button } from '@/components/ui/button';
+import { useAds } from '@/contexts/AdContext';
+import Ad from '@/components/ads/Ad';
 import { 
   getTrending, 
   getPopular, 
@@ -20,6 +22,7 @@ const HomePage = () => {
   const [topRatedMovies, setTopRatedMovies] = useState([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [animeContent, setAnimeContent] = useState([]);
+  const { isAdEnabled } = useAds();
   const [loading, setLoading] = useState({
     trending: true,
     trendingShows: true,
@@ -81,6 +84,18 @@ const HomePage = () => {
     fetchData();
   }, [fetchData]);
 
+  // Banner Ad component
+  const BannerAd = ({ size }) => {
+    if (!isAdEnabled) return null;
+    return (
+      <div className="w-full my-8 flex justify-center">
+        <div className="bg-white/5 p-2 rounded-lg">
+          <Ad size={size} />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <MainLayout>
       <HeroSlideshow />
@@ -123,7 +138,10 @@ const HomePage = () => {
         <CategoryButtons />
       </div>
       
-      <div className="auraluxx-container py-8">
+      <div className="auraluxx-container py-6">
+        {/* Top banner ad */}
+        <BannerAd size="728x90" />
+        
         <MediaSlider
           title="Trending Movies"
           items={trendingMovies}
@@ -140,6 +158,9 @@ const HomePage = () => {
           mediaType="tv"
         />
         
+        {/* Ad after 2 sliders */}
+        <BannerAd size="300x250" />
+        
         <MediaSlider
           title="Now Playing"
           items={nowPlayingMovies}
@@ -155,6 +176,9 @@ const HomePage = () => {
           viewAllLink="/movies?filter=popular"
           mediaType="movie"
         />
+        
+        {/* Ad after 4 sliders */}
+        <BannerAd size="728x90" />
         
         <MediaSlider
           title="Top Rated Movies"
