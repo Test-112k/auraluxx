@@ -32,8 +32,9 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Create a properly working search function
   const performSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery.trim() || searchQuery.length < 2) {
       setResults([]);
       setIsDropdownOpen(false);
       return;
@@ -47,28 +48,28 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         const filteredResults = data.results
           .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
           .slice(0, 8); // Limit to 8 results for dropdown
+        
         setResults(filteredResults);
         setIsDropdownOpen(filteredResults.length > 0);
       } else {
         setResults([]);
+        setIsDropdownOpen(false);
       }
     } catch (error) {
       console.error('Search error:', error);
-      toast({
-        title: "Search Error",
-        description: "Unable to perform search. Please try again.",
-        variant: "destructive",
-      });
+      setResults([]);
+      setIsDropdownOpen(false);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Debounced search to prevent too many API calls
+  // Debounced search with a shorter delay for better responsiveness
   const debouncedSearch = debounce(performSearch, 300);
 
   const setQuery = (newQuery: string) => {
     setQueryValue(newQuery);
+    
     if (newQuery.trim()) {
       debouncedSearch(newQuery);
     } else {

@@ -6,7 +6,7 @@ import { getImageUrl } from '@/services/tmdbApi';
 import { getYearFromDate } from '@/utils/helpers';
 
 const SearchDropdown = () => {
-  const { results, isSearching, setIsDropdownOpen } = useSearch();
+  const { results, isSearching, isDropdownOpen, setIsDropdownOpen, clearSearch } = useSearch();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -22,9 +22,13 @@ const SearchDropdown = () => {
   }, [setIsDropdownOpen]);
 
   const handleItemClick = (id: number, type: string) => {
-    setIsDropdownOpen(false);
     navigate(`/watch/${type}/${id}`);
+    clearSearch();
   };
+
+  if (!isDropdownOpen) {
+    return null;
+  }
 
   return (
     <div 

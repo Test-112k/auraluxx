@@ -1,5 +1,6 @@
 
 import { ReactNode } from 'react';
+import { SearchProvider } from '@/contexts/SearchContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
@@ -10,14 +11,16 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className="flex flex-col min-h-screen bg-aura-dark text-white">
-      <Navbar />
-      <main className="flex-grow pt-16">
-        {children}
-      </main>
-      <ScrollToTop />
-      <Footer />
-    </div>
+    <SearchProvider>
+      <div className="flex flex-col min-h-screen bg-aura-dark text-white">
+        <Navbar />
+        <main className="flex-grow pt-16">
+          {children}
+        </main>
+        <ScrollToTop />
+        <Footer />
+      </div>
+    </SearchProvider>
   );
 };
 

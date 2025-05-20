@@ -80,7 +80,7 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar - more responsive width */}
           <div className="relative flex-1 max-w-sm mx-4">
             <SimpleSearchBar />
           </div>
