@@ -71,16 +71,18 @@ const LoadingSpinner = ({
         <p className={`mt-3 text-white/70 ${sizeMapping[size].text}`}>{text}</p>
       )}
 
-      <style jsx>{`
-        @keyframes spinner-rotate {
-          0% {
-            transform: rotate(0deg);
+      <style>
+        {`
+          @keyframes spinner-rotate {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
           }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
