@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -144,115 +145,94 @@ const WatchPage = () => {
           <CategoryButtons />
         </div>
         
-        {/* Top banner ad */}
+        {/* Top banner ad - separated from video player */}
         {isAdEnabled && (
-          <div className="flex justify-center my-6 overflow-hidden">
+          <div className="flex justify-center mb-8 overflow-hidden bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
             <Ad size="728x90" className="hidden md:block" />
             <Ad size="320x50" className="md:hidden" />
           </div>
         )}
         
-        {/* Main content with side ads */}
-        <div className="flex">
-          {/* Left sidebar ad */}
-          {isAdEnabled && (
-            <div className="hidden lg:block lg:w-[160px] flex-shrink-0 mr-4">
-              <div className="sticky top-24">
-                <Ad size="160x600" />
+        {/* Main content */}
+        <div className="max-w-[1400px] mx-auto">
+          {/* TV Show Season/Episode Selector */}
+          {isTvShow && (
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-white/70">Season</label>
+                <Select
+                  value={selectedSeason.toString()}
+                  onValueChange={(value) => {
+                    setSelectedSeason(parseInt(value));
+                    setSelectedEpisode(1); // Reset episode when season changes
+                  }}
+                >
+                  <SelectTrigger className="w-32 bg-white/10 border-white/10">
+                    <SelectValue placeholder="Season" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
+                    {Array.from({ length: numberOfSeasons }, (_, i) => i + 1).map((season) => (
+                      <SelectItem key={season} value={season.toString()}>
+                        Season {season}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-white/70">Episode</label>
+                <Select
+                  value={selectedEpisode.toString()}
+                  onValueChange={(value) => setSelectedEpisode(parseInt(value))}
+                >
+                  <SelectTrigger className="w-32 bg-white/10 border-white/10">
+                    <SelectValue placeholder="Episode" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
+                    {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
+                      <SelectItem key={episode} value={episode.toString()}>
+                        Episode {episode}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}
           
-          {/* Main content */}
-          <div className="flex-1">
-            {/* TV Show Season/Episode Selector */}
-            {isTvShow && (
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-white/70">Season</label>
-                  <Select
-                    value={selectedSeason.toString()}
-                    onValueChange={(value) => {
-                      setSelectedSeason(parseInt(value));
-                      setSelectedEpisode(1); // Reset episode when season changes
-                    }}
-                  >
-                    <SelectTrigger className="w-32 bg-white/10 border-white/10">
-                      <SelectValue placeholder="Season" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
-                      {Array.from({ length: numberOfSeasons }, (_, i) => i + 1).map((season) => (
-                        <SelectItem key={season} value={season.toString()}>
-                          Season {season}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-white/70">Episode</label>
-                  <Select
-                    value={selectedEpisode.toString()}
-                    onValueChange={(value) => setSelectedEpisode(parseInt(value))}
-                  >
-                    <SelectTrigger className="w-32 bg-white/10 border-white/10">
-                      <SelectValue placeholder="Episode" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
-                      {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
-                        <SelectItem key={episode} value={episode.toString()}>
-                          Episode {episode}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-            
-            {/* Video Player */}
-            <VideoPlayer 
-              id={id || ''} 
-              type={type as 'movie' | 'tv'} 
-              title={title} 
-              season={isTvShow ? selectedSeason : undefined}
-              episode={isTvShow ? selectedEpisode : undefined}
-            />
-            
-            {/* Ad below video player */}
-            {isAdEnabled && (
-              <div className="flex justify-center my-6">
-                <Ad size="300x250" />
-              </div>
-            )}
-            
-            {/* Content Info */}
-            <MediaDetails 
-              title={title}
-              releaseDate={releaseDate}
-              runtime={runtime}
-              voteAverage={details.vote_average}
-              genres={genres}
-              overview={details.overview}
-              posterPath={details.poster_path}
-              cast={credits.cast || []}
-            />
-          </div>
+          {/* Video Player - now without side ads */}
+          <VideoPlayer 
+            id={id || ''} 
+            type={type as 'movie' | 'tv'} 
+            title={title} 
+            season={isTvShow ? selectedSeason : undefined}
+            episode={isTvShow ? selectedEpisode : undefined}
+          />
           
-          {/* Right sidebar ad */}
+          {/* Ad below video player - clearly separated */}
           {isAdEnabled && (
-            <div className="hidden lg:block lg:w-[160px] flex-shrink-0 ml-4">
-              <div className="sticky top-24">
-                <Ad size="160x300" />
-              </div>
+            <div className="flex justify-center my-8 bg-white/5 p-3 rounded-lg max-w-[1400px] mx-auto">
+              <Ad size="300x250" />
             </div>
           )}
+          
+          {/* Content Info */}
+          <MediaDetails 
+            title={title}
+            releaseDate={releaseDate}
+            runtime={runtime}
+            voteAverage={details.vote_average}
+            genres={genres}
+            overview={details.overview}
+            posterPath={details.poster_path}
+            cast={credits.cast || []}
+          />
         </div>
         
-        {/* Native ad */}
+        {/* Native ad - separated with margin */}
         {isAdEnabled && (
-          <div className="my-8">
+          <div className="my-10 max-w-[1400px] mx-auto bg-white/5 p-3 rounded-lg">
             <Ad size="native" />
           </div>
         )}
@@ -275,14 +255,14 @@ const WatchPage = () => {
           </div>
         ) : null}
         
-        {/* Bottom banner ad and social bar */}
+        {/* Bottom banner ad and social bar - separated with margin */}
         {isAdEnabled && (
           <>
-            <div className="flex justify-center my-8">
+            <div className="flex justify-center my-8 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
               <Ad size="728x90" className="hidden md:block" />
               <Ad size="468x60" className="md:hidden" />
             </div>
-            <div className="my-6">
+            <div className="my-6 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
               <Ad size="social-bar" />
             </div>
           </>

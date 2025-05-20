@@ -42,7 +42,7 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
 
   return (
     <div className="flex flex-col w-full mb-8">
-      <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5">
+      <div className="relative w-full aspect-video md:aspect-[16/9] lg:aspect-[16/8.5] bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5 max-w-[1400px] mx-auto">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <LoadingSpinner size="lg" text="Loading video player..." />
@@ -71,7 +71,7 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
       </div>
       
       {/* User guidance message */}
-      <div className="mt-3 p-4 rounded-lg bg-white/5 text-white/80 text-sm md:text-base border border-white/10">
+      <div className="mt-3 p-4 rounded-lg bg-white/5 text-white/80 text-sm md:text-base border border-white/10 max-w-[1400px] mx-auto">
         <p>If you are not able to watch properly, or want to watch in different language, change the server in video player.</p>
       </div>
     </div>

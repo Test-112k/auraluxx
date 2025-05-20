@@ -1,11 +1,13 @@
 
 import { useAds } from '@/contexts/AdContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Ad from './Ad';
 
 const SidebarAd = () => {
   const { isAdEnabled } = useAds();
+  const isMobile = useIsMobile();
   
-  if (!isAdEnabled) return null;
+  if (!isAdEnabled || isMobile) return null;
   
   return (
     <div className="hidden xl:flex flex-col items-center gap-6 ml-4 min-w-[180px] pt-4">

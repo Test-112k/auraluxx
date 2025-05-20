@@ -35,3 +35,27 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Video player optimizations */
+.video-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Mobile video height enhancement */
+@media (max-width: 768px) {
+  .video-container {
+    height: 56vw; /* 16:9 aspect ratio for width-based sizing */
+  }
+}
+
+/* Ad container spacing and visibility */
+.ad-wrapper {
+  margin: 2rem 0;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
