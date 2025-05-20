@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { getTrending, getImageUrl } from '@/services/tmdbApi';
 import { truncateText } from '@/utils/helpers';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -162,25 +162,6 @@ const HeroSlideshow = () => {
           />
         </div>
       ))}
-
-      {/* Navigation Arrows */}
-      <button 
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
-        aria-label="Previous slide"
-        type="button"
-      >
-        <ChevronLeft size={24} />
-      </button>
-      
-      <button 
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors focus:outline-none focus:ring-2 focus:ring-aura-purple"
-        aria-label="Next slide"
-        type="button"
-      >
-        <ChevronRight size={24} />
-      </button>
 
       {/* Content */}
       <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 lg:px-16">

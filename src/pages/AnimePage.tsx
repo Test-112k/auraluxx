@@ -53,7 +53,8 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, trending: true }));
       const trendingData = await getTrendingAnime(1);
       if (trendingData?.results) {
-        setTrendingAnime(filterAnimeContent(trendingData.results));
+        const filtered = filterAnimeContent(trendingData.results);
+        setTrendingAnime(filtered);
       }
       setCategoryLoading(prev => ({ ...prev, trending: false }));
 
@@ -61,7 +62,8 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, topRated: true }));
       const topRatedData = await getTopRatedAnime(1);
       if (topRatedData?.results) {
-        setTopRatedAnime(filterAnimeContent(topRatedData.results));
+        const filtered = filterAnimeContent(topRatedData.results);
+        setTopRatedAnime(filtered);
       }
       setCategoryLoading(prev => ({ ...prev, topRated: false }));
 
@@ -69,7 +71,8 @@ const AnimePage = () => {
       setCategoryLoading(prev => ({ ...prev, recent: true }));
       const recentData = await getRecentAnime(1);
       if (recentData?.results) {
-        setRecentAnime(filterAnimeContent(recentData.results));
+        const filtered = filterAnimeContent(recentData.results);
+        setRecentAnime(filtered);
       }
       setCategoryLoading(prev => ({ ...prev, recent: false }));
 
@@ -125,16 +128,16 @@ const AnimePage = () => {
     
     switch (category) {
       case 'trending':
-        setDisplayedAnime(trendingAnime);
+        setDisplayedAnime([...trendingAnime]);
         break;
       case 'topRated':
-        setDisplayedAnime(topRatedAnime);
+        setDisplayedAnime([...topRatedAnime]);
         break;
       case 'recent':
-        setDisplayedAnime(recentAnime);
+        setDisplayedAnime([...recentAnime]);
         break;
       default:
-        setDisplayedAnime(popularAnime);
+        setDisplayedAnime([...popularAnime]);
     }
   };
 

@@ -58,6 +58,20 @@
   html {
     @apply scroll-smooth;
   }
+  
+  /* Fix for mobile inputs */
+  input, textarea, select {
+    -webkit-appearance: none;
+    appearance: none;
+    color: inherit;
+    font-size: inherit;
+    background-color: transparent;
+  }
+  
+  /* Better focus styles for better accessibility */
+  a:focus, button:focus, input:focus, select:focus, textarea:focus {
+    @apply outline-none ring-2 ring-aura-purple ring-opacity-50;
+  }
 }
 
 @layer components {
@@ -80,6 +94,24 @@
   .auraluxx-container {
     @apply container mx-auto px-4 sm:px-6 lg:px-8;
   }
+  
+  /* Responsive typography */
+  h1 {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold;
+  }
+  
+  h2 {
+    @apply text-xl sm:text-2xl md:text-3xl font-bold;
+  }
+  
+  h3 {
+    @apply text-lg sm:text-xl md:text-2xl font-bold;
+  }
+  
+  /* Improved button states */
+  .btn-hover {
+    @apply transition-all duration-200 hover:translate-y-[-2px] active:translate-y-0;
+  }
 }
 
 #root {
@@ -87,4 +119,11 @@
   margin: 0;
   padding: 0;
   max-width: none;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  .auraluxx-container {
+    @apply px-3;
+  }
 }
