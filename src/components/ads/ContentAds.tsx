@@ -8,14 +8,14 @@ const ContentAds = () => {
   if (!isAdEnabled) return null;
   
   return (
-    <div className="w-full space-y-10 my-8 px-4 max-w-7xl mx-auto">
+    <div className="w-full space-y-16 my-12 px-4 max-w-7xl mx-auto">
       {/* Small banner ad */}
-      <div className="flex justify-center overflow-hidden bg-white/5 p-2 rounded-lg">
+      <div className="flex justify-center overflow-hidden">
         <Ad size="320x50" />
       </div>
       
       {/* Rectangle ad */}
-      <div className="flex justify-center bg-white/5 p-3 rounded-lg">
+      <div className="flex justify-center my-12">
         <Ad size="300x250" />
       </div>
     </div>

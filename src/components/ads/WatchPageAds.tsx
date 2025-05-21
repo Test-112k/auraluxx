@@ -8,16 +8,16 @@ const WatchPageAds = () => {
   if (!isAdEnabled) return null;
   
   return (
-    <div className="space-y-10 max-w-7xl mx-auto px-4">
+    <div className="space-y-14 max-w-7xl mx-auto px-4">
       {/* Top small banner ad */}
-      <div className="flex justify-center my-6 max-w-full overflow-hidden bg-white/5 p-2 rounded-lg">
+      <div className="flex justify-center my-8 max-w-full overflow-hidden">
         <Ad size="320x50" />
       </div>
       
       {/* Side ads - smaller formats only with proper spacing */}
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-10">
         {/* Left sidebar ad - small format */}
-        <div className="hidden lg:block bg-white/5 p-2 rounded-lg sticky top-24 h-fit">
+        <div className="hidden lg:block sticky top-24 h-fit">
           <Ad size="160x300" />
         </div>
         
@@ -27,13 +27,13 @@ const WatchPageAds = () => {
         </div>
         
         {/* Right sidebar ad - small format */}
-        <div className="hidden lg:block bg-white/5 p-2 rounded-lg sticky top-24 h-fit">
+        <div className="hidden lg:block sticky top-24 h-fit">
           <Ad size="160x300" />
         </div>
       </div>
       
       {/* Bottom small banner ad with more spacing */}
-      <div className="flex justify-center my-6 bg-white/5 p-2 rounded-lg">
+      <div className="flex justify-center my-10">
         <Ad size="320x50" />
       </div>
     </div>

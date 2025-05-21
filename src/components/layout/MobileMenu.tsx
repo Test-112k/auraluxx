@@ -56,6 +56,13 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
           TV Series
         </Link>
         <Link 
+          to="/anime" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          Anime
+        </Link>
+        <Link 
           to="/regional" 
           onClick={onClose}
           className="text-2xl font-medium text-white hover:text-gradient transition-all"
@@ -80,37 +87,6 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
           </svg>
           Telegram
         </a>
-        
-        <div className="w-full h-px bg-white/10 my-2"></div>
-        
-        <Link 
-          to="/terms" 
-          onClick={onClose}
-          className="text-lg font-medium text-white/80 hover:text-white transition-all"
-        >
-          Terms of Use
-        </Link>
-        <Link 
-          to="/privacy" 
-          onClick={onClose}
-          className="text-lg font-medium text-white/80 hover:text-white transition-all"
-        >
-          Privacy Policy
-        </Link>
-        <Link 
-          to="/dmca" 
-          onClick={onClose}
-          className="text-lg font-medium text-white/80 hover:text-white transition-all"
-        >
-          DMCA
-        </Link>
-        <Link 
-          to="/contact" 
-          onClick={onClose}
-          className="text-lg font-medium text-white/80 hover:text-white transition-all"
-        >
-          Contact Us
-        </Link>
       </div>
 
       <div className="text-center pb-8 text-sm text-white/60">
