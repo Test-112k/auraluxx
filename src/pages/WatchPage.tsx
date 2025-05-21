@@ -127,6 +127,8 @@ const WatchPage = () => {
   const credits = details.credits || { cast: [], crew: [] };
   const similarContent = similarData?.results || [];
   const isTvShow = type === 'tv';
+  const posterPath = details.poster_path;
+  const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
 
   return (
     <MainLayout>
@@ -145,11 +147,24 @@ const WatchPage = () => {
           <CategoryButtons />
         </div>
         
+        {/* Add mobile movie thumbnail */}
+        {posterUrl && (
+          <div className="block md:hidden mb-6">
+            <div className="flex justify-center">
+              <img 
+                src={posterUrl} 
+                alt={title} 
+                className="w-40 h-auto rounded-lg shadow-lg border border-white/10"
+              />
+            </div>
+            <h1 className="text-xl font-bold text-center mt-3 mb-4">{title}</h1>
+          </div>
+        )}
+        
         {/* Top banner ad - separated from video player */}
         {isAdEnabled && (
           <div className="flex justify-center mb-8 overflow-hidden bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
-            <Ad size="728x90" className="hidden md:block" />
-            <Ad size="320x50" className="md:hidden" />
+            <Ad size="320x50" />
           </div>
         )}
         
@@ -201,7 +216,7 @@ const WatchPage = () => {
             </div>
           )}
           
-          {/* Video Player - now without side ads */}
+          {/* Video Player */}
           <VideoPlayer 
             id={id || ''} 
             type={type as 'movie' | 'tv'} 
@@ -212,7 +227,7 @@ const WatchPage = () => {
           
           {/* Ad below video player - clearly separated */}
           {isAdEnabled && (
-            <div className="flex justify-center my-8 bg-white/5 p-3 rounded-lg max-w-[1400px] mx-auto">
+            <div className="flex justify-center my-10 bg-white/5 p-3 rounded-lg">
               <Ad size="300x250" />
             </div>
           )}
@@ -232,7 +247,7 @@ const WatchPage = () => {
         
         {/* Native ad - separated with margin */}
         {isAdEnabled && (
-          <div className="my-10 max-w-[1400px] mx-auto bg-white/5 p-3 rounded-lg">
+          <div className="my-12 max-w-[1400px] mx-auto bg-white/5 p-3 rounded-lg">
             <Ad size="native" />
           </div>
         )}
@@ -255,17 +270,11 @@ const WatchPage = () => {
           </div>
         ) : null}
         
-        {/* Bottom banner ad and social bar - separated with margin */}
+        {/* Bottom banner ad */}
         {isAdEnabled && (
-          <>
-            <div className="flex justify-center my-8 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
-              <Ad size="728x90" className="hidden md:block" />
-              <Ad size="468x60" className="md:hidden" />
-            </div>
-            <div className="my-6 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
-              <Ad size="social-bar" />
-            </div>
-          </>
+          <div className="flex justify-center mt-12 mb-8 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
+            <Ad size="320x50" />
+          </div>
         )}
       </div>
     </MainLayout>

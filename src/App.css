@@ -96,3 +96,16 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Fix mobile menu display */
+.fixed.inset-0.z-50 {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: auto;
+}
+
+/* Better spacing for ads */
+.ad-container {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
