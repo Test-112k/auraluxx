@@ -19,7 +19,7 @@ const WatchPageAds = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left sidebar ad */}
         <div className="hidden lg:block bg-white/5 p-2 rounded-lg sticky top-24 h-fit">
-          <Ad size="160x300" />
+          <Ad size="160x600" />
         </div>
         
         {/* Main content area would go here */}
