@@ -5,7 +5,6 @@ export type AdSize =
   | '300x250'
   | '728x90'
   | '160x600'
-  | '160x300'
   | '468x60'
   | '320x50'
   | 'social-bar'
@@ -66,19 +65,6 @@ const Ad = ({ size, className = '' }: AdProps) => {
               };
             </script>
             <script type="text/javascript" src="//bluetackclasp.com/b98c5b7929b95d5f7d290198fcf7ddaa/invoke.js"></script>
-          `;
-        case '160x300':
-          return `
-            <script type="text/javascript">
-              atOptions = {
-                'key' : '3fcc1b108f3c16049e14cdf752fe0d7f',
-                'format' : 'iframe',
-                'height' : 300,
-                'width' : 160,
-                'params' : {}
-              };
-            </script>
-            <script type="text/javascript" src="//bluetackclasp.com/3fcc1b108f3c16049e14cdf752fe0d7f/invoke.js"></script>
           `;
         case '468x60':
           return `
@@ -161,17 +147,15 @@ const Ad = ({ size, className = '' }: AdProps) => {
   const getAdContainerClass = () => {
     switch(size) {
       case '300x250':
-        return 'w-[300px] h-[250px] aspect-[300/250]';
+        return 'w-[300px] h-[250px]';
       case '728x90':
-        return 'w-[728px] h-[90px] aspect-[728/90]';
+        return 'w-full max-w-[728px] h-[90px]';
       case '160x600':
-        return 'w-[160px] h-[600px] aspect-[160/600]';
-      case '160x300':
-        return 'w-[160px] h-[300px] aspect-[160/300]';
+        return 'w-[160px] h-[600px]';
       case '468x60':
-        return 'w-[468px] h-[60px] aspect-[468/60]';
+        return 'w-full max-w-[468px] h-[60px]';
       case '320x50':
-        return 'w-[320px] h-[50px] aspect-[320/50]';
+        return 'w-full max-w-[320px] h-[50px]';
       case 'social-bar':
         return 'w-full';
       case 'native':
@@ -184,7 +168,7 @@ const Ad = ({ size, className = '' }: AdProps) => {
   return (
     <div 
       ref={adContainerRef} 
-      className={`ad-container overflow-hidden ${getAdContainerClass()} ${className} hover:scale-[1.01] transition-transform duration-200`}
+      className={`ad-container overflow-hidden ${getAdContainerClass()} ${className}`}
       style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}
     />
   );
