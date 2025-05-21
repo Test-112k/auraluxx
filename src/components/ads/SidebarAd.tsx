@@ -11,13 +11,8 @@ const SidebarAd = () => {
   
   return (
     <div className="hidden xl:flex flex-col items-center gap-6 min-w-[180px] pt-4">
-      {/* Taller ad for wider screens */}
-      <div className="bg-white/5 p-2 rounded-lg sticky top-24 hidden xxl:block">
-        <Ad size="160x600" />
-      </div>
-      
-      {/* Shorter ad for narrower screens */}
-      <div className="bg-white/5 p-2 rounded-lg sticky top-24 xl:block xxl:hidden">
+      {/* Using only the smaller ad format for better UX */}
+      <div className="bg-white/5 p-2 rounded-lg sticky top-24">
         <Ad size="160x300" />
       </div>
     </div>

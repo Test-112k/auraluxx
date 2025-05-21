@@ -82,20 +82,6 @@
   display: block;
 }
 
-/* Extra large screen breakpoint for ads */
-.xxl\:block {
-  display: none;
-}
-
-@media (min-width: 1536px) {
-  .xxl\:block {
-    display: block;
-  }
-  .xxl\:hidden {
-    display: none;
-  }
-}
-
 /* Mobile menu animation */
 .animate-in {
   animation-duration: 300ms;
@@ -106,16 +92,7 @@
   animation-name: fadeIn;
 }
 
-.slide-in-from-bottom {
-  animation-name: slideInFromBottom;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes slideInFromBottom {
-  from { transform: translateY(10%); }
-  to { transform: translateY(0); }
 }
