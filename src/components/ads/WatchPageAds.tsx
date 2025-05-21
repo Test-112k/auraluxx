@@ -29,7 +29,7 @@ const WatchPageAds = () => {
         
         {/* Right sidebar ad */}
         <div className="hidden lg:block bg-white/5 p-2 rounded-lg sticky top-24 h-fit">
-          <Ad size="160x600" />
+          <Ad size="160x300" />
         </div>
       </div>
       

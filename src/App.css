@@ -82,6 +82,20 @@
   display: block;
 }
 
+/* Extra large screen breakpoint for ads */
+.xxl\:block {
+  display: none;
+}
+
+@media (min-width: 1536px) {
+  .xxl\:block {
+    display: block;
+  }
+  .xxl\:hidden {
+    display: none;
+  }
+}
+
 /* Mobile menu animation */
 .animate-in {
   animation-duration: 300ms;

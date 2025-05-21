@@ -5,6 +5,7 @@ export type AdSize =
   | '300x250'
   | '728x90'
   | '160x600'
+  | '160x300'
   | '468x60'
   | '320x50'
   | 'social-bar'
@@ -65,6 +66,19 @@ const Ad = ({ size, className = '' }: AdProps) => {
               };
             </script>
             <script type="text/javascript" src="//bluetackclasp.com/b98c5b7929b95d5f7d290198fcf7ddaa/invoke.js"></script>
+          `;
+        case '160x300':
+          return `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '3fcc1b108f3c16049e14cdf752fe0d7f',
+                'format' : 'iframe',
+                'height' : 300,
+                'width' : 160,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//bluetackclasp.com/3fcc1b108f3c16049e14cdf752fe0d7f/invoke.js"></script>
           `;
         case '468x60':
           return `
@@ -152,6 +166,8 @@ const Ad = ({ size, className = '' }: AdProps) => {
         return 'w-full max-w-[728px] h-[90px]';
       case '160x600':
         return 'w-[160px] h-[600px]';
+      case '160x300':
+        return 'w-[160px] h-[300px]';
       case '468x60':
         return 'w-full max-w-[468px] h-[60px]';
       case '320x50':
