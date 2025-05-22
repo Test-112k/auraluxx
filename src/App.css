@@ -65,14 +65,6 @@
   animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
-/* Ensure ad aspect ratios are preserved */
-.ad-container iframe {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
 /* Mobile menu animation */
 .animate-in {
   animation-duration: 300ms;
@@ -88,18 +80,6 @@
   to { opacity: 1; }
 }
 
-/* Fix mobile menu display */
-.fixed.inset-0.z-50 {
-  height: 100vh;
-  width: 100%;
-  overflow-y: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
 /* Better spacing for ads */
 .ad-container {
   margin: 1rem 0;
@@ -108,11 +88,31 @@
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 70px;
 }
 
-/* Social bar ad specific styling */
-.ad-container[class*="social-bar"] {
-  min-height: 70px;
-  display: block;
-  margin: 1.5rem 0;
+/* Handle external ad scripts better */
+[id*="taboola"], 
+[id*="mgid"], 
+[class*="sc-"],
+[id*="ads-container"] {
+  width: 100% !important;
+  min-height: 70px !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+
+/* Ensure social bar ads display properly */
+script[src*="bluetackclasp.com"] + * {
+  display: block !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Fix mobile menu display */
+body.fixed {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
