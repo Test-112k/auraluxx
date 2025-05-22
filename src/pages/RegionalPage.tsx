@@ -80,14 +80,11 @@ const RegionalPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <h1 className="text-3xl font-bold text-white">Regional Content</h1>
           <div className="w-full md:w-auto self-end md:self-auto">
-            <div className="flex flex-col md:flex-row items-center gap-2">
-              <p className="text-white/80 text-sm mb-1 md:mb-0">Select Your Country to view its local titles</p>
-              <CountrySelector 
-                selectedCountry={selectedCountry} 
-                onSelect={handleCountryChange} 
-                className="ml-auto"
-              />
-            </div>
+            <CountrySelector 
+              selectedCountry={selectedCountry} 
+              onSelect={handleCountryChange} 
+              className="ml-auto"
+            />
           </div>
         </div>
         
@@ -100,7 +97,6 @@ const RegionalPage = () => {
             loadMore={loadMore}
             loading={loading}
             hasMore={page <= totalPages}
-            threshold={800}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {regionalContent.map((item) => (
@@ -115,6 +111,12 @@ const RegionalPage = () => {
                 />
               ))}
             </div>
+            
+            {loading && regionalContent.length > 0 && (
+              <div className="flex justify-center my-8">
+                <LoadingSpinner size="md" text="Loading more..." />
+              </div>
+            )}
           </InfiniteScroll>
         ) : (
           <div className="flex flex-col items-center justify-center h-64 text-center">

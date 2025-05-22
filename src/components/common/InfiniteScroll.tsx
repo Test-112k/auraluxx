@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 800, // Increased threshold for earlier loading, especially on mobile
+  threshold = 300, // Reduced threshold for faster response
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -32,7 +32,6 @@ const InfiniteScroll = ({
     const documentHeight = document.documentElement.scrollHeight;
     
     // Load more content when user scrolls near the bottom with optimized threshold
-    // This triggers loading much earlier, especially important for mobile
     if (scrollY + windowHeight >= documentHeight - threshold) {
       loadingRef.current = true;
       loadMoreContent();
@@ -46,12 +45,12 @@ const InfiniteScroll = ({
     if (timerRef.current) window.clearTimeout(timerRef.current);
     
     try {
-      // Reduced delay for faster response
+      // Add a small delay to batch rapid scroll events
       timerRef.current = window.setTimeout(async () => {
         await loadMore();
         setLoadingMore(false);
         loadingRef.current = false;
-      }, 30);
+      }, 50); // Reduced delay for faster response
     } catch (error) {
       console.error('Error loading more content:', error);
       setLoadingMore(false);
@@ -74,15 +73,11 @@ const InfiniteScroll = ({
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', scrollHandler, { passive: true });
     
-    // Initial check in case the page is already scrolled
-    // This helps load content immediately if the page is refreshed while scrolled
-    setTimeout(() => handleScroll(), 100);
-    
     return () => {
       window.removeEventListener('scroll', scrollHandler);
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, [handleScroll]);
+  }, []);
 
   return (
     <>
