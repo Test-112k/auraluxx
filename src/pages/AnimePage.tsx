@@ -79,7 +79,7 @@ const AnimePage = () => {
         
         if (reset) {
           setAnimeContent(filtered);
-          setPage(1);
+          setPage(2); // Start loading from page 2 next
         } else {
           setAnimeContent(prev => [...prev, ...filtered]);
           setPage(currentPage + 1);
@@ -135,7 +135,7 @@ const AnimePage = () => {
     if (page >= totalPages) return false;
     
     await fetchAnimeData(false);
-    return true;
+    return page < totalPages;
   }, [page, totalPages, fetchAnimeData]);
   
   // Handle filter change
@@ -146,7 +146,6 @@ const AnimePage = () => {
   // Initial data loading
   useEffect(() => {
     // Reset page when filter changes
-    setPage(1);
     loadFeaturedContent();
     fetchAnimeData(true);
   }, [activeFilter, loadFeaturedContent, fetchAnimeData]);
@@ -211,7 +210,7 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
-              threshold={300}
+              threshold={800} // Increased threshold for earlier loading
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (
