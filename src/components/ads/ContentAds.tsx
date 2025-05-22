@@ -1,12 +1,14 @@
-
 import { useAds } from '@/contexts/AdContext';
 import Ad from './Ad';
 import { useEffect, useRef } from 'react';
 
 const ContentAds = () => {
-  const { isAdEnabled } = useAds();
+  // Force ads to be disabled regardless of context
+  const { isAdEnabled: _ } = useAds();
+  const isAdEnabled = false; // Override ad display
   const socialBarRef = useRef<HTMLDivElement>(null);
   
+  // Keep the effect but it won't run as isAdEnabled is false
   useEffect(() => {
     if (isAdEnabled && socialBarRef.current) {
       // Clear any existing content first
@@ -20,8 +22,10 @@ const ContentAds = () => {
     }
   }, [isAdEnabled]);
   
+  // Component returns null when ads are disabled (which is always now)
   if (!isAdEnabled) return null;
   
+  // This code is now unreachable but kept for structure
   return (
     <div className="w-full space-y-12 my-8 px-4 max-w-7xl mx-auto">
       {/* Social bar ad */}

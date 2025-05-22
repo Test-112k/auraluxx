@@ -5,6 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import { getTrending, getPopular, getTopRated, getNowPlaying } from '@/services/tmdbApi';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const filterOptions = [
   { label: 'Popular', value: 'popular' },
@@ -44,11 +45,14 @@ const TvSeriesPage = () => {
       }
 
       if (data?.results) {
+        // Filter out results without poster images for cleaner UI
+        const filteredResults = data.results.filter(item => item.poster_path);
+        
         if (reset) {
-          setTvSeries(data.results);
+          setTvSeries(filteredResults);
           setPage(1);
         } else {
-          setTvSeries(prev => [...prev, ...data.results]);
+          setTvSeries(prev => [...prev, ...filteredResults]);
           setPage(currentPage + 1);
         }
         
@@ -63,7 +67,7 @@ const TvSeriesPage = () => {
 
   const loadMore = async () => {
     if (page < totalPages) {
-      await fetchTvSeries();
+      await fetchTvSeries(false);
       return true;
     }
     return false;
@@ -116,6 +120,7 @@ const TvSeriesPage = () => {
             loadMore={loadMore}
             loading={loading}
             hasMore={page < totalPages}
+            threshold={800}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {tvSeries.map((series) => (
@@ -130,6 +135,12 @@ const TvSeriesPage = () => {
                 />
               ))}
             </div>
+            
+            {loading && tvSeries.length > 0 && (
+              <div className="flex justify-center my-8">
+                <LoadingSpinner size="md" variant="purple" />
+              </div>
+            )}
           </InfiniteScroll>
         )}
       </div>

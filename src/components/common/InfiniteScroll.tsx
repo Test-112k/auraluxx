@@ -1,5 +1,5 @@
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, useRef } from 'react';
 
 interface InfiniteScrollProps {
   loadMore: () => Promise<boolean>; // Function returns true if more data is available
@@ -14,32 +14,48 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 300,
+  threshold = 500, // Increased threshold for earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadingRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (loading || loadingMore || !hasMore) return;
+      // Prevent multiple simultaneous loading requests
+      if (loading || loadingMore || !hasMore || loadingRef.current) return;
       
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       
-      // Load more content when user scrolls near the bottom
+      // Load more content when user scrolls near the bottom with increased threshold
       if (scrollY + windowHeight >= documentHeight - threshold) {
+        loadingRef.current = true;
         loadMoreContent();
       }
     };
 
     const loadMoreContent = async () => {
       setLoadingMore(true);
-      await loadMore();
-      setLoadingMore(false);
+      
+      // Clear any existing timers
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      
+      // Add a small delay to batch rapid scroll events
+      timerRef.current = window.setTimeout(async () => {
+        await loadMore();
+        setLoadingMore(false);
+        loadingRef.current = false;
+      }, 100);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Use passive listener for better scroll performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
   }, [loading, loadingMore, hasMore, loadMore, threshold]);
 
   return (
