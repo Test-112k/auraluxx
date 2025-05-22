@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MediaCard from './MediaCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Link } from 'react-router-dom';
 
 interface Media {
   id: number;
@@ -100,9 +101,9 @@ const MediaSlider = ({
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         {viewAllLink && (
-          <a href={viewAllLink} className="text-aura-purple hover:text-aura-accent transition-colors">
+          <Link to={viewAllLink} className="text-aura-purple hover:text-aura-accent transition-colors">
             View All
-          </a>
+          </Link>
         )}
       </div>
 

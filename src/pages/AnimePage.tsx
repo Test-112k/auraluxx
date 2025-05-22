@@ -27,28 +27,28 @@ const AnimePage = () => {
   const activeFilter = searchParams.get('filter') || 'popular';
 
   // Improved filter function for anime content
-  const filterAnimeContent = (results: any[]) => {
-    return results.filter(item => 
-      // Filter for Japanese animation and ensure it has a poster
+  const filterAnimeContent = useCallback((results: any[]) => {
+    // First filter for basic requirements (Japanese animation with poster)
+    const basicFiltered = results.filter(item => 
       item.original_language === 'ja' && 
-      item.poster_path &&
-      // For recent content, ensure it has a valid date within the last 2 years
-      (activeFilter !== 'recent' || isRecent(item.first_air_date || item.release_date))
+      item.poster_path
     );
-  };
-
-  // Helper function to check if a date is recent (within last 2 years)
-  const isRecent = (dateString?: string) => {
-    if (!dateString) return false;
     
-    const itemDate = new Date(dateString);
-    const now = new Date();
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(now.getFullYear() - 2);
+    // Apply additional filter for recent content if needed
+    if (activeFilter === 'recent') {
+      const currentYear = new Date().getFullYear();
+      // Only include anime from the current year or last year
+      return basicFiltered.filter(item => {
+        const releaseDate = item.first_air_date || item.release_date;
+        if (!releaseDate) return false;
+        
+        const releaseYear = parseInt(releaseDate.split('-')[0]);
+        return releaseYear >= currentYear - 1;
+      });
+    }
     
-    // Check if date is valid and within the last 2 years
-    return !isNaN(itemDate.getTime()) && itemDate >= twoYearsAgo && itemDate <= now;
-  };
+    return basicFiltered;
+  }, [activeFilter]);
 
   // Fetch anime content based on the active filter
   const fetchAnimeData = useCallback(async (reset = true) => {
@@ -93,7 +93,7 @@ const AnimePage = () => {
       setLoading(false);
       if (initialLoading) setInitialLoading(false);
     }
-  }, [activeFilter, page, initialLoading]);
+  }, [activeFilter, page, initialLoading, filterAnimeContent]);
   
   // Load featured content separately (trending and recent)
   const loadFeaturedContent = useCallback(async () => {
@@ -110,8 +110,18 @@ const AnimePage = () => {
       // Get properly filtered recent anime
       const recentData = await getRecentAnime(1);
       if (recentData?.results) {
+        const currentYear = new Date().getFullYear();
         const filteredRecent = recentData.results
-          .filter(item => item.original_language === 'ja' && item.poster_path && isRecent(item.first_air_date || item.release_date))
+          .filter(item => {
+            const hasValidPoster = item.original_language === 'ja' && item.poster_path;
+            if (!hasValidPoster) return false;
+            
+            const releaseDate = item.first_air_date || item.release_date;
+            if (!releaseDate) return false;
+            
+            const releaseYear = parseInt(releaseDate.split('-')[0]);
+            return releaseYear >= currentYear - 1;
+          })
           .slice(0, 15);
         setRecentAnime(filteredRecent);
       }
@@ -120,24 +130,26 @@ const AnimePage = () => {
     }
   }, []);
 
-  // Load more anime for infinite scrolling
-  const loadMoreAnime = async () => {
+  // Load more anime for infinite scrolling - optimized
+  const loadMoreAnime = useCallback(async () => {
     if (page >= totalPages) return false;
     
     await fetchAnimeData(false);
     return true;
-  };
+  }, [page, totalPages, fetchAnimeData]);
   
   // Handle filter change
-  const handleFilterChange = (filter: string) => {
+  const handleFilterChange = useCallback((filter: string) => {
     setSearchParams({ filter });
-  };
+  }, [setSearchParams]);
 
   // Initial data loading
   useEffect(() => {
+    // Reset page when filter changes
+    setPage(1);
     loadFeaturedContent();
     fetchAnimeData(true);
-  }, [activeFilter]);
+  }, [activeFilter, loadFeaturedContent, fetchAnimeData]);
 
   return (
     <MainLayout>
@@ -156,6 +168,7 @@ const AnimePage = () => {
               items={trendingAnime}
               loading={initialLoading}
               mediaType="tv"
+              viewAllLink="/anime?filter=trending"
             />
             
             <MediaSlider 
@@ -163,6 +176,7 @@ const AnimePage = () => {
               items={recentAnime}
               loading={initialLoading}
               mediaType="tv"
+              viewAllLink="/anime?filter=recent"
             />
           </div>
 
@@ -197,6 +211,7 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
+              threshold={300}
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (

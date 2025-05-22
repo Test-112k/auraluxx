@@ -1,5 +1,6 @@
 
-import { useState, useEffect, ReactNode, useRef } from 'react';
+import { useState, useEffect, ReactNode, useRef, useCallback } from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
 interface InfiniteScrollProps {
   loadMore: () => Promise<boolean>; // Function returns true if more data is available
@@ -14,56 +15,76 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 500, // Increased threshold for earlier loading
+  threshold = 300, // Reduced threshold for faster response
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
   const timerRef = useRef<number | null>(null);
+  const scrollListenerRef = useRef<() => void>();
+  
+  // Memoize the scroll handler to improve performance
+  const handleScroll = useCallback(() => {
+    // Prevent multiple simultaneous loading requests
+    if (loading || loadingMore || !hasMore || loadingRef.current) return;
+    
+    const scrollY = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    // Load more content when user scrolls near the bottom with optimized threshold
+    if (scrollY + windowHeight >= documentHeight - threshold) {
+      loadingRef.current = true;
+      loadMoreContent();
+    }
+  }, [loading, loadingMore, hasMore, threshold]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      // Prevent multiple simultaneous loading requests
-      if (loading || loadingMore || !hasMore || loadingRef.current) return;
-      
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      
-      // Load more content when user scrolls near the bottom with increased threshold
-      if (scrollY + windowHeight >= documentHeight - threshold) {
-        loadingRef.current = true;
-        loadMoreContent();
-      }
-    };
-
-    const loadMoreContent = async () => {
-      setLoadingMore(true);
-      
-      // Clear any existing timers
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      
+  const loadMoreContent = useCallback(async () => {
+    setLoadingMore(true);
+    
+    // Clear any existing timers
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    
+    try {
       // Add a small delay to batch rapid scroll events
       timerRef.current = window.setTimeout(async () => {
         await loadMore();
         setLoadingMore(false);
         loadingRef.current = false;
-      }, 100);
-    };
+      }, 50); // Reduced delay for faster response
+    } catch (error) {
+      console.error('Error loading more content:', error);
+      setLoadingMore(false);
+      loadingRef.current = false;
+    }
+  }, [loadMore]);
 
+  // Store the handler in a ref to avoid adding it as a dependency
+  useEffect(() => {
+    scrollListenerRef.current = handleScroll;
+  }, [handleScroll]);
+  
+  useEffect(() => {
+    const scrollHandler = () => {
+      if (scrollListenerRef.current) {
+        scrollListenerRef.current();
+      }
+    };
+    
     // Use passive listener for better scroll performance
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', scrollHandler);
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, [loading, loadingMore, hasMore, loadMore, threshold]);
+  }, []);
 
   return (
     <>
       {children}
       {loadingMore && (
-        <div className="flex justify-center my-8">
-          <div className="w-10 h-10 rounded-full border-4 border-white/10 border-t-aura-purple animate-spin"></div>
+        <div className="flex justify-center my-6">
+          <LoadingSpinner size="md" variant="purple" />
         </div>
       )}
     </>
