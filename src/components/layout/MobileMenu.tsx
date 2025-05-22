@@ -26,14 +26,14 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-300 md:hidden">
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-300">
       <div className="flex justify-end p-6">
         <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
           <X size={24} />
         </Button>
       </div>
 
-      <div className="flex flex-col items-center justify-center flex-1 space-y-8 text-center overflow-y-auto py-8">
+      <div className="flex flex-col items-center justify-center flex-1 space-y-8 text-center overflow-y-auto py-8 px-4">
         <Link 
           to="/" 
           onClick={onClose}

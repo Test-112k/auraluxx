@@ -90,15 +90,29 @@
 
 /* Fix mobile menu display */
 .fixed.inset-0.z-50 {
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
 /* Better spacing for ads */
 .ad-container {
-  margin: 0.5rem 0;
+  margin: 1rem 0;
   line-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Social bar ad specific styling */
+.ad-container[class*="social-bar"] {
+  min-height: 70px;
+  display: block;
+  margin: 1.5rem 0;
 }

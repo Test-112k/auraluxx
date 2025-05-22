@@ -157,7 +157,7 @@ const Ad = ({ size, className = '' }: AdProps) => {
     
   }, [size]);
 
-  // Get proper aspect ratio constraint class based on ad size
+  // Get proper container class based on ad size
   const getAdContainerClass = () => {
     switch(size) {
       case '300x250':
@@ -173,7 +173,7 @@ const Ad = ({ size, className = '' }: AdProps) => {
       case '320x50':
         return 'w-full max-w-[320px] h-[50px]';
       case 'social-bar':
-        return 'w-full';
+        return 'w-full min-h-[70px]'; // Added minimum height for social bar
       case 'native':
         return 'w-full';
       default:
@@ -185,7 +185,6 @@ const Ad = ({ size, className = '' }: AdProps) => {
     <div 
       ref={adContainerRef} 
       className={`ad-container ${getAdContainerClass()} ${className}`}
-      style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}
     />
   );
 };
