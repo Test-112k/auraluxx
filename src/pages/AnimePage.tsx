@@ -81,7 +81,11 @@ const AnimePage = () => {
           setAnimeContent(filtered);
           setPage(1);
         } else {
-          setAnimeContent(prev => [...prev, ...filtered]);
+          // Ensure we don't add duplicate items by checking IDs
+          const existingIds = new Set(animeContent.map(item => item.id));
+          const newItems = filtered.filter(item => !existingIds.has(item.id));
+          
+          setAnimeContent(prev => [...prev, ...newItems]);
           setPage(currentPage + 1);
         }
         
@@ -93,7 +97,7 @@ const AnimePage = () => {
       setLoading(false);
       if (initialLoading) setInitialLoading(false);
     }
-  }, [activeFilter, page, initialLoading, filterAnimeContent]);
+  }, [activeFilter, page, initialLoading, filterAnimeContent, animeContent]);
   
   // Load featured content separately (trending and recent)
   const loadFeaturedContent = useCallback(async () => {
@@ -135,7 +139,7 @@ const AnimePage = () => {
     if (page >= totalPages) return false;
     
     await fetchAnimeData(false);
-    return page < totalPages; // Return true if there are more pages
+    return page < totalPages - 1; // Return true if there are more pages
   }, [page, totalPages, fetchAnimeData]);
   
   // Handle filter change
@@ -211,12 +215,12 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
-              threshold={600} // Using higher threshold for earlier loading
+              threshold={800} // Using higher threshold for earlier loading
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (
                   <MediaCard
-                    key={item.id}
+                    key={`anime-${item.id}`} // Using prefix to ensure unique keys
                     id={item.id}
                     title={item.name || item.title}
                     type="tv"

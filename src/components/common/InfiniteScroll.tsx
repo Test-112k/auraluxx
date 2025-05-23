@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 600, // Increased threshold for earlier loading
+  threshold = 800, // Further increased threshold for even earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -31,7 +31,7 @@ const InfiniteScroll = ({
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     
-    // Load more content earlier when scrolling down (increased threshold)
+    // Load more content much earlier when scrolling down (increased threshold)
     if (scrollY + windowHeight >= documentHeight - threshold) {
       loadingRef.current = true;
       loadMoreContent();
@@ -39,19 +39,31 @@ const InfiniteScroll = ({
   }, [loading, loadingMore, hasMore, threshold]);
 
   const loadMoreContent = useCallback(async () => {
+    if (loadingMore) return; // Prevent duplicate loads
+    
     setLoadingMore(true);
     
     try {
-      // Remove the timeout delay for faster response
-      await loadMore();
+      // Immediate loading without delay
+      const hasMoreContent = await loadMore();
       setLoadingMore(false);
       loadingRef.current = false;
+      
+      // If still more content and we're near bottom, load more proactively
+      if (hasMoreContent && 
+          window.innerHeight + window.scrollY >= 
+          document.documentElement.scrollHeight - threshold * 1.5) {
+        // Small timeout to prevent UI jank
+        setTimeout(() => {
+          handleScroll();
+        }, 300);
+      }
     } catch (error) {
       console.error('Error loading more content:', error);
       setLoadingMore(false);
       loadingRef.current = false;
     }
-  }, [loadMore]);
+  }, [loadMore, threshold, loadingMore, handleScroll]);
 
   // Store the handler in a ref to avoid adding it as a dependency
   useEffect(() => {
@@ -65,8 +77,9 @@ const InfiniteScroll = ({
       }
     };
     
-    // Check for content on mount if the page doesn't have a scrollbar yet
-    if (document.documentElement.scrollHeight <= window.innerHeight && hasMore && !loading) {
+    // Check for content on mount and load initial content if needed
+    // This ensures content fills the page on first load
+    if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && hasMore && !loading) {
       loadMoreContent();
     }
     
@@ -77,7 +90,7 @@ const InfiniteScroll = ({
       window.removeEventListener('scroll', scrollHandler);
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, []);
+  }, [loadMoreContent, hasMore, loading]);
 
   return (
     <>
