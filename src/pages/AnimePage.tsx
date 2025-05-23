@@ -135,7 +135,7 @@ const AnimePage = () => {
     if (page >= totalPages) return false;
     
     await fetchAnimeData(false);
-    return true;
+    return page < totalPages; // Return true if there are more pages
   }, [page, totalPages, fetchAnimeData]);
   
   // Handle filter change
@@ -211,7 +211,7 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
-              threshold={300}
+              threshold={600} // Using higher threshold for earlier loading
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (
