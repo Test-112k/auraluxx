@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaSlider from '@/components/common/MediaSlider';
@@ -134,12 +133,12 @@ const AnimePage = () => {
     }
   }, []);
 
-  // Load more anime for infinite scrolling - optimized
+  // Load more anime for infinite scrolling - optimized and fixed
   const loadMoreAnime = useCallback(async () => {
     if (page >= totalPages) return false;
     
     await fetchAnimeData(false);
-    return page < totalPages - 1; // Return true if there are more pages
+    return page < totalPages; // Return true if there are more pages available
   }, [page, totalPages, fetchAnimeData]);
   
   // Handle filter change
@@ -215,7 +214,7 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
-              threshold={800} // Using higher threshold for earlier loading
+              threshold={1000} // Using higher threshold for earlier loading
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (

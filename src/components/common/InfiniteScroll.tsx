@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 800, // Further increased threshold for even earlier loading
+  threshold = 1000, // Further increased threshold for even earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -53,10 +53,10 @@ const InfiniteScroll = ({
       if (hasMoreContent && 
           window.innerHeight + window.scrollY >= 
           document.documentElement.scrollHeight - threshold * 1.5) {
-        // Small timeout to prevent UI jank
+        // Very small timeout to prevent UI jank but load quickly
         setTimeout(() => {
           handleScroll();
-        }, 300);
+        }, 100);
       }
     } catch (error) {
       console.error('Error loading more content:', error);
@@ -79,7 +79,7 @@ const InfiniteScroll = ({
     
     // Check for content on mount and load initial content if needed
     // This ensures content fills the page on first load
-    if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && hasMore && !loading) {
+    if (document.documentElement.scrollHeight <= window.innerHeight * 2 && hasMore && !loading) {
       loadMoreContent();
     }
     

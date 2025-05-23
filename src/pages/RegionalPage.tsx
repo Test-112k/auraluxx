@@ -80,11 +80,15 @@ const RegionalPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <h1 className="text-3xl font-bold text-white">Regional Content</h1>
           <div className="w-full md:w-auto self-end md:self-auto">
-            <CountrySelector 
-              selectedCountry={selectedCountry} 
-              onSelect={handleCountryChange} 
-              className="ml-auto"
-            />
+            <div className="flex items-center gap-3">
+              <p className="text-white/80 hidden md:block">Select Your Country to view its local titles</p>
+              <CountrySelector 
+                selectedCountry={selectedCountry} 
+                onSelect={handleCountryChange} 
+                className="ml-auto"
+              />
+            </div>
+            <p className="text-white/80 text-sm mt-2 md:hidden">Select Your Country to view its local titles</p>
           </div>
         </div>
         
@@ -97,6 +101,7 @@ const RegionalPage = () => {
             loadMore={loadMore}
             loading={loading}
             hasMore={page <= totalPages}
+            threshold={1000}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {regionalContent.map((item) => (

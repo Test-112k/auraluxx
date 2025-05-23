@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import { countryToLanguageMap } from '@/services/tmdbApi';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -176,6 +176,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
           <>
             <span className="text-xl">{selectedCountryObj.flag}</span>
             <span>{selectedCountryObj.english_name}</span>
+            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
           </>
         )}
       </button>
