@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 2000, // Further increased threshold for much earlier loading
+  threshold = 2500, // Even further increased threshold for much earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -32,8 +32,11 @@ const InfiniteScroll = ({
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     
+    console.log(`Scroll position: ${scrollY + windowHeight}, Document height: ${documentHeight}, Threshold: ${documentHeight - threshold}`);
+    
     // Load more content much earlier when scrolling down (increased threshold)
     if (scrollY + windowHeight >= documentHeight - threshold) {
+      console.log('Scroll threshold reached, loading more content...');
       loadingRef.current = true;
       scrollAttemptCounter.current = 0;
       loadMoreContent();
@@ -41,7 +44,10 @@ const InfiniteScroll = ({
   }, [loading, loadingMore, hasMore, threshold]);
 
   const loadMoreContent = useCallback(async () => {
-    if (loadingMore) return; // Prevent duplicate loads
+    if (loadingMore) {
+      console.log('Already loading more content, skipping request');
+      return; // Prevent duplicate loads
+    }
     
     setLoadingMore(true);
     console.log('Loading more content...');
@@ -49,6 +55,8 @@ const InfiniteScroll = ({
     try {
       // Immediate loading without delay
       const hasMoreContent = await loadMore();
+      console.log(`Load more result: ${hasMoreContent ? 'More content available' : 'No more content'}`);
+      
       setLoadingMore(false);
       loadingRef.current = false;
       
@@ -56,17 +64,21 @@ const InfiniteScroll = ({
       if (hasMoreContent && 
           window.innerHeight + window.scrollY >= 
           document.documentElement.scrollHeight - threshold * 1.5) {
-        // No timeout - immediately check for more content
-        handleScroll();
+        console.log('Still near bottom after loading, loading more content proactively');
+        // Small delay to prevent rapid successive loads
+        setTimeout(() => {
+          handleScroll();
+        }, 100);
       }
     } catch (error) {
       console.error('Error loading more content:', error);
       setLoadingMore(false);
       loadingRef.current = false;
       
-      // Retry loading if failed (up to 3 attempts)
-      if (scrollAttemptCounter.current < 3) {
+      // Retry loading if failed (up to 5 attempts)
+      if (scrollAttemptCounter.current < 5) {
         scrollAttemptCounter.current += 1;
+        console.log(`Retrying load, attempt ${scrollAttemptCounter.current}/5`);
         setTimeout(() => {
           loadMoreContent();
         }, 1000); // Wait a second before retrying
@@ -88,9 +100,16 @@ const InfiniteScroll = ({
     
     // Check for content on mount and load initial content if needed
     // This ensures content fills the page on first load
-    if (document.documentElement.scrollHeight <= window.innerHeight * 3 && hasMore && !loading) {
-      loadMoreContent();
-    }
+    const checkInitialLoad = () => {
+      console.log('Checking initial load conditions');
+      if (document.documentElement.scrollHeight <= window.innerHeight * 2 && hasMore && !loading && !loadingMore) {
+        console.log('Page not filled, loading initial content');
+        loadMoreContent();
+      }
+    };
+    
+    // Run initial load check after a short delay to allow for render
+    setTimeout(checkInitialLoad, 500);
     
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', scrollHandler, { passive: true });
@@ -104,12 +123,13 @@ const InfiniteScroll = ({
     // Check periodically for a short time after initial load
     const periodicCheck = setInterval(() => {
       scrollHandler();
-    }, 500);
+      console.log('Periodic scroll check');
+    }, 1000);
     
-    // Clear periodic check after 5 seconds
+    // Clear periodic check after 10 seconds
     setTimeout(() => {
       clearInterval(periodicCheck);
-    }, 5000);
+    }, 10000);
     
     return () => {
       window.removeEventListener('scroll', scrollHandler);
@@ -118,7 +138,18 @@ const InfiniteScroll = ({
       clearInterval(periodicCheck);
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, [loadMoreContent, hasMore, loading]);
+  }, [loadMoreContent, hasMore, loading, loadingMore]);
+
+  // Force an initial check for content
+  useEffect(() => {
+    if (hasMore && !loading && !loadingMore) {
+      const timer = setTimeout(() => {
+        handleScroll();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasMore, loading, loadingMore, handleScroll]);
 
   return (
     <>

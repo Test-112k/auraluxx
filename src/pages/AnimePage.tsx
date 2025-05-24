@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaSlider from '@/components/common/MediaSlider';
@@ -53,6 +54,7 @@ const AnimePage = () => {
   const fetchAnimeData = useCallback(async (reset = true) => {
     try {
       setLoading(true);
+      console.log(`Fetching anime data with filter: ${activeFilter}, page: ${reset ? 1 : page}`);
       
       let data;
       const currentPage = reset ? 1 : page;
@@ -73,8 +75,11 @@ const AnimePage = () => {
           break;
       }
       
+      console.log(`Received data for ${activeFilter}, total pages: ${data?.total_pages || 0}`);
+      
       if (data?.results) {
         const filtered = filterAnimeContent(data.results);
+        console.log(`Filtered ${filtered.length} items from ${data.results.length} results`);
         
         if (reset) {
           setAnimeContent(filtered);
@@ -83,8 +88,11 @@ const AnimePage = () => {
           // Ensure we don't add duplicate items by checking IDs
           const existingIds = new Set(animeContent.map(item => item.id));
           const newItems = filtered.filter(item => !existingIds.has(item.id));
+          console.log(`Adding ${newItems.length} new unique items`);
           
-          setAnimeContent(prev => [...prev, ...newItems]);
+          if (newItems.length > 0) {
+            setAnimeContent(prev => [...prev, ...newItems]);
+          }
           setPage(currentPage + 1);
         }
         
@@ -135,12 +143,16 @@ const AnimePage = () => {
 
   // Enhanced loadMoreAnime function with better error handling and performance
   const loadMoreAnime = useCallback(async () => {
-    if (page >= totalPages || loading) return false;
+    if (page >= totalPages || loading) {
+      console.log(`Not loading more anime. Page: ${page}, Total pages: ${totalPages}, Loading: ${loading}`);
+      return false;
+    }
     
     try {
       console.log(`Loading more anime... Current page: ${page}, Total pages: ${totalPages}`);
       await fetchAnimeData(false);
-      return page < totalPages; // Return true if there are more pages available
+      console.log(`Successfully loaded more anime. New page: ${page + 1}`);
+      return page + 1 < totalPages; // Return true if there are more pages available
     } catch (error) {
       console.error('Error loading more anime:', error);
       return false;
@@ -221,7 +233,7 @@ const AnimePage = () => {
               loadMore={loadMoreAnime}
               loading={loading}
               hasMore={page < totalPages}
-              threshold={2000} // Further increased threshold for even earlier loading
+              threshold={2500} // Further increased threshold for even earlier loading
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (
