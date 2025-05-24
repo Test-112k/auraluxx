@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 2500, // Even further increased threshold for much earlier loading
+  threshold = 3000, // Further increased threshold for much earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -109,7 +109,7 @@ const InfiniteScroll = ({
     };
     
     // Run initial load check after a short delay to allow for render
-    setTimeout(checkInitialLoad, 500);
+    setTimeout(checkInitialLoad, 100); // Reduced delay for faster initial load
     
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', scrollHandler, { passive: true });
@@ -124,12 +124,15 @@ const InfiniteScroll = ({
     const periodicCheck = setInterval(() => {
       scrollHandler();
       console.log('Periodic scroll check');
-    }, 1000);
+    }, 500); // Faster checks
     
-    // Clear periodic check after 10 seconds
+    // Clear periodic check after 15 seconds
     setTimeout(() => {
       clearInterval(periodicCheck);
-    }, 10000);
+    }, 15000); // Extended check period
+    
+    // Force an initial check
+    scrollHandler();
     
     return () => {
       window.removeEventListener('scroll', scrollHandler);
@@ -145,7 +148,7 @@ const InfiniteScroll = ({
     if (hasMore && !loading && !loadingMore) {
       const timer = setTimeout(() => {
         handleScroll();
-      }, 500);
+      }, 200); // Reduced timeout for faster initial check
       
       return () => clearTimeout(timer);
     }

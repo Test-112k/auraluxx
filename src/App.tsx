@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdProvider } from "./contexts/AdContext";
 import HomePage from "./pages/HomePage";
 import MoviePage from "./pages/MoviePage";
@@ -18,7 +18,15 @@ import DmcaPage from "./pages/DmcaPage";
 import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -39,7 +47,8 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/dmca" element={<DmcaPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
