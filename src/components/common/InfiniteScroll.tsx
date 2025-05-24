@@ -15,13 +15,21 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 3000, // Further increased threshold for much earlier loading
+  threshold = 4000, // Further increased threshold for much earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
   const timerRef = useRef<number | null>(null);
   const scrollListenerRef = useRef<() => void>();
   const scrollAttemptCounter = useRef(0);
+  const lastScrollPosition = useRef(0);
+  
+  // Force layout recalculation to ensure accurate measurements
+  const forceLayout = useCallback(() => {
+    // Read layout property to force layout calculation
+    document.body.offsetHeight;
+    return true;
+  }, []);
   
   // Memoize the scroll handler to improve performance
   const handleScroll = useCallback(() => {
@@ -32,7 +40,11 @@ const InfiniteScroll = ({
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     
-    console.log(`Scroll position: ${scrollY + windowHeight}, Document height: ${documentHeight}, Threshold: ${documentHeight - threshold}`);
+    // Log only if scrolling down or position changed significantly
+    if (Math.abs(scrollY - lastScrollPosition.current) > 50) {
+      console.log(`Scroll position: ${scrollY + windowHeight}, Document height: ${documentHeight}, Threshold: ${documentHeight - threshold}`);
+      lastScrollPosition.current = scrollY;
+    }
     
     // Load more content much earlier when scrolling down (increased threshold)
     if (scrollY + windowHeight >= documentHeight - threshold) {
@@ -53,6 +65,9 @@ const InfiniteScroll = ({
     console.log('Loading more content...');
     
     try {
+      // Force layout calculation before loading
+      forceLayout();
+      
       // Immediate loading without delay
       const hasMoreContent = await loadMore();
       console.log(`Load more result: ${hasMoreContent ? 'More content available' : 'No more content'}`);
@@ -60,16 +75,24 @@ const InfiniteScroll = ({
       setLoadingMore(false);
       loadingRef.current = false;
       
-      // If still more content and we're near bottom, load more proactively
-      if (hasMoreContent && 
-          window.innerHeight + window.scrollY >= 
-          document.documentElement.scrollHeight - threshold * 1.5) {
-        console.log('Still near bottom after loading, loading more content proactively');
-        // Small delay to prevent rapid successive loads
-        setTimeout(() => {
-          handleScroll();
-        }, 100);
-      }
+      // Wait a tiny bit for the DOM to update with new content
+      setTimeout(() => {
+        // Force another layout calculation after content is added
+        forceLayout();
+        
+        // If still more content and we're near bottom, load more proactively
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        
+        if (hasMoreContent && windowHeight + scrollY >= documentHeight - threshold * 1.5) {
+          console.log('Still near bottom after loading, loading more content proactively');
+          // Small delay to prevent rapid successive loads
+          setTimeout(() => {
+            handleScroll();
+          }, 50);
+        }
+      }, 50);
     } catch (error) {
       console.error('Error loading more content:', error);
       setLoadingMore(false);
@@ -84,7 +107,7 @@ const InfiniteScroll = ({
         }, 1000); // Wait a second before retrying
       }
     }
-  }, [loadMore, threshold, loadingMore, handleScroll]);
+  }, [loadMore, threshold, loadingMore, handleScroll, forceLayout]);
 
   // Store the handler in a ref to avoid adding it as a dependency
   useEffect(() => {
@@ -102,14 +125,16 @@ const InfiniteScroll = ({
     // This ensures content fills the page on first load
     const checkInitialLoad = () => {
       console.log('Checking initial load conditions');
-      if (document.documentElement.scrollHeight <= window.innerHeight * 2 && hasMore && !loading && !loadingMore) {
+      forceLayout(); // Force layout calculation
+      if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && hasMore && !loading && !loadingMore) {
         console.log('Page not filled, loading initial content');
         loadMoreContent();
       }
     };
     
-    // Run initial load check after a short delay to allow for render
-    setTimeout(checkInitialLoad, 100); // Reduced delay for faster initial load
+    // Run initial load check immediately and after a short delay to allow for render
+    checkInitialLoad();
+    setTimeout(checkInitialLoad, 100);
     
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', scrollHandler, { passive: true });
@@ -121,18 +146,25 @@ const InfiniteScroll = ({
     window.addEventListener('load', scrollHandler);
     
     // Check periodically for a short time after initial load
+    const periodicCheckInterval = 250; // Faster checks
     const periodicCheck = setInterval(() => {
       scrollHandler();
       console.log('Periodic scroll check');
-    }, 500); // Faster checks
+    }, periodicCheckInterval);
     
-    // Clear periodic check after 15 seconds
+    // Clear periodic check after 30 seconds
     setTimeout(() => {
       clearInterval(periodicCheck);
-    }, 15000); // Extended check period
+    }, 30000); // Extended check period
     
-    // Force an initial check
-    scrollHandler();
+    // Force multiple initial checks to ensure content loads
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => {
+        forceLayout();
+        scrollHandler();
+        console.log(`Force scroll check #${i+1}`);
+      }, i * 500);
+    }
     
     return () => {
       window.removeEventListener('scroll', scrollHandler);
@@ -141,18 +173,20 @@ const InfiniteScroll = ({
       clearInterval(periodicCheck);
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, [loadMoreContent, hasMore, loading, loadingMore]);
+  }, [loadMoreContent, hasMore, loading, loadingMore, forceLayout]);
 
-  // Force an initial check for content
+  // Force an additional check when the component has mounted
   useEffect(() => {
     if (hasMore && !loading && !loadingMore) {
       const timer = setTimeout(() => {
+        forceLayout();
         handleScroll();
-      }, 200); // Reduced timeout for faster initial check
+        console.log('Additional initial content check');
+      }, 200);
       
       return () => clearTimeout(timer);
     }
-  }, [hasMore, loading, loadingMore, handleScroll]);
+  }, [hasMore, loading, loadingMore, handleScroll, forceLayout]);
 
   return (
     <>
