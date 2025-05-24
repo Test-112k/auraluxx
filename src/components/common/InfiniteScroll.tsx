@@ -15,7 +15,7 @@ const InfiniteScroll = ({
   children,
   loading,
   hasMore,
-  threshold = 4000, // Further increased threshold for much earlier loading
+  threshold = 5000, // Further increased threshold for much earlier loading
 }: InfiniteScrollProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingRef = useRef(false);
@@ -23,6 +23,7 @@ const InfiniteScroll = ({
   const scrollListenerRef = useRef<() => void>();
   const scrollAttemptCounter = useRef(0);
   const lastScrollPosition = useRef(0);
+  const initialChecksDone = useRef(false);
   
   // Force layout recalculation to ensure accurate measurements
   const forceLayout = useCallback(() => {
@@ -90,21 +91,22 @@ const InfiniteScroll = ({
           // Small delay to prevent rapid successive loads
           setTimeout(() => {
             handleScroll();
-          }, 50);
+          }, 100);
         }
-      }, 50);
+      }, 100);
     } catch (error) {
       console.error('Error loading more content:', error);
       setLoadingMore(false);
       loadingRef.current = false;
       
-      // Retry loading if failed (up to 5 attempts)
+      // Retry loading if failed (up to 5 attempts with exponential backoff)
       if (scrollAttemptCounter.current < 5) {
         scrollAttemptCounter.current += 1;
-        console.log(`Retrying load, attempt ${scrollAttemptCounter.current}/5`);
+        const delay = 1000 * Math.pow(1.5, scrollAttemptCounter.current); // Exponential backoff
+        console.log(`Retrying load, attempt ${scrollAttemptCounter.current}/5 after ${delay}ms`);
         setTimeout(() => {
           loadMoreContent();
-        }, 1000); // Wait a second before retrying
+        }, delay);
       }
     }
   }, [loadMore, threshold, loadingMore, handleScroll, forceLayout]);
@@ -122,19 +124,24 @@ const InfiniteScroll = ({
     };
     
     // Check for content on mount and load initial content if needed
-    // This ensures content fills the page on first load
     const checkInitialLoad = () => {
       console.log('Checking initial load conditions');
       forceLayout(); // Force layout calculation
-      if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && hasMore && !loading && !loadingMore) {
+      
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      console.log(`Initial load check: Window height: ${windowHeight}, Document height: ${documentHeight}, Content filled: ${documentHeight > windowHeight * 1.5}`);
+      
+      if (documentHeight <= windowHeight * 1.5 && hasMore && !loading && !loadingMore) {
         console.log('Page not filled, loading initial content');
         loadMoreContent();
       }
     };
     
-    // Run initial load check immediately and after a short delay to allow for render
-    checkInitialLoad();
+    // Run initial load check after a short delay to allow for render
     setTimeout(checkInitialLoad, 100);
+    setTimeout(checkInitialLoad, 500);
     
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', scrollHandler, { passive: true });
@@ -146,25 +153,34 @@ const InfiniteScroll = ({
     window.addEventListener('load', scrollHandler);
     
     // Check periodically for a short time after initial load
-    const periodicCheckInterval = 250; // Faster checks
+    const periodicCheckInterval = 200; // Faster checks
     const periodicCheck = setInterval(() => {
       scrollHandler();
-      console.log('Periodic scroll check');
+      checkInitialLoad();
+      if (!initialChecksDone.current) {
+        console.log('Periodic content check');
+      }
     }, periodicCheckInterval);
     
-    // Clear periodic check after 30 seconds
+    // Mark initial checks as done after 5 seconds
+    setTimeout(() => {
+      initialChecksDone.current = true;
+    }, 5000);
+    
+    // Clear periodic check after 60 seconds
     setTimeout(() => {
       clearInterval(periodicCheck);
-    }, 30000); // Extended check period
+    }, 60000); // Extended check period
     
-    // Force multiple initial checks to ensure content loads
-    for (let i = 0; i < 4; i++) {
+    // Force multiple initial checks with escalating delays
+    [100, 500, 1000, 2000, 4000].forEach((delay, i) => {
       setTimeout(() => {
         forceLayout();
         scrollHandler();
-        console.log(`Force scroll check #${i+1}`);
-      }, i * 500);
-    }
+        checkInitialLoad();
+        console.log(`Force scroll check #${i+1} at ${delay}ms`);
+      }, delay);
+    });
     
     return () => {
       window.removeEventListener('scroll', scrollHandler);
@@ -175,14 +191,14 @@ const InfiniteScroll = ({
     };
   }, [loadMoreContent, hasMore, loading, loadingMore, forceLayout]);
 
-  // Force an additional check when the component has mounted
+  // Force an additional check when hasMore, loading, or loadingMore changes
   useEffect(() => {
     if (hasMore && !loading && !loadingMore) {
       const timer = setTimeout(() => {
         forceLayout();
         handleScroll();
-        console.log('Additional initial content check');
-      }, 200);
+        console.log('Additional content check triggered by prop change');
+      }, 300);
       
       return () => clearTimeout(timer);
     }

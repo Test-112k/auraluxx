@@ -32,16 +32,16 @@ const ContentAds = () => {
       {/* Social bar ad */}
       <div ref={socialBarRef} className="w-full my-6 min-h-[70px]"></div>
       
-      {/* Small banner ad - responsive size for mobile/desktop */}
+      {/* Mobile-specific banner with proper sizing */}
       <div className="flex justify-center mb-12">
         {isMobile ? (
-          <Ad size="320x50" className="w-full" />
+          <Ad size="320x50" className="w-full max-w-[320px]" />
         ) : (
           <Ad size="728x90" /> 
         )}
       </div>
       
-      {/* Rectangle ad */}
+      {/* Rectangle ad - works on both mobile and desktop */}
       <div className="flex justify-center mb-12">
         <Ad size="300x250" />
       </div>
