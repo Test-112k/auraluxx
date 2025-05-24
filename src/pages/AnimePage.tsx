@@ -2,11 +2,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaSlider from '@/components/common/MediaSlider';
-import InfiniteScroll from '@/components/common/InfiniteScroll';
 import MediaCard from '@/components/common/MediaCard';
 import { getAnimeContent, getTrendingAnime, getTopRatedAnime, getRecentAnime } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { useSearchParams } from 'react-router-dom';
+import ContentAds from '@/components/ads/ContentAds';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const filterOptions = [
   { label: 'Popular', value: 'popular' },
@@ -15,16 +23,19 @@ const filterOptions = [
   { label: 'New Releases', value: 'recent' }
 ];
 
+const ITEMS_PER_PAGE = 24; // Number of items to show per page
+
 const AnimePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [animeContent, setAnimeContent] = useState<any[]>([]);
   const [trendingAnime, setTrendingAnime] = useState<any[]>([]);
   const [recentAnime, setRecentAnime] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
+  
   const activeFilter = searchParams.get('filter') || 'popular';
+  const currentPage = parseInt(searchParams.get('page') || '1');
 
   // Improved filter function for anime content
   const filterAnimeContent = useCallback((results: any[]) => {
@@ -50,14 +61,13 @@ const AnimePage = () => {
     return basicFiltered;
   }, [activeFilter]);
 
-  // Fetch anime content based on the active filter
-  const fetchAnimeData = useCallback(async (reset = true) => {
+  // Fetch anime content based on the active filter and page
+  const fetchAnimeData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log(`Fetching anime data with filter: ${activeFilter}, page: ${reset ? 1 : page}`);
+      console.log(`Fetching anime data with filter: ${activeFilter}, page: ${currentPage}`);
       
       let data;
-      const currentPage = reset ? 1 : page;
       
       switch (activeFilter) {
         case 'trending':
@@ -80,23 +90,8 @@ const AnimePage = () => {
       if (data?.results) {
         const filtered = filterAnimeContent(data.results);
         console.log(`Filtered ${filtered.length} items from ${data.results.length} results`);
-        
-        if (reset) {
-          setAnimeContent(filtered);
-          setPage(1);
-        } else {
-          // Ensure we don't add duplicate items by checking IDs
-          const existingIds = new Set(animeContent.map(item => item.id));
-          const newItems = filtered.filter(item => !existingIds.has(item.id));
-          console.log(`Adding ${newItems.length} new unique items`);
-          
-          if (newItems.length > 0) {
-            setAnimeContent(prev => [...prev, ...newItems]);
-          }
-          setPage(currentPage + 1);
-        }
-        
-        setTotalPages(data.total_pages);
+        setAnimeContent(filtered);
+        setTotalPages(Math.min(data.total_pages, 500)); // API typically limits to 500 pages
       }
     } catch (error) {
       console.error('Error fetching anime data:', error);
@@ -104,7 +99,7 @@ const AnimePage = () => {
       setLoading(false);
       if (initialLoading) setInitialLoading(false);
     }
-  }, [activeFilter, page, initialLoading, filterAnimeContent, animeContent]);
+  }, [activeFilter, currentPage, filterAnimeContent, initialLoading]);
   
   // Load featured content separately (trending and recent)
   const loadFeaturedContent = useCallback(async () => {
@@ -141,37 +136,122 @@ const AnimePage = () => {
     }
   }, []);
 
-  // Enhanced loadMoreAnime function with better error handling and performance
-  const loadMoreAnime = useCallback(async () => {
-    if (page >= totalPages || loading) {
-      console.log(`Not loading more anime. Page: ${page}, Total pages: ${totalPages}, Loading: ${loading}`);
-      return false;
-    }
-    
-    try {
-      console.log(`Loading more anime... Current page: ${page}, Total pages: ${totalPages}`);
-      await fetchAnimeData(false);
-      console.log(`Successfully loaded more anime. New page: ${page + 1}`);
-      return page + 1 < totalPages; // Return true if there are more pages available
-    } catch (error) {
-      console.error('Error loading more anime:', error);
-      return false;
-    }
-  }, [page, totalPages, fetchAnimeData, loading]);
-  
   // Handle filter change
   const handleFilterChange = useCallback((filter: string) => {
     window.scrollTo(0, 0); // Scroll to top when changing filters
-    setSearchParams({ filter });
+    setSearchParams({ filter, page: '1' }); // Reset to page 1 when changing filters
   }, [setSearchParams]);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    window.scrollTo(0, 0); // Scroll to top when changing page
+    setSearchParams({ filter: activeFilter, page: page.toString() });
+  }, [setSearchParams, activeFilter]);
 
   // Initial data loading
   useEffect(() => {
-    // Reset page when filter changes
-    setPage(1);
     loadFeaturedContent();
-    fetchAnimeData(true);
-  }, [activeFilter, loadFeaturedContent, fetchAnimeData]);
+  }, [loadFeaturedContent]);
+
+  // Fetch data when filter or page changes
+  useEffect(() => {
+    fetchAnimeData();
+  }, [fetchAnimeData, activeFilter, currentPage]);
+
+  // Generate pagination items
+  const renderPagination = () => {
+    const items = [];
+    const maxVisiblePages = 5; // Maximum number of page links to show
+    
+    // Calculate the range of pages to show
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Add previous page button
+    items.push(
+      <PaginationItem key="prev">
+        <PaginationPrevious
+          onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+          className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    );
+    
+    // Add first page and ellipsis if needed
+    if (startPage > 1) {
+      items.push(
+        <PaginationItem key="1">
+          <PaginationLink 
+            isActive={currentPage === 1} 
+            onClick={() => handlePageChange(1)}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+      
+      if (startPage > 2) {
+        items.push(
+          <PaginationItem key="ellipsis1">
+            <span className="flex h-9 w-9 items-center justify-center">...</span>
+          </PaginationItem>
+        );
+      }
+    }
+    
+    // Add page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink 
+            isActive={currentPage === i} 
+            onClick={() => handlePageChange(i)}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    // Add last page and ellipsis if needed
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        items.push(
+          <PaginationItem key="ellipsis2">
+            <span className="flex h-9 w-9 items-center justify-center">...</span>
+          </PaginationItem>
+        );
+      }
+      
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink 
+            isActive={currentPage === totalPages} 
+            onClick={() => handlePageChange(totalPages)}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    // Add next page button
+    items.push(
+      <PaginationItem key="next">
+        <PaginationNext
+          onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+          className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    );
+    
+    return items;
+  };
 
   return (
     <MainLayout>
@@ -219,22 +299,17 @@ const AnimePage = () => {
             ))}
           </div>
 
-          {/* Main Anime Grid with Infinite Scrolling */}
+          {/* Main Anime Grid with Pagination */}
           <h2 className="text-xl font-bold text-white mb-4">
             {filterOptions.find(opt => opt.value === activeFilter)?.label || 'Popular'} Anime
           </h2>
           
-          {loading && animeContent.length === 0 ? (
+          {loading ? (
             <div className="flex justify-center my-12">
               <LoadingSpinner size="lg" variant="purple" text="Loading anime..." />
             </div>
           ) : animeContent.length > 0 ? (
-            <InfiniteScroll
-              loadMore={loadMoreAnime}
-              loading={loading}
-              hasMore={page < totalPages}
-              threshold={2500} // Further increased threshold for even earlier loading
-            >
+            <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {animeContent.map((item) => (
                   <MediaCard
@@ -248,12 +323,24 @@ const AnimePage = () => {
                   />
                 ))}
               </div>
-            </InfiniteScroll>
+              
+              {/* Pagination control */}
+              <div className="mt-12">
+                <Pagination>
+                  <PaginationContent>
+                    {renderPagination()}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </>
           ) : (
             <div className="flex justify-center items-center py-12 text-white/60">
               No anime found
             </div>
           )}
+          
+          {/* Content Ads */}
+          <ContentAds />
         </div>
       )}
     </MainLayout>
