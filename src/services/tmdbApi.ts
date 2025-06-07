@@ -1,38 +1,68 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 /**
- * Base API request function with error handling
+ * Base API request function with enhanced error handling and retry logic
  */
-const apiRequest = async (endpoint: string, params = {}) => {
+const apiRequest = async (endpoint: string, params = {}, retries = 3) => {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.append('api_key', TMDB_API_KEY);
   
   // Add additional params
   Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.append(key, String(value));
+    if (value !== null && value !== undefined) {
+      url.searchParams.append(key, String(value));
+    }
   });
   
-  try {
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`TMDB API Error: ${response.status}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      console.log(`TMDB API Request (attempt ${attempt + 1}):`, url.toString());
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
+      const response = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`TMDB API Error: ${response.status} - ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`TMDB API Success:`, { endpoint, resultsCount: data.results?.length || 0 });
+      return data;
+      
+    } catch (error) {
+      console.error(`TMDB API attempt ${attempt + 1} failed:`, error);
+      
+      if (attempt === retries) {
+        console.error('TMDB API final failure:', error);
+        if (error.name !== 'AbortError') {
+          toast({
+            title: "Connection Error",
+            description: "Unable to fetch content. Please check your internet connection.",
+            variant: "destructive",
+          });
+        }
+        return null;
+      }
+      
+      // Wait before retry (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('API Request failed:', error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch content. Please try again later.",
-      variant: "destructive",
-    });
-    return null;
   }
+  
+  return null;
 };
 
 /**

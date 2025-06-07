@@ -7,24 +7,24 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import SidebarAd from '@/components/ads/SidebarAd';
-import ContentAds from '@/components/ads/ContentAds';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <SearchProvider>
       <AdProvider>
         <div className="flex flex-col min-h-screen bg-aura-dark text-white">
           <Navbar />
           <div className="flex flex-1 max-w-full mx-auto w-full">
-            <main className="flex-grow pt-16 w-full">
+            <main className="flex-grow pt-16 w-full min-h-0">
               {children}
-              <ContentAds />
             </main>
-            <SidebarAd />
+            {!isMobile && <SidebarAd />}
           </div>
           <ScrollToTop />
           <Footer />
