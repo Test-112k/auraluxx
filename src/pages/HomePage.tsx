@@ -35,7 +35,7 @@ const HomePage = () => {
     try {
       setError(null);
       
-      // Use Promise.allSettled for better performance and error handling
+      // Fetch data with better error handling
       const [
         trendingMoviesData,
         trendingShowsData,
@@ -52,59 +52,65 @@ const HomePage = () => {
         getAnimeContent()
       ]);
 
-      // Process results with error handling
-      if (trendingMoviesData.status === 'fulfilled' && trendingMoviesData.value?.results) {
+      // Process results with improved error handling
+      if (trendingMoviesData.status === 'fulfilled' && trendingMoviesData.value?.results?.length > 0) {
         console.log('Trending movies loaded:', trendingMoviesData.value.results.length, 'items');
         setTrendingMovies(trendingMoviesData.value.results);
       } else {
-        console.error('Failed to load trending movies:', trendingMoviesData);
+        console.warn('Failed to load trending movies');
+        setTrendingMovies([]);
       }
       setLoading(prev => ({ ...prev, trending: false }));
 
-      if (trendingShowsData.status === 'fulfilled' && trendingShowsData.value?.results) {
+      if (trendingShowsData.status === 'fulfilled' && trendingShowsData.value?.results?.length > 0) {
         console.log('Trending shows loaded:', trendingShowsData.value.results.length, 'items');
         setTrendingShows(trendingShowsData.value.results);
       } else {
-        console.error('Failed to load trending shows:', trendingShowsData);
+        console.warn('Failed to load trending shows');
+        setTrendingShows([]);
       }
       setLoading(prev => ({ ...prev, trendingShows: false }));
 
-      if (popularData.status === 'fulfilled' && popularData.value?.results) {
+      if (popularData.status === 'fulfilled' && popularData.value?.results?.length > 0) {
         console.log('Popular movies loaded:', popularData.value.results.length, 'items');
         setPopularMovies(popularData.value.results);
       } else {
-        console.error('Failed to load popular movies:', popularData);
+        console.warn('Failed to load popular movies');
+        setPopularMovies([]);
       }
       setLoading(prev => ({ ...prev, popular: false }));
 
-      if (topRatedData.status === 'fulfilled' && topRatedData.value?.results) {
+      if (topRatedData.status === 'fulfilled' && topRatedData.value?.results?.length > 0) {
         console.log('Top rated movies loaded:', topRatedData.value.results.length, 'items');
         setTopRatedMovies(topRatedData.value.results);
       } else {
-        console.error('Failed to load top rated movies:', topRatedData);
+        console.warn('Failed to load top rated movies');
+        setTopRatedMovies([]);
       }
       setLoading(prev => ({ ...prev, topRated: false }));
 
-      if (nowPlayingData.status === 'fulfilled' && nowPlayingData.value?.results) {
+      if (nowPlayingData.status === 'fulfilled' && nowPlayingData.value?.results?.length > 0) {
         console.log('Now playing movies loaded:', nowPlayingData.value.results.length, 'items');
         setNowPlayingMovies(nowPlayingData.value.results);
       } else {
-        console.error('Failed to load now playing movies:', nowPlayingData);
+        console.warn('Failed to load now playing movies');
+        setNowPlayingMovies([]);
       }
       setLoading(prev => ({ ...prev, nowPlaying: false }));
 
-      if (animeData.status === 'fulfilled' && animeData.value?.results) {
+      if (animeData.status === 'fulfilled' && animeData.value?.results?.length > 0) {
         console.log('Anime content loaded:', animeData.value.results.length, 'items');
         setAnimeContent(animeData.value.results);
       } else {
-        console.error('Failed to load anime content:', animeData);
+        console.warn('Failed to load anime content');
+        setAnimeContent([]);
       }
       setLoading(prev => ({ ...prev, anime: false }));
 
       console.log('Homepage data fetching completed');
     } catch (error) {
       console.error('Error fetching homepage data:', error);
-      setError('Failed to load content. Please try refreshing the page.');
+      setError('Failed to load content. Please check your connection and try again.');
     }
   }, []);
 

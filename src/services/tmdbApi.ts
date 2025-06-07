@@ -1,13 +1,12 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 /**
- * Base API request function with error handling
+ * Base API request function with error handling and retry logic
  */
-const apiRequest = async (endpoint: string, params = {}) => {
+const apiRequest = async (endpoint: string, params = {}, retries = 2) => {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.append('api_key', TMDB_API_KEY);
   
@@ -16,22 +15,42 @@ const apiRequest = async (endpoint: string, params = {}) => {
     url.searchParams.append(key, String(value));
   });
   
-  try {
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`TMDB API Error: ${response.status}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      console.log(`API request attempt ${attempt + 1}:`, url.toString());
+      
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        // Add timeout and other fetch options
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
+      
+      if (!response.ok) {
+        throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`API request successful:`, endpoint, data?.results?.length || 0, 'results');
+      return data;
+    } catch (error) {
+      console.error(`API Request attempt ${attempt + 1} failed:`, error);
+      
+      if (attempt === retries) {
+        // Only show toast on final failure
+        toast({
+          title: "Connection Error",
+          description: "Unable to load content. Please check your internet connection and try again.",
+          variant: "destructive",
+        });
+        return { results: [], total_pages: 0, page: 1 }; // Return empty but valid structure
+      }
+      
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('API Request failed:', error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch content. Please try again later.",
-      variant: "destructive",
-    });
-    return null;
   }
 };
 
