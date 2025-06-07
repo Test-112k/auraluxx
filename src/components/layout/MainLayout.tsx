@@ -2,18 +2,18 @@
 import { ReactNode } from 'react';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { AdProvider } from '@/contexts/AdContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import SidebarAd from '@/components/ads/SidebarAd';
-import ContentAds from '@/components/ads/ContentAds';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
+  console.log('MainLayout rendering...');
+  
   return (
     <SearchProvider>
       <AdProvider>
@@ -22,7 +22,6 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex flex-1 max-w-full mx-auto w-full">
             <main className="flex-grow pt-16 w-full">
               {children}
-              <ContentAds />
             </main>
             <SidebarAd />
           </div>

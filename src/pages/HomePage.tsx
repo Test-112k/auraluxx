@@ -28,9 +28,13 @@ const HomePage = () => {
     nowPlaying: true,
     anime: true,
   });
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    console.log('Starting to fetch homepage data...');
     try {
+      setError(null);
+      
       // Use Promise.allSettled for better performance and error handling
       const [
         trendingMoviesData,
@@ -50,42 +54,78 @@ const HomePage = () => {
 
       // Process results with error handling
       if (trendingMoviesData.status === 'fulfilled' && trendingMoviesData.value?.results) {
+        console.log('Trending movies loaded:', trendingMoviesData.value.results.length, 'items');
         setTrendingMovies(trendingMoviesData.value.results);
+      } else {
+        console.error('Failed to load trending movies:', trendingMoviesData);
       }
       setLoading(prev => ({ ...prev, trending: false }));
 
       if (trendingShowsData.status === 'fulfilled' && trendingShowsData.value?.results) {
+        console.log('Trending shows loaded:', trendingShowsData.value.results.length, 'items');
         setTrendingShows(trendingShowsData.value.results);
+      } else {
+        console.error('Failed to load trending shows:', trendingShowsData);
       }
       setLoading(prev => ({ ...prev, trendingShows: false }));
 
       if (popularData.status === 'fulfilled' && popularData.value?.results) {
+        console.log('Popular movies loaded:', popularData.value.results.length, 'items');
         setPopularMovies(popularData.value.results);
+      } else {
+        console.error('Failed to load popular movies:', popularData);
       }
       setLoading(prev => ({ ...prev, popular: false }));
 
       if (topRatedData.status === 'fulfilled' && topRatedData.value?.results) {
+        console.log('Top rated movies loaded:', topRatedData.value.results.length, 'items');
         setTopRatedMovies(topRatedData.value.results);
+      } else {
+        console.error('Failed to load top rated movies:', topRatedData);
       }
       setLoading(prev => ({ ...prev, topRated: false }));
 
       if (nowPlayingData.status === 'fulfilled' && nowPlayingData.value?.results) {
+        console.log('Now playing movies loaded:', nowPlayingData.value.results.length, 'items');
         setNowPlayingMovies(nowPlayingData.value.results);
+      } else {
+        console.error('Failed to load now playing movies:', nowPlayingData);
       }
       setLoading(prev => ({ ...prev, nowPlaying: false }));
 
       if (animeData.status === 'fulfilled' && animeData.value?.results) {
+        console.log('Anime content loaded:', animeData.value.results.length, 'items');
         setAnimeContent(animeData.value.results);
+      } else {
+        console.error('Failed to load anime content:', animeData);
       }
       setLoading(prev => ({ ...prev, anime: false }));
+
+      console.log('Homepage data fetching completed');
     } catch (error) {
       console.error('Error fetching homepage data:', error);
+      setError('Failed to load content. Please try refreshing the page.');
     }
   }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-white/70 mb-4">{error}</p>
+            <Button onClick={fetchData} className="bg-aura-purple hover:bg-aura-darkpurple">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
