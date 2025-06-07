@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { getTrending, getImageUrl } from '@/services/tmdbApi';
 import { truncateText } from '@/utils/helpers';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface SlideItem {
   id: number;
@@ -21,6 +20,7 @@ const HeroSlideshow = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [autoplay, setAutoplay] = useState(true);
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -28,13 +28,30 @@ const HeroSlideshow = () => {
   const fetchSlides = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getTrending('movie', 'day');
+      // Try multiple data sources for better reliability on slow connections
+      let data = await getTrending('movie', 'day');
+      
+      // Fallback to weekly trending if daily fails
+      if (!data?.results?.length) {
+        console.log('Daily trending failed, trying weekly...');
+        data = await getTrending('movie', 'week');
+      }
+      
       if (data?.results) {
-        // Filter items with backdrop images
+        // Filter items with backdrop images and limit to 5 for faster loading
         const filteredResults = data.results
           .filter((item: any) => item.backdrop_path)
           .slice(0, 5);
-        setSlides(filteredResults);
+        
+        if (filteredResults.length > 0) {
+          setSlides(filteredResults);
+          // Pre-load first image
+          const firstImage = new Image();
+          firstImage.onload = () => {
+            setImageLoadingStates(prev => ({ ...prev, [filteredResults[0].id]: true }));
+          };
+          firstImage.src = getImageUrl(filteredResults[0].backdrop_path, 'w1280');
+        }
       }
     } catch (error) {
       console.error('Error fetching slideshow data:', error);
@@ -43,17 +60,40 @@ const HeroSlideshow = () => {
     }
   }, []);
 
+  // Progressive image loading
+  const handleImageLoad = useCallback((slideId: number) => {
+    setImageLoadingStates(prev => ({ ...prev, [slideId]: true }));
+  }, []);
+
   const nextSlide = useCallback(() => {
     if (!slides.length) return;
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
+    const nextIndex = (currentSlide + 1) % slides.length;
+    setCurrentSlide(nextIndex);
+    
+    // Pre-load next image
+    const nextSlideData = slides[nextIndex];
+    if (nextSlideData && !imageLoadingStates[nextSlideData.id]) {
+      const img = new Image();
+      img.onload = () => handleImageLoad(nextSlideData.id);
+      img.src = getImageUrl(nextSlideData.backdrop_path, 'w1280');
+    }
+  }, [slides, currentSlide, imageLoadingStates, handleImageLoad]);
 
   const prevSlide = useCallback(() => {
     if (!slides.length) return;
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  }, [slides.length]);
+    const prevIndex = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+    setCurrentSlide(prevIndex);
+    
+    // Pre-load previous image
+    const prevSlideData = slides[prevIndex];
+    if (prevSlideData && !imageLoadingStates[prevSlideData.id]) {
+      const img = new Image();
+      img.onload = () => handleImageLoad(prevSlideData.id);
+      img.src = getImageUrl(prevSlideData.backdrop_path, 'w1280');
+    }
+  }, [slides, currentSlide, imageLoadingStates, handleImageLoad]);
 
-  // Handle autoplay
+  // Handle autoplay with longer intervals for slow connections
   useEffect(() => {
     if (!slides.length || !autoplay) return;
     
@@ -61,7 +101,7 @@ const HeroSlideshow = () => {
     
     autoplayRef.current = setInterval(() => {
       nextSlide();
-    }, 6000);
+    }, 8000); // Increased from 6s to 8s for better UX on slow connections
     
     return () => {
       if (autoplayRef.current) clearInterval(autoplayRef.current);
@@ -120,10 +160,11 @@ const HeroSlideshow = () => {
   };
 
   const renderSkeleton = () => (
-    <div className="relative w-full h-[50vh] md:h-[70vh] bg-aura-dark/50 animate-pulse">
+    <div className="relative w-full h-[50vh] md:h-[70vh] bg-aura-dark/50">
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-t-aura-purple border-white/20 rounded-full animate-spin"></div>
         <p className="text-white/60 mt-4">Loading featured content...</p>
+        <p className="text-white/40 text-sm mt-2">This may take longer on slow connections</p>
       </div>
     </div>
   );
@@ -138,14 +179,23 @@ const HeroSlideshow = () => {
     <div 
       ref={slideshowRef}
       className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden" 
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      onMouseEnter={() => setAutoplay(false)}
+      onMouseLeave={() => setAutoplay(true)}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchMove={(e) => {
+        if (touchStartX.current === null) return;
+        const touchEndX = e.touches[0].clientX;
+        const diff = touchStartX.current - touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) nextSlide();
+          else prevSlide();
+          touchStartX.current = null;
+        }
+      }}
+      onTouchEnd={() => { touchStartX.current = null; }}
       tabIndex={0}
     >
-      {/* Backdrop Image with Animation */}
+      {/* Backdrop Images with progressive loading */}
       {slides.map((slideItem, index) => (
         <div 
           key={slideItem.id} 
@@ -155,10 +205,25 @@ const HeroSlideshow = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-10"></div>
+          
+          {/* Placeholder while image loads */}
+          {!imageLoadingStates[slideItem.id] && (
+            <div className="w-full h-full bg-aura-dark/30 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-t-aura-purple border-white/20 rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-white/40 text-sm">Loading image...</p>
+              </div>
+            </div>
+          )}
+          
           <img
-            src={getImageUrl(slideItem.backdrop_path, 'original')}
+            src={getImageUrl(slideItem.backdrop_path, 'w1280')} // Use smaller size for faster loading
             alt={slideItem.title || slideItem.name}
-            className="w-full h-full object-cover object-center transition-transform duration-10000 hover:scale-105"
+            className={`w-full h-full object-cover object-center transition-all duration-500 ${
+              imageLoadingStates[slideItem.id] ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => handleImageLoad(slideItem.id)}
+            loading="lazy"
           />
         </div>
       ))}

@@ -1,12 +1,13 @@
+
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 /**
- * Base API request function with enhanced error handling and retry logic
+ * Base API request function with enhanced error handling and retry logic for slow connections
  */
-const apiRequest = async (endpoint: string, params = {}, retries = 3) => {
+const apiRequest = async (endpoint: string, params = {}, retries = 2) => {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.append('api_key', TMDB_API_KEY);
   
@@ -22,7 +23,9 @@ const apiRequest = async (endpoint: string, params = {}, retries = 3) => {
       console.log(`TMDB API Request (attempt ${attempt + 1}):`, url.toString());
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      // Progressive timeout: start with 30s for slow connections, reduce on retries
+      const timeoutDuration = attempt === 0 ? 30000 : (attempt === 1 ? 20000 : 15000);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
       
       const response = await fetch(url.toString(), {
         signal: controller.signal,
@@ -47,18 +50,20 @@ const apiRequest = async (endpoint: string, params = {}, retries = 3) => {
       
       if (attempt === retries) {
         console.error('TMDB API final failure:', error);
+        // Only show toast for non-abort errors on final attempt
         if (error.name !== 'AbortError') {
           toast({
             title: "Connection Error",
-            description: "Unable to fetch content. Please check your internet connection.",
+            description: "Content is loading slowly. Please wait or check your internet connection.",
             variant: "destructive",
           });
         }
         return null;
       }
       
-      // Wait before retry (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      // Progressive backoff: longer waits for slow connections
+      const waitTime = Math.pow(2, attempt) * 2000; // 2s, 4s, 8s
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
   
