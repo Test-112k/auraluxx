@@ -5,6 +5,8 @@ import HeroSlideshow from '@/components/common/HeroSlideshow';
 import MediaSlider from '@/components/common/MediaSlider';
 import CategoryButtons from '@/components/common/CategoryButtons';
 import { Button } from '@/components/ui/button';
+import { useAds } from '@/contexts/AdContext';
+import Ad from '@/components/ads/Ad';
 import { 
   getTrending, 
   getPopular, 
@@ -20,6 +22,7 @@ const HomePage = () => {
   const [topRatedMovies, setTopRatedMovies] = useState([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [animeContent, setAnimeContent] = useState([]);
+  const { isAdEnabled } = useAds();
   const [loading, setLoading] = useState({
     trending: true,
     trendingShows: true,
@@ -28,89 +31,52 @@ const HomePage = () => {
     nowPlaying: true,
     anime: true,
   });
-  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    console.log('Starting to fetch homepage data...');
     try {
-      setError(null);
-      
-      // Fetch data with better error handling
-      const [
-        trendingMoviesData,
-        trendingShowsData,
-        popularData,
-        topRatedData,
-        nowPlayingData,
-        animeData
-      ] = await Promise.allSettled([
-        getTrending('movie', 'week'),
-        getTrending('tv', 'week'),
-        getPopular('movie'),
-        getTopRated('movie'),
-        getNowPlaying('movie'),
-        getAnimeContent()
-      ]);
-
-      // Process results with improved error handling
-      if (trendingMoviesData.status === 'fulfilled' && trendingMoviesData.value?.results?.length > 0) {
-        console.log('Trending movies loaded:', trendingMoviesData.value.results.length, 'items');
-        setTrendingMovies(trendingMoviesData.value.results);
-      } else {
-        console.warn('Failed to load trending movies');
-        setTrendingMovies([]);
+      // Fetch trending movies
+      const trendingMoviesData = await getTrending('movie', 'week');
+      if (trendingMoviesData?.results) {
+        setTrendingMovies(trendingMoviesData.results);
       }
       setLoading(prev => ({ ...prev, trending: false }));
 
-      if (trendingShowsData.status === 'fulfilled' && trendingShowsData.value?.results?.length > 0) {
-        console.log('Trending shows loaded:', trendingShowsData.value.results.length, 'items');
-        setTrendingShows(trendingShowsData.value.results);
-      } else {
-        console.warn('Failed to load trending shows');
-        setTrendingShows([]);
+      // Fetch trending shows
+      const trendingShowsData = await getTrending('tv', 'week');
+      if (trendingShowsData?.results) {
+        setTrendingShows(trendingShowsData.results);
       }
       setLoading(prev => ({ ...prev, trendingShows: false }));
 
-      if (popularData.status === 'fulfilled' && popularData.value?.results?.length > 0) {
-        console.log('Popular movies loaded:', popularData.value.results.length, 'items');
-        setPopularMovies(popularData.value.results);
-      } else {
-        console.warn('Failed to load popular movies');
-        setPopularMovies([]);
+      // Fetch popular movies
+      const popularData = await getPopular('movie');
+      if (popularData?.results) {
+        setPopularMovies(popularData.results);
       }
       setLoading(prev => ({ ...prev, popular: false }));
 
-      if (topRatedData.status === 'fulfilled' && topRatedData.value?.results?.length > 0) {
-        console.log('Top rated movies loaded:', topRatedData.value.results.length, 'items');
-        setTopRatedMovies(topRatedData.value.results);
-      } else {
-        console.warn('Failed to load top rated movies');
-        setTopRatedMovies([]);
+      // Fetch top rated movies
+      const topRatedData = await getTopRated('movie');
+      if (topRatedData?.results) {
+        setTopRatedMovies(topRatedData.results);
       }
       setLoading(prev => ({ ...prev, topRated: false }));
 
-      if (nowPlayingData.status === 'fulfilled' && nowPlayingData.value?.results?.length > 0) {
-        console.log('Now playing movies loaded:', nowPlayingData.value.results.length, 'items');
-        setNowPlayingMovies(nowPlayingData.value.results);
-      } else {
-        console.warn('Failed to load now playing movies');
-        setNowPlayingMovies([]);
+      // Fetch now playing movies
+      const nowPlayingData = await getNowPlaying('movie');
+      if (nowPlayingData?.results) {
+        setNowPlayingMovies(nowPlayingData.results);
       }
       setLoading(prev => ({ ...prev, nowPlaying: false }));
 
-      if (animeData.status === 'fulfilled' && animeData.value?.results?.length > 0) {
-        console.log('Anime content loaded:', animeData.value.results.length, 'items');
-        setAnimeContent(animeData.value.results);
-      } else {
-        console.warn('Failed to load anime content');
-        setAnimeContent([]);
+      // Fetch anime content
+      const animeData = await getAnimeContent();
+      if (animeData?.results) {
+        setAnimeContent(animeData.results);
       }
       setLoading(prev => ({ ...prev, anime: false }));
-
-      console.log('Homepage data fetching completed');
     } catch (error) {
       console.error('Error fetching homepage data:', error);
-      setError('Failed to load content. Please check your connection and try again.');
     }
   }, []);
 
@@ -118,124 +84,117 @@ const HomePage = () => {
     fetchData();
   }, [fetchData]);
 
-  if (error) {
+  // Banner Ad component
+  const BannerAd = ({ size }) => {
+    if (!isAdEnabled) return null;
     return (
-      <MainLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-white/70 mb-4">{error}</p>
-            <Button onClick={fetchData} className="bg-aura-purple hover:bg-aura-darkpurple">
-              Try Again
-            </Button>
-          </div>
+      <div className="w-full my-8 flex justify-center">
+        <div className="bg-white/5 p-2 rounded-lg">
+          <Ad size={size} />
         </div>
-      </MainLayout>
+      </div>
     );
-  }
+  };
 
   return (
     <MainLayout>
-      <div className="animate-fade-in">
-        <HeroSlideshow />
-        
-        {/* Telegram Announcement with animation */}
-        <div className="bg-gradient-to-r from-aura-purple/20 to-aura-accent/20 py-6 animate-slide-in-right">
-          <div className="auraluxx-container flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-2">Join our Telegram Channel</h2>
-              <p className="text-white/80">Stay updated with our new websites and latest releases</p>
-            </div>
-            <Button 
-              asChild 
-              className="bg-aura-purple hover:bg-aura-darkpurple flex items-center gap-2 hover-scale"
+      <HeroSlideshow />
+      
+      {/* Telegram Announcement */}
+      <div className="bg-gradient-to-r from-aura-purple/20 to-aura-accent/20 py-6">
+        <div className="auraluxx-container flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-white mb-2">Join our Telegram Channel</h2>
+            <p className="text-white/80">Stay updated with our new websites and latest releases</p>
+          </div>
+          <Button 
+            asChild 
+            className="bg-aura-purple hover:bg-aura-darkpurple flex items-center gap-2"
+          >
+            <a 
+              href="https://t.me/auralux1" 
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <a 
-                href="https://t.me/auralux1" 
-                target="_blank"
-                rel="noopener noreferrer"
+              {/* Telegram Icon */}
+              <svg 
+                className="h-5 w-5" 
+                viewBox="0 0 24 24" 
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg 
-                  className="h-5 w-5" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path 
-                    d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.64 8.8C16.49 10.38 15.84 14.22 15.51 15.99C15.37 16.74 15.09 16.99 14.83 17.02C14.25 17.07 13.81 16.64 13.25 16.27C12.37 15.69 11.87 15.33 11.02 14.77C10.03 14.12 10.67 13.76 11.24 13.18C11.39 13.03 13.95 10.7 14 10.49C14.0069 10.4589 14.006 10.4267 13.9973 10.3961C13.9886 10.3655 13.9724 10.3376 13.95 10.315C13.89 10.25 13.81 10.27 13.74 10.28C13.65 10.29 12.15 11.24 9.24 13.12C8.78 13.42 8.36 13.57 7.98 13.56C7.57 13.55 6.77 13.35 6.17 13.17C5.44 12.95 4.86 12.83 4.91 12.43C4.94 12.22 5.22 12.01 5.76 11.8C8.87 10.38 10.97 9.45 12.06 9C15.17 7.68 15.92 7.45 16.43 7.45C16.54 7.45 16.8 7.48 16.97 7.62C17.11 7.73 17.15 7.89 17.16 7.99C17.15 8.15 17.14 8.48 16.64 8.8Z" 
-                  />
-                </svg>
-                Join Now
-              </a>
-            </Button>
-          </div>
+                <path 
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.64 8.8C16.49 10.38 15.84 14.22 15.51 15.99C15.37 16.74 15.09 16.99 14.83 17.02C14.25 17.07 13.81 16.64 13.25 16.27C12.37 15.69 11.87 15.33 11.02 14.77C10.03 14.12 10.67 13.76 11.24 13.18C11.39 13.03 13.95 10.7 14 10.49C14.0069 10.4589 14.006 10.4267 13.9973 10.3961C13.9886 10.3655 13.9724 10.3376 13.95 10.315C13.89 10.25 13.81 10.27 13.74 10.28C13.65 10.29 12.15 11.24 9.24 13.12C8.78 13.42 8.36 13.57 7.98 13.56C7.57 13.55 6.77 13.35 6.17 13.17C5.44 12.95 4.86 12.83 4.91 12.43C4.94 12.22 5.22 12.01 5.76 11.8C8.87 10.38 10.97 9.45 12.06 9C15.17 7.68 15.92 7.45 16.43 7.45C16.54 7.45 16.8 7.48 16.97 7.62C17.11 7.73 17.15 7.89 17.16 7.99C17.15 8.15 17.14 8.48 16.64 8.8Z" 
+                />
+              </svg>
+              Join Now
+            </a>
+          </Button>
         </div>
+      </div>
+      
+      {/* Category buttons */}
+      <div className="auraluxx-container">
+        <CategoryButtons />
+      </div>
+      
+      <div className="auraluxx-container py-6">
+        {/* Top banner ad */}
+        <BannerAd size="728x90" />
         
-        {/* Category buttons with animation */}
-        <div className="auraluxx-container animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <CategoryButtons />
-        </div>
+        <MediaSlider
+          title="Trending Movies"
+          items={trendingMovies}
+          loading={loading.trending}
+          viewAllLink="/movies?filter=trending"
+          mediaType="movie"
+        />
         
-        <div className="auraluxx-container py-6 space-y-8">
-          <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <MediaSlider
-              title="Trending Movies"
-              items={trendingMovies}
-              loading={loading.trending}
-              viewAllLink="/movies?filter=trending"
-              mediaType="movie"
-            />
-          </div>
-          
-          <div className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <MediaSlider
-              title="Trending TV Shows"
-              items={trendingShows}
-              loading={loading.trendingShows}
-              viewAllLink="/tv-series?filter=trending"
-              mediaType="tv"
-            />
-          </div>
-          
-          <div className="animate-fade-in" style={{ animationDelay: "0.5s" }}>
-            <MediaSlider
-              title="Now Playing"
-              items={nowPlayingMovies}
-              loading={loading.nowPlaying}
-              viewAllLink="/movies?filter=now_playing"
-              mediaType="movie"
-            />
-          </div>
-          
-          <div className="animate-fade-in" style={{ animationDelay: "0.6s" }}>
-            <MediaSlider
-              title="Popular Movies"
-              items={popularMovies}
-              loading={loading.popular}
-              viewAllLink="/movies?filter=popular"
-              mediaType="movie"
-            />
-          </div>
-          
-          <div className="animate-fade-in" style={{ animationDelay: "0.7s" }}>
-            <MediaSlider
-              title="Top Rated Movies"
-              items={topRatedMovies}
-              loading={loading.topRated}
-              viewAllLink="/movies?filter=top_rated"
-              mediaType="movie"
-            />
-          </div>
-          
-          <div className="animate-fade-in" style={{ animationDelay: "0.8s" }}>
-            <MediaSlider
-              title="Popular Anime"
-              items={animeContent}
-              loading={loading.anime}
-              viewAllLink="/anime"
-              mediaType="tv"
-            />
-          </div>
-        </div>
+        <MediaSlider
+          title="Trending TV Shows"
+          items={trendingShows}
+          loading={loading.trendingShows}
+          viewAllLink="/tv-series?filter=trending"
+          mediaType="tv"
+        />
+        
+        {/* Ad after 2 sliders */}
+        <BannerAd size="300x250" />
+        
+        <MediaSlider
+          title="Now Playing"
+          items={nowPlayingMovies}
+          loading={loading.nowPlaying}
+          viewAllLink="/movies?filter=now_playing"
+          mediaType="movie"
+        />
+        
+        <MediaSlider
+          title="Popular Movies"
+          items={popularMovies}
+          loading={loading.popular}
+          viewAllLink="/movies?filter=popular"
+          mediaType="movie"
+        />
+        
+        {/* Ad after 4 sliders */}
+        <BannerAd size="728x90" />
+        
+        <MediaSlider
+          title="Top Rated Movies"
+          items={topRatedMovies}
+          loading={loading.topRated}
+          viewAllLink="/movies?filter=top_rated"
+          mediaType="movie"
+        />
+        
+        <MediaSlider
+          title="Popular Anime"
+          items={animeContent}
+          loading={loading.anime}
+          viewAllLink="/anime"
+          mediaType="tv"
+        />
       </div>
     </MainLayout>
   );

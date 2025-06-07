@@ -43,13 +43,13 @@ const App = () => (
             <Route path="/regional" element={<RegionalPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/watch/:type/:id" element={<WatchPage />} />
-            <Route path="/watch/:type/:id/*" element={<WatchPage />} />
+            <Route path="/watch/:type/:id/" element={<WatchPage />} /> {/* Added this route with trailing slash */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/dmca" element={<DmcaPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

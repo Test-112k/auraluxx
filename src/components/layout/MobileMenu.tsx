@@ -14,12 +14,16 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
   // Prevent body scrolling when menu is open
   useEffect(() => {
     if (isOpen) {
+      // Save current scroll position
       const scrollY = window.scrollY;
+      
+      // Apply fixed position with top offset to prevent jumping
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
     } else {
+      // Restore scroll position when closing menu
       const scrollY = document.body.style.top;
       document.body.style.position = '';
       document.body.style.top = '';
@@ -39,52 +43,58 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
 
   if (!isOpen) return null;
 
-  const menuItems = [
-    { to: "/", label: "Home" },
-    { to: "/movies", label: "Movies" },
-    { to: "/tv-series", label: "TV Series" },
-    { to: "/anime", label: "Anime" },
-    { to: "/regional", label: "Regional" }
-  ];
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in">
-      {/* Header with close button */}
-      <div className="flex justify-between items-center p-6 animate-slide-in-right">
-        <h2 className="text-xl font-bold text-gradient">Auraluxx</h2>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onClose} 
-          className="text-white hover:bg-white/10 hover-scale"
-        >
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-300">
+      <div className="flex justify-end p-6">
+        <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
           <X size={24} />
         </Button>
       </div>
 
-      {/* Menu items */}
-      <div className="flex flex-col items-center justify-center flex-1 space-y-6 text-center overflow-y-auto py-8 px-4">
-        {menuItems.map((item, index) => (
-          <Link 
-            key={item.to}
-            to={item.to} 
-            onClick={onClose}
-            className="text-2xl font-medium text-white hover:text-gradient transition-all hover-scale animate-fade-in"
-            style={{ animationDelay: `${0.1 * (index + 1)}s` }}
-          >
-            {item.label}
-          </Link>
-        ))}
-        
-        {/* Telegram link */}
+      <div className="flex flex-col items-center justify-center flex-1 space-y-8 text-center overflow-y-auto py-8 px-4">
+        <Link 
+          to="/" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          Home
+        </Link>
+        <Link 
+          to="/movies" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          Movies
+        </Link>
+        <Link 
+          to="/tv-series" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          TV Series
+        </Link>
+        <Link 
+          to="/anime" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          Anime
+        </Link>
+        <Link 
+          to="/regional" 
+          onClick={onClose}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all"
+        >
+          Regional
+        </Link>
         <a 
           href={telegramUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={onClose}
-          className="text-2xl font-medium text-white hover:text-gradient transition-all flex items-center hover-scale animate-fade-in"
-          style={{ animationDelay: "0.6s" }}
+          className="text-2xl font-medium text-white hover:text-gradient transition-all flex items-center"
         >
+          {/* Telegram Logo */}
           <svg 
             className="mr-2 h-6 w-6" 
             fill="#ffffff"
@@ -97,8 +107,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
         </a>
       </div>
 
-      {/* Footer */}
-      <div className="text-center pb-8 text-sm text-white/60 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+      <div className="text-center pb-8 text-sm text-white/60">
         <p>Auraluxx © {new Date().getFullYear()}</p>
       </div>
     </div>

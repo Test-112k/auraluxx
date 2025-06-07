@@ -73,7 +73,7 @@
     background-color: transparent;
   }
   
-  /* Better focus styles for accessibility */
+  /* Better focus styles for better accessibility */
   a:focus, button:focus, input:focus, select:focus, textarea:focus {
     @apply outline-none ring-2 ring-aura-purple ring-opacity-50;
   }
@@ -113,70 +113,9 @@
     @apply text-lg sm:text-xl md:text-2xl font-bold;
   }
   
-  /* Performance optimized button states */
+  /* Improved button states */
   .btn-hover {
     @apply transition-all duration-200 hover:translate-y-[-2px] active:translate-y-0;
-  }
-
-  /* Performance optimized animations */
-  .hover-scale {
-    @apply transition-transform duration-200 ease-out will-change-transform;
-  }
-
-  .hover-scale:hover {
-    @apply scale-105;
-  }
-
-  /* Smooth fade animations */
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
-    opacity: 0;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.4s ease-out forwards;
-    opacity: 0;
-    transform: scale(0.9);
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.5s ease-out forwards;
-    opacity: 0;
-    transform: translateX(30px);
-  }
-}
-
-/* 60fps optimized keyframes */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInRight {
-  0% {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
 
@@ -202,33 +141,16 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
-/* Performance optimizations */
-* {
-  box-sizing: border-box;
-}
-
-/* Hardware acceleration for smooth animations */
-.animate-fade-in,
-.animate-scale-in,
-.animate-slide-in-right,
-.hover-scale {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
+/* Ad container styles */
+.ad-container {
+  @apply flex justify-center items-center bg-white/5 rounded-lg transition-all;
 }
 
 /* Prevent image overflow */
 img {
   @apply max-w-full h-auto;
-}
-
-/* Remove body margin/padding that can cause layout shifts */
-body, html {
-  margin: 0;
-  padding: 0;
 }

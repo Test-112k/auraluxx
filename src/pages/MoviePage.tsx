@@ -5,7 +5,6 @@ import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import { getTrending, getPopular, getTopRated, getNowPlaying } from '@/services/tmdbApi';
-import { Button } from '@/components/ui/button';
 
 const filterOptions = [
   { label: 'Popular', value: 'popular' },
@@ -20,18 +19,14 @@ const MoviePage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const activeFilter = searchParams.get('filter') || 'popular';
 
   const fetchMovies = useCallback(async (reset = false) => {
-    console.log('Fetching movies...', { activeFilter, reset, page });
     setLoading(true);
-    setError(null);
     const currentPage = reset ? 1 : page;
-    
-    try {
-      let data;
+    let data;
 
+    try {
       switch (activeFilter) {
         case 'trending':
           data = await getTrending('movie', 'week', currentPage);
@@ -48,39 +43,26 @@ const MoviePage = () => {
           break;
       }
 
-      console.log('Movies API response:', data);
-
-      if (data?.results && Array.isArray(data.results)) {
+      if (data?.results) {
         if (reset) {
           setMovies(data.results);
-          setPage(2); // Next page to load
+          setPage(1);
         } else {
           setMovies(prev => [...prev, ...data.results]);
           setPage(currentPage + 1);
         }
         
-        setTotalPages(data.total_pages || 1);
-        console.log('Movies loaded:', data.results.length, 'items');
-      } else {
-        console.warn('No movie results found');
-        if (reset) {
-          setMovies([]);
-          setError('No movies found for this category');
-        }
+        setTotalPages(data.total_pages);
       }
     } catch (error) {
       console.error('Error fetching movies:', error);
-      setError('Failed to load movies. Please try again.');
-      if (reset) {
-        setMovies([]);
-      }
     } finally {
       setLoading(false);
     }
   }, [activeFilter, page]);
 
   const loadMore = async () => {
-    if (page <= totalPages && !loading) {
+    if (page < totalPages) {
       await fetchMovies();
       return true;
     }
@@ -89,13 +71,6 @@ const MoviePage = () => {
 
   const handleFilterChange = (filter: string) => {
     setSearchParams({ filter });
-    setPage(1);
-    setMovies([]);
-  };
-
-  const handleRetry = () => {
-    setError(null);
-    fetchMovies(true);
   };
 
   useEffect(() => {
@@ -123,19 +98,8 @@ const MoviePage = () => {
             </button>
           ))}
         </div>
-
-        {/* Error state */}
-        {error && (
-          <div className="text-center py-12">
-            <p className="text-white/70 mb-4">{error}</p>
-            <Button onClick={handleRetry} className="bg-aura-purple hover:bg-aura-darkpurple">
-              Try Again
-            </Button>
-          </div>
-        )}
-
-        {/* Loading state */}
-        {loading && movies.length === 0 && !error ? (
+        
+        {loading && movies.length === 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {Array(18).fill(0).map((_, i) => (
               <div key={i} className="rounded-lg overflow-hidden animate-pulse">
@@ -148,38 +112,25 @@ const MoviePage = () => {
             ))}
           </div>
         ) : (
-          /* Movies grid */
-          movies.length > 0 && (
-            <InfiniteScroll
-              loadMore={loadMore}
-              loading={loading}
-              hasMore={page <= totalPages}
-            >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {movies.map((movie) => (
-                  <MediaCard
-                    key={`${movie.id}-${movie.title}`}
-                    id={movie.id}
-                    title={movie.title}
-                    type="movie"
-                    posterPath={movie.poster_path}
-                    releaseDate={movie.release_date}
-                    voteAverage={movie.vote_average}
-                  />
-                ))}
-              </div>
-            </InfiniteScroll>
-          )
-        )}
-
-        {/* Empty state */}
-        {!loading && !error && movies.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-white/70 mb-4">No movies found</p>
-            <Button onClick={handleRetry} className="bg-aura-purple hover:bg-aura-darkpurple">
-              Refresh
-            </Button>
-          </div>
+          <InfiniteScroll
+            loadMore={loadMore}
+            loading={loading}
+            hasMore={page < totalPages}
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {movies.map((movie) => (
+                <MediaCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  type="movie"
+                  posterPath={movie.poster_path}
+                  releaseDate={movie.release_date}
+                  voteAverage={movie.vote_average}
+                />
+              ))}
+            </div>
+          </InfiniteScroll>
         )}
       </div>
     </MainLayout>

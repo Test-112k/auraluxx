@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { getTrending, getImageUrl } from '@/services/tmdbApi';
 import { truncateText } from '@/utils/helpers';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SlideItem {
   id: number;
@@ -20,35 +21,23 @@ const HeroSlideshow = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [autoplay, setAutoplay] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
   const fetchSlides = useCallback(async () => {
-    console.log('Fetching slideshow data...');
     setLoading(true);
-    setError(null);
-    
     try {
       const data = await getTrending('movie', 'day');
-      console.log('Slideshow API response:', data);
-      
       if (data?.results) {
         // Filter items with backdrop images
         const filteredResults = data.results
           .filter((item: any) => item.backdrop_path)
           .slice(0, 5);
-        
-        console.log('Filtered slideshow results:', filteredResults.length, 'items');
         setSlides(filteredResults);
-      } else {
-        console.warn('No results in slideshow data');
-        setError('No featured content available');
       }
     } catch (error) {
       console.error('Error fetching slideshow data:', error);
-      setError('Failed to load featured content');
     } finally {
       setLoading(false);
     }
@@ -140,20 +129,7 @@ const HeroSlideshow = () => {
   );
 
   if (loading) return renderSkeleton();
-  
-  if (error || slides.length === 0) {
-    return (
-      <div className="relative w-full h-[50vh] md:h-[70vh] bg-gradient-to-br from-aura-purple/20 to-aura-accent/20 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Welcome to Auraluxx</h2>
-          <p className="text-white/80 mb-6">Your premium streaming destination</p>
-          {error && (
-            <p className="text-white/60 text-sm">{error}</p>
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (slides.length === 0) return null;
 
   const slide = slides[currentSlide];
   const title = slide.title || slide.name || '';
@@ -183,11 +159,6 @@ const HeroSlideshow = () => {
             src={getImageUrl(slideItem.backdrop_path, 'original')}
             alt={slideItem.title || slideItem.name}
             className="w-full h-full object-cover object-center transition-transform duration-10000 hover:scale-105"
-            onError={(e) => {
-              console.error('Failed to load image:', slideItem.backdrop_path);
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
           />
         </div>
       ))}
