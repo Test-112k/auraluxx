@@ -11,30 +11,34 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: MobileMenuProps) => {
-  // Prevent body scrolling when menu is open with better mobile handling
+  // Prevent body scrolling when menu is open - improved for mobile
   useEffect(() => {
     if (isOpen) {
       // Save current scroll position
       const scrollY = window.scrollY;
       
-      // Apply fixed position with top offset to prevent jumping
+      // Apply styles to prevent scrolling
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      document.body.style.height = '100vh';
       
       // Prevent iOS bounce scrolling
       document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.position = 'relative';
     } else {
       // Restore scroll position when closing menu
       const scrollY = document.body.style.top;
       document.body.style.position = '';
       document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.height = '';
       document.documentElement.style.overflow = '';
+      document.documentElement.style.position = '';
       
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
@@ -45,24 +49,26 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
       // Cleanup on unmount
       document.body.style.position = '';
       document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.height = '';
       document.documentElement.style.overflow = '';
+      document.documentElement.style.position = '';
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/98 backdrop-blur-sm flex flex-col animate-fade-in duration-300 overscroll-none">
-      {/* Header with close button */}
-      <div className="flex justify-end p-4 md:p-6 border-b border-white/10">
+    <div className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
+      {/* Header with close button - better touch target */}
+      <div className="flex justify-end p-4 border-b border-white/10">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={onClose} 
-          className="text-white hover:bg-white/10 transition-colors"
+          className="text-white hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px]"
         >
           <X size={24} />
         </Button>
@@ -70,39 +76,39 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
 
       {/* Menu items - optimized for touch */}
       <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="flex flex-col justify-center flex-1 space-y-6 md:space-y-8 text-center py-8 px-4">
+        <div className="flex flex-col justify-center flex-1 space-y-4 text-center py-8 px-4">
           <Link 
             to="/" 
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all py-3 border-b border-white/10 last:border-0"
+            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
             Home
           </Link>
           <Link 
             to="/movies" 
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all py-3 border-b border-white/10 last:border-0"
+            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
             Movies
           </Link>
           <Link 
             to="/tv-series" 
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all py-3 border-b border-white/10 last:border-0"
+            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
             TV Series
           </Link>
           <Link 
             to="/anime" 
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all py-3 border-b border-white/10 last:border-0"
+            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
             Anime
           </Link>
           <Link 
             to="/regional" 
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all py-3 border-b border-white/10 last:border-0"
+            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
             Regional
           </Link>
@@ -111,9 +117,8 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="text-xl md:text-2xl font-medium text-white hover:text-gradient transition-all flex items-center justify-center py-3"
+            className="text-xl font-medium text-white hover:text-gradient transition-all flex items-center justify-center py-4 min-h-[56px]"
           >
-            {/* Optimized Telegram Logo for faster loading */}
             <svg 
               className="mr-3 h-6 w-6" 
               fill="currentColor"
@@ -127,7 +132,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
         </div>
 
         {/* Footer */}
-        <div className="text-center pb-6 md:pb-8 text-xs md:text-sm text-white/60 border-t border-white/10 pt-4">
+        <div className="text-center pb-6 text-sm text-white/60 border-t border-white/10 pt-4">
           <p>Auraluxx © {new Date().getFullYear()}</p>
         </div>
       </div>

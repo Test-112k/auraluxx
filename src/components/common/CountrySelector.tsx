@@ -172,7 +172,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
       {/* Selected country button */}
       <button
         onClick={toggleDropdown}
-        className="flex items-center gap-2 px-3 py-2 md:px-4 bg-black/40 hover:bg-black/60 text-white rounded-md border border-white/10 transition-colors text-sm md:text-base"
+        className="flex items-center gap-2 px-3 py-2 md:px-4 bg-black/40 hover:bg-black/60 text-white rounded-md border border-white/10 transition-colors text-sm md:text-base min-h-[44px]"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
@@ -186,9 +186,9 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
         )}
       </button>
 
-      {/* Dropdown menu with higher z-index */}
+      {/* Dropdown menu with ultra-high z-index */}
       {isOpen && (
-        <div className="absolute z-[9999] mt-2 right-0 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+        <div className="absolute z-[999999] mt-2 right-0 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
           {/* Search input */}
           <div className="p-3 relative">
             <div className="relative">
@@ -211,7 +211,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
                 <button
                   key={country.iso_3166_1}
                   onClick={() => handleCountrySelect(country.iso_3166_1)}
-                  className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base ${
+                  className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base min-h-[44px] ${
                     selectedCountry === country.iso_3166_1
                       ? 'bg-aura-purple text-white'
                       : 'bg-white/5 hover:bg-white/10 text-white'

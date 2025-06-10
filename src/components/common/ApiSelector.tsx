@@ -22,7 +22,7 @@ const ApiSelector = ({ selectedApi, onApiChange }: ApiSelectorProps) => {
             variant={selectedApi === api.key ? "default" : "outline"}
             size="sm"
             onClick={() => onApiChange(api.key)}
-            className={`flex-1 min-h-[60px] sm:min-h-[70px] flex flex-col items-center justify-center transition-all duration-200 ${
+            className={`flex-1 min-h-[56px] sm:min-h-[70px] flex flex-col items-center justify-center transition-all duration-200 ${
               selectedApi === api.key 
                 ? 'bg-primary text-primary-foreground shadow-lg' 
                 : 'bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:text-white'

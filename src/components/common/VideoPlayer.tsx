@@ -46,7 +46,7 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
     // Longer timeout for slow connections
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 5000);
+    }, 8000); // Increased timeout for slow connections
     
     return () => clearTimeout(timer);
   }, [id, season, episode, apiType]);
@@ -64,12 +64,10 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
     <div className="flex flex-col w-full mb-8">
       {/* Enhanced mobile video player with better sizing */}
       <div className="relative w-full bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5 max-w-[1400px] mx-auto
-        aspect-video 
-        sm:aspect-video 
+        h-[60vh] sm:h-[65vh] md:h-auto
         md:aspect-[16/9] 
         lg:aspect-[16/8.5]
-        h-[50vh] sm:h-[55vh] md:h-auto
-        min-h-[250px]">
+        min-h-[300px] sm:min-h-[350px]">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <LoadingSpinner size="lg" text="Loading video player..." />
@@ -80,7 +78,7 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <div className="text-center text-white/70 px-4">
               <p className="text-lg font-medium mb-2">Unable to load video</p>
-              <p className="text-sm">Please try again later or check your connection</p>
+              <p className="text-sm">Please try a different API or check your connection</p>
             </div>
           </div>
         )}
@@ -100,8 +98,8 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
       </div>
       
       {/* User guidance message - more compact on mobile */}
-      <div className="mt-3 p-3 md:p-4 rounded-lg bg-white/5 text-white/80 text-xs sm:text-sm md:text-base border border-white/10 max-w-[1400px] mx-auto">
-        <p>If you are not able to watch properly, or want to watch in different language, change the server in video player.</p>
+      <div className="mt-3 p-3 md:p-4 rounded-lg bg-white/5 text-white/80 text-xs sm:text-sm border border-white/10 max-w-[1400px] mx-auto">
+        <p>If the video doesn't load, try switching to a different API above or change the server within the video player.</p>
       </div>
     </div>
   );
