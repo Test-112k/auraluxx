@@ -8,15 +8,35 @@ interface VideoPlayerProps {
   title: string;
   season?: number;
   episode?: number;
+  apiType: 'embed' | 'torrent' | 'agg';
 }
 
-const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => {
+const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  const iframeSrc = type === 'tv' 
-    ? `https://rivestream.net/embed?type=tv&id=${id}&season=${season}&episode=${episode}` 
-    : `https://rivestream.net/embed?type=movie&id=${id}`;
+  const getIframeSrc = () => {
+    const baseUrl = 'https://rivestream.net';
+    
+    switch (apiType) {
+      case 'torrent':
+        return type === 'tv' 
+          ? `${baseUrl}/embed/torrent?type=tv&id=${id}&season=${season}&episode=${episode}` 
+          : `${baseUrl}/embed/torrent?type=movie&id=${id}`;
+      
+      case 'agg':
+        return type === 'tv' 
+          ? `${baseUrl}/embed/agg?type=tv&id=${id}&season=${season}&episode=${episode}` 
+          : `${baseUrl}/embed/agg?type=movie&id=${id}`;
+      
+      default: // embed
+        return type === 'tv' 
+          ? `${baseUrl}/embed?type=tv&id=${id}&season=${season}&episode=${episode}` 
+          : `${baseUrl}/embed?type=movie&id=${id}`;
+    }
+  };
+
+  const iframeSrc = getIframeSrc();
 
   // Handle iframe load events with longer timeout for slow connections
   useEffect(() => {
@@ -29,7 +49,7 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
     }, 5000);
     
     return () => clearTimeout(timer);
-  }, [id, season, episode]);
+  }, [id, season, episode, apiType]);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -48,7 +68,8 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
         sm:aspect-video 
         md:aspect-[16/9] 
         lg:aspect-[16/8.5]
-        h-[50vh] sm:h-[55vh] md:h-auto">
+        h-[50vh] sm:h-[55vh] md:h-auto
+        min-h-[250px]">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <LoadingSpinner size="lg" text="Loading video player..." />
@@ -65,6 +86,7 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
         )}
         
         <iframe
+          key={iframeSrc} // Force re-render when URL changes
           className="absolute inset-0 w-full h-full border-0"
           src={iframeSrc}
           title={title}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -7,6 +6,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import MediaSlider from '@/components/common/MediaSlider';
 import CategoryButtons from '@/components/common/CategoryButtons';
 import VideoPlayer from '@/components/common/VideoPlayer';
+import ApiSelector from '@/components/common/ApiSelector';
 import MediaDetails from '@/components/common/MediaDetails';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ const WatchPage = () => {
   const navigate = useNavigate();
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
+  const [selectedApi, setSelectedApi] = useState<'embed' | 'torrent' | 'agg'>('embed');
   const { isAdEnabled } = useAds();
   
   // Fetch media details
@@ -216,6 +217,12 @@ const WatchPage = () => {
             </div>
           )}
           
+          {/* API Selector */}
+          <ApiSelector 
+            selectedApi={selectedApi}
+            onApiChange={setSelectedApi}
+          />
+          
           {/* Video Player */}
           <VideoPlayer 
             id={id || ''} 
@@ -223,6 +230,7 @@ const WatchPage = () => {
             title={title} 
             season={isTvShow ? selectedSeason : undefined}
             episode={isTvShow ? selectedEpisode : undefined}
+            apiType={selectedApi}
           />
           
           {/* Ad below video player - clearly separated */}
