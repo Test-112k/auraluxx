@@ -61,7 +61,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
+    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
       {/* Header with close button - better touch target */}
       <div className="flex justify-end p-4 border-b border-white/10">
         <Button 
@@ -96,7 +96,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             onClick={onClose}
             className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
           >
-            TV Series
+            TV Shows
           </Link>
           <Link 
             to="/anime" 
