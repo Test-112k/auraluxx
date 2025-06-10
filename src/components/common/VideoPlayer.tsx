@@ -18,15 +18,15 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
     ? `https://rivestream.net/embed?type=tv&id=${id}&season=${season}&episode=${episode}` 
     : `https://rivestream.net/embed?type=movie&id=${id}`;
 
-  // Handle iframe load events
+  // Handle iframe load events with longer timeout for slow connections
   useEffect(() => {
     setIsLoading(true);
     setHasError(false);
     
-    // Reset loading state when src changes
+    // Longer timeout for slow connections
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 5000);
     
     return () => clearTimeout(timer);
   }, [id, season, episode]);
@@ -42,7 +42,13 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
 
   return (
     <div className="flex flex-col w-full mb-8">
-      <div className="relative w-full aspect-video md:aspect-[16/9] lg:aspect-[16/8.5] bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5 max-w-[1400px] mx-auto">
+      {/* Enhanced mobile video player with better sizing */}
+      <div className="relative w-full bg-black rounded-lg overflow-hidden shadow-xl shadow-black/30 border border-white/5 max-w-[1400px] mx-auto
+        aspect-video 
+        sm:aspect-video 
+        md:aspect-[16/9] 
+        lg:aspect-[16/8.5]
+        h-[50vh] sm:h-[55vh] md:h-auto">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
             <LoadingSpinner size="lg" text="Loading video player..." />
@@ -67,11 +73,12 @@ const VideoPlayer = ({ id, type, title, season, episode }: VideoPlayerProps) => 
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
+          loading="lazy"
         ></iframe>
       </div>
       
-      {/* User guidance message */}
-      <div className="mt-3 p-4 rounded-lg bg-white/5 text-white/80 text-sm md:text-base border border-white/10 max-w-[1400px] mx-auto">
+      {/* User guidance message - more compact on mobile */}
+      <div className="mt-3 p-3 md:p-4 rounded-lg bg-white/5 text-white/80 text-xs sm:text-sm md:text-base border border-white/10 max-w-[1400px] mx-auto">
         <p>If you are not able to watch properly, or want to watch in different language, change the server in video player.</p>
       </div>
     </div>

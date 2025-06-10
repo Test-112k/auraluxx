@@ -27,11 +27,15 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
   // Flag emoji for each country
   const getCountryFlag = (countryCode: string) => {
-    const codePoints = countryCode
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
+    try {
+      const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt(0));
+      return String.fromCodePoint(...codePoints);
+    } catch {
+      return '🌍'; // Fallback flag
+    }
   };
 
   // Popular countries to show at the top when not searching
@@ -62,7 +66,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     const fetchCountries = async () => {
       setIsLoading(true);
       try {
-        // For simplicity, we'll use a hardcoded list of most common countries with streaming content
+        // Optimized list for faster loading
         const commonCountries: Country[] = [
           { iso_3166_1: 'US', english_name: 'United States', native_name: 'United States' },
           { iso_3166_1: 'IN', english_name: 'India', native_name: 'India' },
@@ -168,22 +172,23 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
       {/* Selected country button */}
       <button
         onClick={toggleDropdown}
-        className="flex items-center gap-2 px-4 py-2 bg-black/40 hover:bg-black/60 text-white rounded-md border border-white/10 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 md:px-4 bg-black/40 hover:bg-black/60 text-white rounded-md border border-white/10 transition-colors text-sm md:text-base"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         {selectedCountryObj && (
           <>
-            <span className="text-xl">{selectedCountryObj.flag}</span>
-            <span>{selectedCountryObj.english_name}</span>
-            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+            <span className="text-lg md:text-xl">{selectedCountryObj.flag}</span>
+            <span className="hidden sm:inline">{selectedCountryObj.english_name}</span>
+            <span className="sm:hidden">{selectedCountryObj.iso_3166_1}</span>
+            <ChevronDown className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4 opacity-70" />
           </>
         )}
       </button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown menu with higher z-index */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 right-0 w-72 bg-aura-dark/95 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-xl overflow-hidden animate-fade-in">
+        <div className="absolute z-[9999] mt-2 right-0 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
           {/* Search input */}
           <div className="p-3 relative">
             <div className="relative">
@@ -194,30 +199,30 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
                 placeholder="Search country by name or code"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all"
+                className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all text-sm"
               />
             </div>
           </div>
 
           {/* Countries grid */}
-          <div className="max-h-96 overflow-y-auto p-3 grid grid-cols-2 md:grid-cols-2 gap-2">
+          <div className="max-h-80 md:max-h-96 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {displayedCountries.length > 0 ? (
               displayedCountries.map((country) => (
                 <button
                   key={country.iso_3166_1}
                   onClick={() => handleCountrySelect(country.iso_3166_1)}
-                  className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base ${
                     selectedCountry === country.iso_3166_1
                       ? 'bg-aura-purple text-white'
                       : 'bg-white/5 hover:bg-white/10 text-white'
                   }`}
                 >
-                  <span className="text-xl">{country.flag}</span>
-                  <span className="truncate">{country.english_name}</span>
+                  <span className="text-lg md:text-xl">{country.flag}</span>
+                  <span className="truncate text-left">{country.english_name}</span>
                 </button>
               ))
             ) : (
-              <div className="col-span-2 py-4 text-center text-white/60">
+              <div className="col-span-full py-4 text-center text-white/60">
                 No countries found
               </div>
             )}

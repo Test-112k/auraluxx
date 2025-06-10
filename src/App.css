@@ -36,39 +36,53 @@
   color: #888;
 }
 
-/* Video player optimizations */
+/* Enhanced video player optimizations for mobile */
 .video-container {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Enhanced mobile video height for better viewing */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .video-container {
-    height: 75vw; /* Increased height for better mobile viewing */
+    height: 50vh; /* Better mobile viewing experience */
+    min-height: 250px; /* Minimum height for usability */
   }
 }
 
-/* Global loading animation */
+@media (min-width: 641px) and (max-width: 768px) {
+  .video-container {
+    height: 55vh; /* Tablet optimization */
+  }
+}
+
+/* Global loading animation with hardware acceleration */
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 0.7;
+    transform: translateZ(0);
   }
   50% {
     opacity: 0.3;
+    transform: translateZ(0);
   }
 }
 
 .loading-animation {
   animation: pulse-glow 1.5s ease-in-out infinite;
+  will-change: opacity;
 }
 
-/* Mobile menu animation */
+/* Enhanced mobile menu animation with hardware acceleration */
 .animate-in {
-  animation-duration: 300ms;
+  animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 .fade-in {
@@ -76,19 +90,34 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+    transform: translateZ(0);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateZ(0);
+  }
 }
 
-/* Better spacing for ads */
+/* Better spacing for ads with mobile optimization */
 .ad-container {
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   line-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 70px;
+  min-height: 50px;
+  /* Hardware acceleration */
+  transform: translateZ(0);
+}
+
+@media (min-width: 768px) {
+  .ad-container {
+    margin: 1rem 0;
+    min-height: 70px;
+  }
 }
 
 /* Handle external ad scripts better */
@@ -97,9 +126,20 @@
 [class*="sc-"],
 [id*="ads-container"] {
   width: 100% !important;
-  min-height: 70px !important;
+  min-height: 50px !important;
   margin: 0 auto !important;
   overflow: visible !important;
+  /* Hardware acceleration */
+  transform: translateZ(0) !important;
+}
+
+@media (min-width: 768px) {
+  [id*="taboola"], 
+  [id*="mgid"], 
+  [class*="sc-"],
+  [id*="ads-container"] {
+    min-height: 70px !important;
+  }
 }
 
 /* Ensure social bar ads display properly */
@@ -107,12 +147,62 @@ script[src*="bluetackclasp.com"] + * {
   display: block !important;
   width: 100% !important;
   overflow: visible !important;
+  transform: translateZ(0) !important;
 }
 
-/* Fix mobile menu display */
-body.fixed {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+/* Enhanced mobile menu body lock */
+body.menu-open {
+  position: fixed !important;
+  width: 100% !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: none !important;
+}
+
+/* Prevent iOS bounce scrolling during menu */
+html.menu-open {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+/* Mobile touch optimization */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button, a[role="button"], .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth scrolling optimization */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Remove tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Performance optimizations for slow connections */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimize for low-end devices */
+@media (max-width: 480px) {
+  .video-container {
+    border-radius: 8px; /* Reduce border radius for better performance */
+  }
+  
+  .animate-in {
+    animation-duration: 150ms; /* Faster animations on mobile */
+  }
 }
