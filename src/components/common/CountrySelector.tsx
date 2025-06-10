@@ -186,9 +186,9 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
         )}
       </button>
 
-      {/* Dropdown menu with ultra-high z-index */}
+      {/* Dropdown menu with maximum z-index to appear above everything */}
       {isOpen && (
-        <div className="absolute z-[999999] mt-2 right-0 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+        <div className="absolute z-[99999999] mt-2 right-0 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
           {/* Search input */}
           <div className="p-3 relative">
             <div className="relative">

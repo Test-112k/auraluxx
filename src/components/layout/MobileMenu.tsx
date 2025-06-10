@@ -61,7 +61,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
+    <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
       {/* Header with close button - better touch target */}
       <div className="flex justify-end p-4 border-b border-white/10">
         <Button 

@@ -33,10 +33,12 @@ const Navbar = () => {
   const telegramUrl = "https://t.me/auralux1";
 
   const handleMobileMenuToggle = () => {
+    console.log('Mobile menu toggle clicked, current state:', isMobileMenuOpen);
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleMobileMenuClose = () => {
+    console.log('Mobile menu closing');
     setIsMobileMenuOpen(false);
   };
 
@@ -118,7 +120,7 @@ const Navbar = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={handleMobileMenuToggle}
-                className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px]"
+                className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] z-50"
                 aria-label="Open menu"
               >
                 <Menu size={24} />
