@@ -20,8 +20,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <AdProvider>
         <div className="flex flex-col min-h-screen bg-aura-dark text-white">
           <Navbar />
-          {/* Add top padding to account for fixed navbar */}
-          <div className="flex flex-1 max-w-full mx-auto w-full" style={{ paddingTop: '80px' }}>
+          {/* Fixed header requires top padding for content */}
+          <div className="flex flex-1 max-w-full mx-auto w-full pt-20 md:pt-24">
             <main className="flex-grow w-full min-h-0">
               {children}
             </main>

@@ -82,60 +82,78 @@ const RegionalPage = () => {
 
   return (
     <MainLayout>
-      <div className="auraluxx-container py-8">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
-          <h1 className="text-3xl font-bold text-white">Regional Content</h1>
-          <div className="w-full lg:w-auto">
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-              <p className="text-white/80 text-sm lg:text-base">Select Your Country to view its local titles</p>
-              <CountrySelector 
-                selectedCountry={selectedCountry} 
-                onSelect={handleCountryChange} 
-                className="w-full lg:w-64"
-              />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header Section - Better visibility */}
+        <div className="bg-aura-dark/50 backdrop-blur-sm rounded-lg p-6 mb-8 border border-aura-purple/20">
+          <div className="flex flex-col space-y-6">
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Regional Content</h1>
+              <p className="text-white/80 text-base md:text-lg">
+                Discover movies and shows from different regions around the world
+              </p>
+            </div>
+            
+            {/* Country Selector - Better positioned */}
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex-shrink-0">
+                <p className="text-white font-medium text-lg">Select Your Country:</p>
+              </div>
+              <div className="w-full md:w-80">
+                <CountrySelector 
+                  selectedCountry={selectedCountry} 
+                  onSelect={handleCountryChange} 
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
         
-        {loading && regionalContent.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <LoadingSpinner size="lg" text="Loading regional content..." />
-          </div>
-        ) : regionalContent.length > 0 ? (
-          <InfiniteScroll
-            loadMore={loadMore}
-            loading={loading}
-            hasMore={page <= totalPages}
-            threshold={1000}
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {regionalContent.map((item) => (
-                <MediaCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.title}
-                  type="movie"
-                  posterPath={item.poster_path}
-                  releaseDate={item.release_date}
-                  voteAverage={item.vote_average}
-                />
-              ))}
+        {/* Content Section */}
+        <div className="relative">
+          {loading && regionalContent.length === 0 ? (
+            <div className="flex justify-center items-center py-20">
+              <LoadingSpinner size="lg" text="Loading regional content..." />
             </div>
-            
-            {loading && regionalContent.length > 0 && (
-              <div className="flex justify-center my-8">
-                <LoadingSpinner size="md" text="Loading more..." />
+          ) : regionalContent.length > 0 ? (
+            <InfiniteScroll
+              loadMore={loadMore}
+              loading={loading}
+              hasMore={page <= totalPages}
+              threshold={1000}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                {regionalContent.map((item) => (
+                  <MediaCard
+                    key={item.id}
+                    id={item.id}
+                    title={item.title}
+                    type="movie"
+                    posterPath={item.poster_path}
+                    releaseDate={item.release_date}
+                    voteAverage={item.vote_average}
+                  />
+                ))}
               </div>
-            )}
-          </InfiniteScroll>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <div className="text-white/60">
-              <p className="mb-2">{error || 'No content available for this region.'}</p>
-              <p>Please try another country.</p>
+              
+              {loading && regionalContent.length > 0 && (
+                <div className="flex justify-center my-8">
+                  <LoadingSpinner size="md" text="Loading more..." />
+                </div>
+              )}
+            </InfiniteScroll>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="bg-aura-dark/50 backdrop-blur-sm rounded-lg p-8 text-center border border-aura-purple/20 max-w-md">
+                <div className="text-white/80 space-y-3">
+                  <h3 className="text-xl font-semibold text-white">No Content Available</h3>
+                  <p className="text-base">{error || 'No content available for this region.'}</p>
+                  <p className="text-sm">Please try selecting another country from the dropdown above.</p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </MainLayout>
   );
