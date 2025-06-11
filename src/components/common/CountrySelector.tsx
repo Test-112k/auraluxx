@@ -22,6 +22,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   const [countries, setCountries] = useState<Country[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [initialCountrySet, setInitialCountrySet] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,6 +42,25 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   // Popular countries to show at the top when not searching
   const popularCountries = ['US', 'IN', 'JP', 'KR', 'CN', 'FR', 'ES', 'IT', 'DE', 'GB', 'BR', 'MX', 'RU', 'TR'];
   
+  // Detect user's country by IP
+  const detectUserCountry = async () => {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      console.log('IP detection result:', data);
+      
+      if (data.country_code && countryToLanguageMap[data.country_code]) {
+        console.log(`Setting country based on IP: ${data.country_code}`);
+        return data.country_code;
+      }
+    } catch (error) {
+      console.error('Error detecting country:', error);
+    }
+    
+    // Fallback to India if detection fails
+    return 'IN';
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -102,6 +122,13 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
         }));
 
         setCountries(countriesWithFlags);
+
+        // Set initial country based on IP detection if not already set
+        if (!initialCountrySet) {
+          const detectedCountry = await detectUserCountry();
+          onSelect(detectedCountry);
+          setInitialCountrySet(true);
+        }
       } catch (error) {
         console.error('Error fetching countries:', error);
       } finally {
@@ -110,7 +137,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     };
 
     fetchCountries();
-  }, []);
+  }, [initialCountrySet, onSelect]);
 
   // Filter countries by search query and only those with language mappings
   const filteredCountries = countries
@@ -188,46 +215,52 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
       {/* Dropdown menu with ultra-maximum z-index to appear above everything */}
       {isOpen && (
-        <div className="fixed z-[999999999] mt-2 right-4 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
-          {/* Search input */}
-          <div className="p-3 relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search country by name or code"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all text-sm"
-              />
+        <>
+          {/* Backdrop overlay */}
+          <div className="fixed inset-0 z-[999999998] bg-black/20 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+          
+          {/* Dropdown content */}
+          <div className="fixed z-[999999999] top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+            {/* Search input */}
+            <div className="p-3 relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search country by name or code"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Countries grid */}
+            <div className="max-h-80 md:max-h-96 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {displayedCountries.length > 0 ? (
+                displayedCountries.map((country) => (
+                  <button
+                    key={country.iso_3166_1}
+                    onClick={() => handleCountrySelect(country.iso_3166_1)}
+                    className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base min-h-[44px] ${
+                      selectedCountry === country.iso_3166_1
+                        ? 'bg-aura-purple text-white'
+                        : 'bg-white/5 hover:bg-white/10 text-white'
+                    }`}
+                  >
+                    <span className="text-lg md:text-xl">{country.flag}</span>
+                    <span className="truncate text-left">{country.english_name}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="col-span-full py-4 text-center text-white/60">
+                  No countries found
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Countries grid */}
-          <div className="max-h-80 md:max-h-96 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {displayedCountries.length > 0 ? (
-              displayedCountries.map((country) => (
-                <button
-                  key={country.iso_3166_1}
-                  onClick={() => handleCountrySelect(country.iso_3166_1)}
-                  className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base min-h-[44px] ${
-                    selectedCountry === country.iso_3166_1
-                      ? 'bg-aura-purple text-white'
-                      : 'bg-white/5 hover:bg-white/10 text-white'
-                  }`}
-                >
-                  <span className="text-lg md:text-xl">{country.flag}</span>
-                  <span className="truncate text-left">{country.english_name}</span>
-                </button>
-              ))
-            ) : (
-              <div className="col-span-full py-4 text-center text-white/60">
-                No countries found
-              </div>
-            )}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

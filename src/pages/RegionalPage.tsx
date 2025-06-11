@@ -9,13 +9,15 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const RegionalPage = () => {
   const [regionalContent, setRegionalContent] = useState<any[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('IN'); // Default to India
+  const [selectedCountry, setSelectedCountry] = useState(''); // Start empty, will be set by IP detection
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRegionalContent = useCallback(async (reset = false) => {
+    if (!selectedCountry) return; // Don't fetch if no country selected yet
+    
     setLoading(true);
     setError(null);
     const language = countryToLanguageMap[selectedCountry];
@@ -64,6 +66,7 @@ const RegionalPage = () => {
 
   const handleCountryChange = (countryCode: string) => {
     if (countryCode === selectedCountry) return;
+    console.log('Country changed to:', countryCode);
     setSelectedCountry(countryCode);
     setPage(1);
     setRegionalContent([]);
@@ -71,7 +74,10 @@ const RegionalPage = () => {
   };
 
   useEffect(() => {
-    fetchRegionalContent(true);
+    if (selectedCountry) {
+      console.log('Fetching content for country:', selectedCountry);
+      fetchRegionalContent(true);
+    }
   }, [selectedCountry]);
 
   return (

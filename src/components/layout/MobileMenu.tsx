@@ -61,54 +61,54 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in duration-300">
+    <div className="fixed inset-0 z-[99999999] bg-aura-dark/98 backdrop-blur-md flex flex-col animate-fade-in duration-300">
       {/* Header with close button - better touch target */}
-      <div className="flex justify-end p-4 border-b border-white/10">
+      <div className="flex justify-end p-4 border-b border-aura-purple/20">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={onClose} 
-          className="text-white hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px]"
+          className="text-white hover:bg-aura-purple/20 transition-colors min-h-[44px] min-w-[44px]"
         >
           <X size={24} />
         </Button>
       </div>
 
       {/* Menu items - optimized for touch */}
-      <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="flex flex-col justify-center flex-1 space-y-4 text-center py-8 px-4">
+      <div className="flex flex-col flex-1 overflow-y-auto bg-aura-dark">
+        <div className="flex flex-col justify-center flex-1 space-y-2 text-center py-8 px-4">
           <Link 
             to="/" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
           >
             Home
           </Link>
           <Link 
             to="/movies" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
           >
             Movies
           </Link>
           <Link 
             to="/tv-series" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
           >
             TV Shows
           </Link>
           <Link 
             to="/anime" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
           >
             Anime
           </Link>
           <Link 
             to="/regional" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all py-4 border-b border-white/10 min-h-[56px] flex items-center justify-center"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
           >
             Regional
           </Link>
@@ -117,7 +117,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-gradient transition-all flex items-center justify-center py-4 min-h-[56px]"
+            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all flex items-center justify-center py-4 min-h-[56px] rounded-lg"
           >
             <svg 
               className="mr-3 h-6 w-6" 
@@ -132,7 +132,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
         </div>
 
         {/* Footer */}
-        <div className="text-center pb-6 text-sm text-white/60 border-t border-white/10 pt-4">
+        <div className="text-center pb-6 text-sm text-white/60 border-t border-aura-purple/20 pt-4 bg-aura-dark">
           <p>Auraluxx © {new Date().getFullYear()}</p>
         </div>
       </div>
