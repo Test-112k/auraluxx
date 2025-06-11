@@ -11,25 +11,18 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: MobileMenuProps) => {
-  // Prevent body scrolling when menu is open - improved for mobile
+  // Prevent body scrolling when menu is open
   useEffect(() => {
     if (isOpen) {
-      // Save current scroll position
       const scrollY = window.scrollY;
-      
-      // Apply styles to prevent scrolling
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.left = '0';
       document.body.style.right = '0';
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      
-      // Prevent iOS bounce scrolling
       document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'relative';
     } else {
-      // Restore scroll position when closing menu
       const scrollY = document.body.style.top;
       document.body.style.position = '';
       document.body.style.top = '';
@@ -38,7 +31,6 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
       document.body.style.width = '';
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
       
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
@@ -46,7 +38,6 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
     }
     
     return () => {
-      // Cleanup on unmount
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
@@ -54,16 +45,16 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
       document.body.style.width = '';
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999999] bg-aura-dark/98 backdrop-blur-md flex flex-col animate-fade-in duration-300">
-      {/* Header with close button - better touch target */}
-      <div className="flex justify-end p-4 border-b border-aura-purple/20">
+    <div className="fixed inset-0 z-[999999] bg-aura-dark backdrop-blur-sm flex flex-col animate-fade-in">
+      {/* Header with close button */}
+      <div className="flex justify-between items-center p-4 border-b border-aura-purple/30 bg-aura-dark">
+        <h2 className="text-xl font-bold text-white">Menu</h2>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -74,41 +65,41 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
         </Button>
       </div>
 
-      {/* Menu items - optimized for touch */}
-      <div className="flex flex-col flex-1 overflow-y-auto bg-aura-dark">
-        <div className="flex flex-col justify-center flex-1 space-y-2 text-center py-8 px-4">
+      {/* Menu items */}
+      <div className="flex-1 bg-aura-dark p-6">
+        <div className="space-y-6">
           <Link 
             to="/" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
           >
             Home
           </Link>
           <Link 
             to="/movies" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
           >
             Movies
           </Link>
           <Link 
             to="/tv-series" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
           >
             TV Shows
           </Link>
           <Link 
             to="/anime" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
           >
             Anime
           </Link>
           <Link 
             to="/regional" 
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all py-4 border-b border-aura-purple/20 min-h-[56px] flex items-center justify-center rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
           >
             Regional
           </Link>
@@ -117,7 +108,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="text-xl font-medium text-white hover:text-aura-purple hover:bg-aura-purple/10 transition-all flex items-center justify-center py-4 min-h-[56px] rounded-lg"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 flex items-center"
           >
             <svg 
               className="mr-3 h-6 w-6" 
@@ -130,11 +121,11 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             Telegram
           </a>
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="text-center pb-6 text-sm text-white/60 border-t border-aura-purple/20 pt-4 bg-aura-dark">
-          <p>Auraluxx © {new Date().getFullYear()}</p>
-        </div>
+      {/* Footer */}
+      <div className="text-center p-4 text-sm text-white/60 border-t border-aura-purple/30 bg-aura-dark">
+        <p>Auraluxx © {new Date().getFullYear()}</p>
       </div>
     </div>
   );

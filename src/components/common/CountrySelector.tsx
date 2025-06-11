@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Globe } from 'lucide-react';
 import { countryToLanguageMap } from '@/services/tmdbApi';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -26,7 +26,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Flag emoji for each country
   const getCountryFlag = (countryCode: string) => {
     try {
       const codePoints = countryCode
@@ -35,14 +34,12 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
         .map(char => 127397 + char.charCodeAt(0));
       return String.fromCodePoint(...codePoints);
     } catch {
-      return '🌍'; // Fallback flag
+      return '🌍';
     }
   };
 
-  // Popular countries to show at the top when not searching
   const popularCountries = ['US', 'IN', 'JP', 'KR', 'CN', 'FR', 'ES', 'IT', 'DE', 'GB', 'BR', 'MX', 'RU', 'TR'];
   
-  // Detect user's country by IP
   const detectUserCountry = async () => {
     try {
       const response = await fetch('https://ipapi.co/json/');
@@ -57,11 +54,9 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
       console.error('Error detecting country:', error);
     }
     
-    // Fallback to India if detection fails
     return 'IN';
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -73,7 +68,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Focus search input when dropdown opens
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
       setTimeout(() => {
@@ -86,7 +80,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     const fetchCountries = async () => {
       setIsLoading(true);
       try {
-        // Optimized list for faster loading
         const commonCountries: Country[] = [
           { iso_3166_1: 'US', english_name: 'United States', native_name: 'United States' },
           { iso_3166_1: 'IN', english_name: 'India', native_name: 'India' },
@@ -115,7 +108,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
           { iso_3166_1: 'CA', english_name: 'Canada', native_name: 'Canada' },
         ];
         
-        // Add flag emoji to each country
         const countriesWithFlags = commonCountries.map(country => ({
           ...country,
           flag: getCountryFlag(country.iso_3166_1)
@@ -123,7 +115,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
         setCountries(countriesWithFlags);
 
-        // Set initial country based on IP detection if not already set
         if (!initialCountrySet) {
           const detectedCountry = await detectUserCountry();
           onSelect(detectedCountry);
@@ -139,7 +130,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     fetchCountries();
   }, [initialCountrySet, onSelect]);
 
-  // Filter countries by search query and only those with language mappings
   const filteredCountries = countries
     .filter(country => {
       const hasMapping = Object.keys(countryToLanguageMap).includes(country.iso_3166_1);
@@ -149,13 +139,11 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
       return hasMapping && matchesSearch;
     });
 
-  // Get displayed countries (either filtered by search or sorted by popularity)
   const getDisplayedCountries = () => {
     if (searchQuery) {
       return filteredCountries;
     }
     
-    // Sort to put popular countries first when not searching
     return [...filteredCountries].sort((a, b) => {
       const aIndex = popularCountries.indexOf(a.iso_3166_1);
       const bIndex = popularCountries.indexOf(b.iso_3166_1);
@@ -169,8 +157,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   };
 
   const displayedCountries = getDisplayedCountries();
-  
-  // Find the selected country object
   const selectedCountryObj = countries.find(c => c.iso_3166_1 === selectedCountry);
 
   const toggleDropdown = () => {
@@ -188,81 +174,91 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
   if (isLoading) {
     return (
-      <div className={`px-4 py-2 bg-white/5 rounded-md ${className}`}>
+      <div className={`px-4 py-2 bg-white/10 rounded-lg border border-white/20 ${className}`}>
         <LoadingSpinner size="sm" variant="white" />
       </div>
     );
   }
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
-      {/* Selected country button */}
-      <button
-        onClick={toggleDropdown}
-        className="flex items-center gap-2 px-3 py-2 md:px-4 bg-black/40 hover:bg-black/60 text-white rounded-md border border-white/10 transition-colors text-sm md:text-base min-h-[44px]"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        {selectedCountryObj && (
-          <>
-            <span className="text-lg md:text-xl">{selectedCountryObj.flag}</span>
-            <span className="hidden sm:inline">{selectedCountryObj.english_name}</span>
-            <span className="sm:hidden">{selectedCountryObj.iso_3166_1}</span>
-            <ChevronDown className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4 opacity-70" />
-          </>
-        )}
-      </button>
-
-      {/* Dropdown menu with ultra-maximum z-index to appear above everything */}
+    <>
+      {/* Backdrop overlay */}
       {isOpen && (
-        <>
-          {/* Backdrop overlay */}
-          <div className="fixed inset-0 z-[999999998] bg-black/20 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-          
-          {/* Dropdown content */}
-          <div className="fixed z-[999999999] top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-80 sm:w-72 bg-aura-dark/98 backdrop-blur-lg border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+        <div 
+          className="fixed inset-0 z-[999999] bg-black/50 backdrop-blur-sm" 
+          onClick={() => setIsOpen(false)} 
+        />
+      )}
+      
+      <div className={`relative ${className}`} ref={dropdownRef}>
+        {/* Selected country button */}
+        <button
+          onClick={toggleDropdown}
+          className="flex items-center justify-between w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-all duration-200 min-h-[50px] backdrop-blur-sm"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+        >
+          <div className="flex items-center gap-3">
+            {selectedCountryObj ? (
+              <>
+                <span className="text-xl">{selectedCountryObj.flag}</span>
+                <span className="font-medium">{selectedCountryObj.english_name}</span>
+              </>
+            ) : (
+              <>
+                <Globe className="h-5 w-5" />
+                <span className="font-medium">Select Country</span>
+              </>
+            )}
+          </div>
+          <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Dropdown menu */}
+        {isOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 z-[9999999] bg-aura-dark border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
             {/* Search input */}
-            <div className="p-3 relative">
+            <div className="p-4 border-b border-aura-purple/20">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search country by name or code"
+                  placeholder="Search countries..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full py-2 pl-10 pr-4 bg-white/10 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all text-sm"
+                  className="w-full py-3 pl-10 pr-4 bg-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all placeholder:text-white/50"
                 />
               </div>
             </div>
 
-            {/* Countries grid */}
-            <div className="max-h-80 md:max-h-96 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Countries list */}
+            <div className="max-h-80 overflow-y-auto">
               {displayedCountries.length > 0 ? (
                 displayedCountries.map((country) => (
                   <button
                     key={country.iso_3166_1}
                     onClick={() => handleCountrySelect(country.iso_3166_1)}
-                    className={`flex items-center gap-2 p-2 md:p-3 rounded-lg transition-colors text-sm md:text-base min-h-[44px] ${
+                    className={`w-full flex items-center gap-3 p-4 hover:bg-aura-purple/20 transition-colors ${
                       selectedCountry === country.iso_3166_1
                         ? 'bg-aura-purple text-white'
-                        : 'bg-white/5 hover:bg-white/10 text-white'
+                        : 'text-white'
                     }`}
                   >
-                    <span className="text-lg md:text-xl">{country.flag}</span>
-                    <span className="truncate text-left">{country.english_name}</span>
+                    <span className="text-xl">{country.flag}</span>
+                    <span className="font-medium">{country.english_name}</span>
                   </button>
                 ))
               ) : (
-                <div className="col-span-full py-4 text-center text-white/60">
+                <div className="p-8 text-center text-white/60">
                   No countries found
                 </div>
               )}
             </div>
           </div>
-        </>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 
