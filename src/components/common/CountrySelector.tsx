@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown, Globe } from 'lucide-react';
+import { Search, ChevronDown, Globe, X } from 'lucide-react';
 import { countryToLanguageMap } from '@/services/tmdbApi';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -23,7 +23,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [initialCountrySet, setInitialCountrySet] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const getCountryFlag = (countryCode: string) => {
@@ -56,17 +55,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
     
     return 'IN';
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
@@ -159,13 +147,6 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
   const displayedCountries = getDisplayedCountries();
   const selectedCountryObj = countries.find(c => c.iso_3166_1 === selectedCountry);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setSearchQuery('');
-    }
-  };
-
   const handleCountrySelect = (countryCode: string) => {
     onSelect(countryCode);
     setIsOpen(false);
@@ -174,7 +155,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
   if (isLoading) {
     return (
-      <div className={`px-4 py-2 bg-white/10 rounded-lg border border-white/20 ${className}`}>
+      <div className={`px-4 py-3 bg-aura-dark border border-aura-purple/30 rounded-lg ${className}`}>
         <LoadingSpinner size="sm" variant="white" />
       </div>
     );
@@ -182,19 +163,19 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
   return (
     <>
-      {/* Backdrop overlay */}
+      {/* Modal Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[999999] bg-black/50 backdrop-blur-sm" 
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" 
           onClick={() => setIsOpen(false)} 
         />
       )}
       
-      <div className={`relative ${className}`} ref={dropdownRef}>
+      <div className={`relative ${className}`}>
         {/* Selected country button */}
         <button
-          onClick={toggleDropdown}
-          className="flex items-center justify-between w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-all duration-200 min-h-[50px] backdrop-blur-sm"
+          onClick={() => setIsOpen(true)}
+          className="flex items-center justify-between w-full px-4 py-3 bg-aura-dark hover:bg-aura-purple/20 text-white rounded-lg border border-aura-purple/30 transition-all duration-200 min-h-[50px] backdrop-blur-sm shadow-lg"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
@@ -211,49 +192,62 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
               </>
             )}
           </div>
-          <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className="h-5 w-5" />
         </button>
 
-        {/* Dropdown menu */}
+        {/* Full Screen Modal */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 z-[9999999] bg-aura-dark border border-aura-purple/30 rounded-xl shadow-2xl overflow-hidden animate-fade-in">
-            {/* Search input */}
-            <div className="p-4 border-b border-aura-purple/20">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search countries..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full py-3 pl-10 pr-4 bg-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-aura-purple/50 transition-all placeholder:text-white/50"
-                />
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <div className="bg-aura-dark border border-aura-purple/30 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-aura-purple/20">
+                <h3 className="text-lg font-semibold text-white">Select Country</h3>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-white/60 hover:text-white transition-colors p-1"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-            </div>
 
-            {/* Countries list */}
-            <div className="max-h-80 overflow-y-auto">
-              {displayedCountries.length > 0 ? (
-                displayedCountries.map((country) => (
-                  <button
-                    key={country.iso_3166_1}
-                    onClick={() => handleCountrySelect(country.iso_3166_1)}
-                    className={`w-full flex items-center gap-3 p-4 hover:bg-aura-purple/20 transition-colors ${
-                      selectedCountry === country.iso_3166_1
-                        ? 'bg-aura-purple text-white'
-                        : 'text-white'
-                    }`}
-                  >
-                    <span className="text-xl">{country.flag}</span>
-                    <span className="font-medium">{country.english_name}</span>
-                  </button>
-                ))
-              ) : (
-                <div className="p-8 text-center text-white/60">
-                  No countries found
+              {/* Search input */}
+              <div className="p-4 border-b border-aura-purple/20">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search countries..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full py-3 pl-10 pr-4 bg-aura-dark border border-aura-purple/30 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all placeholder:text-white/50"
+                  />
                 </div>
-              )}
+              </div>
+
+              {/* Countries list */}
+              <div className="max-h-96 overflow-y-auto">
+                {displayedCountries.length > 0 ? (
+                  displayedCountries.map((country) => (
+                    <button
+                      key={country.iso_3166_1}
+                      onClick={() => handleCountrySelect(country.iso_3166_1)}
+                      className={`w-full flex items-center gap-3 p-4 hover:bg-aura-purple/20 transition-colors text-left ${
+                        selectedCountry === country.iso_3166_1
+                          ? 'bg-aura-purple text-white'
+                          : 'text-white'
+                      }`}
+                    >
+                      <span className="text-xl">{country.flag}</span>
+                      <span className="font-medium">{country.english_name}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-white/60">
+                    No countries found
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

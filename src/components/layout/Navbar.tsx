@@ -45,9 +45,10 @@ const Navbar = () => {
   return (
     <>
       <nav 
-        className={`fixed top-0 left-0 right-0 z-[1000] w-full transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300 ${
           isScrolled ? 'bg-aura-dark/98 shadow-lg backdrop-blur-md' : 'bg-aura-dark/95 backdrop-blur-sm'
         }`}
+        style={{ position: 'fixed' }}
       >
         <div className="auraluxx-container">
           <div className="flex items-center justify-between py-4">

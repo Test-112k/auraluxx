@@ -82,19 +82,18 @@ const RegionalPage = () => {
 
   return (
     <MainLayout>
-      <div className="auraluxx-container py-24">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+      <div className="auraluxx-container py-8">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
           <h1 className="text-3xl font-bold text-white">Regional Content</h1>
-          <div className="w-full md:w-auto self-end md:self-auto">
-            <div className="flex items-center gap-3">
-              <p className="text-white/80 hidden md:block">Select Your Country to view its local titles</p>
+          <div className="w-full lg:w-auto">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+              <p className="text-white/80 text-sm lg:text-base">Select Your Country to view its local titles</p>
               <CountrySelector 
                 selectedCountry={selectedCountry} 
                 onSelect={handleCountryChange} 
-                className="ml-auto"
+                className="w-full lg:w-64"
               />
             </div>
-            <p className="text-white/80 text-sm mt-2 md:hidden">Select Your Country to view its local titles</p>
           </div>
         </div>
         
