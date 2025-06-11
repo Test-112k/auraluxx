@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
+import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getTrending, getPopular, getTopRated, getNowPlaying } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
@@ -20,6 +21,9 @@ const TvSeriesPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('');
   const activeFilter = searchParams.get('filter') || 'popular';
 
   const fetchTvSeries = useCallback(async (reset = false) => {
@@ -46,7 +50,20 @@ const TvSeriesPage = () => {
 
       if (data?.results) {
         // Filter out results without poster images for cleaner UI
-        const filteredResults = data.results.filter(item => item.poster_path);
+        let filteredResults = data.results.filter(item => item.poster_path);
+        
+        // Apply additional filters
+        if (selectedGenre) {
+          filteredResults = filteredResults.filter(item => 
+            item.genre_ids?.includes(parseInt(selectedGenre))
+          );
+        }
+        
+        if (selectedYear) {
+          filteredResults = filteredResults.filter(item => 
+            item.first_air_date?.startsWith(selectedYear)
+          );
+        }
         
         if (reset) {
           setTvSeries(filteredResults);
@@ -63,7 +80,7 @@ const TvSeriesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, page]);
+  }, [activeFilter, page, selectedGenre, selectedYear, selectedLanguage]);
 
   const loadMore = async () => {
     if (page < totalPages) {
@@ -77,13 +94,37 @@ const TvSeriesPage = () => {
     setSearchParams({ filter });
   };
 
+  const handleGenreChange = (genre: string) => {
+    setSelectedGenre(genre);
+    setPage(1);
+  };
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    setPage(1);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    setPage(1);
+  };
+
   useEffect(() => {
     fetchTvSeries(true);
-  }, [activeFilter]);
+  }, [activeFilter, selectedGenre, selectedYear, selectedLanguage]);
 
   return (
     <MainLayout>
-      <div className="auraluxx-container py-24">
+      <CategoryFilterBar
+        onGenreChange={handleGenreChange}
+        onYearChange={handleYearChange}
+        onLanguageChange={handleLanguageChange}
+        selectedGenre={selectedGenre}
+        selectedYear={selectedYear}
+        selectedLanguage={selectedLanguage}
+      />
+      
+      <div className="auraluxx-container py-8">
         <h1 className="text-3xl font-bold text-white mb-8">TV Series</h1>
         
         {/* Filter tabs */}

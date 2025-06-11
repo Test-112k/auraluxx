@@ -20,8 +20,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <AdProvider>
         <div className="flex flex-col min-h-screen bg-aura-dark text-white">
           <Navbar />
-          <div className="flex flex-1 max-w-full mx-auto w-full">
-            <main className="flex-grow pt-16 w-full min-h-0">
+          <div className="flex flex-1 max-w-full mx-auto w-full pt-20">
+            <main className="flex-grow w-full min-h-0">
               {children}
             </main>
             {!isMobile && <SidebarAd />}
