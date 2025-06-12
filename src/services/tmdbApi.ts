@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
@@ -124,7 +125,7 @@ export const getNowPlaying = (mediaType: 'movie' | 'tv', page = 1) => {
 /**
  * Discover items with filters - Enhanced with better date filtering
  */
-export const discover = (mediaType: string, params = {}, page = 1) => {
+export const discover = (mediaType: string, params: Record<string, any> = {}, page = 1) => {
   const enhancedParams = { ...params, page };
   
   // Enhanced date filtering for better accuracy
@@ -147,8 +148,8 @@ export const discover = (mediaType: string, params = {}, page = 1) => {
 /**
  * Get regional content with enhanced filtering
  */
-export const getRegionalContent = (language: string, page = 1, filters = {}) => {
-  const params = {
+export const getRegionalContent = (language: string, page = 1, filters: Record<string, any> = {}) => {
+  const params: Record<string, any> = {
     with_original_language: language,
     sort_by: 'popularity.desc',
     page,
