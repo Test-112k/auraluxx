@@ -10,7 +10,7 @@ const ScrollToTop = () => {
   useEffect(() => {
     const toggleVisibility = () => {
       console.log('Scroll position:', window.scrollY); // Debug log
-      if (window.scrollY > 200) {
+      if (window.scrollY > 300) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -34,14 +34,17 @@ const ScrollToTop = () => {
 
   console.log('ScrollToTop isVisible:', isVisible); // Debug log
 
-  if (!isVisible) return null;
-
   return (
     <Button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 z-[9999] rounded-full p-3 bg-aura-purple hover:bg-aura-darkpurple text-white shadow-xl transition-all duration-300 min-h-[50px] min-w-[50px] opacity-100 scale-100 translate-y-0"
+      className={`fixed bottom-6 right-6 z-[9999] rounded-full p-3 bg-aura-purple hover:bg-aura-darkpurple text-white shadow-xl transition-all duration-300 min-h-[50px] min-w-[50px] ${
+        isVisible 
+          ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
+          : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
+      }`}
       size="icon"
       aria-label="Scroll to top"
+      style={{ display: 'block' }}
     >
       <ArrowUp className="h-5 w-5" />
     </Button>

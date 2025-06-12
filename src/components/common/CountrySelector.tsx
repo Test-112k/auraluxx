@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown, Globe, X } from 'lucide-react';
+import { Search, ChevronDown, Globe, X, MapPin } from 'lucide-react';
 import { countryToLanguageMap } from '@/services/tmdbApi';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -155,104 +155,125 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
 
   if (isLoading) {
     return (
-      <div className={`px-4 py-3 bg-aura-dark border border-aura-purple/30 rounded-lg ${className}`}>
+      <div className={`flex items-center gap-2 px-4 py-3 bg-aura-dark/80 border border-aura-purple/30 rounded-lg ${className}`}>
         <LoadingSpinner size="sm" variant="white" />
+        <span className="text-white/70 text-sm">Detecting location...</span>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Modal Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" 
-          onClick={() => setIsOpen(false)} 
-        />
-      )}
-      
-      <div className={`relative ${className}`}>
-        {/* Selected country button */}
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center justify-between w-full px-4 py-3 bg-aura-dark hover:bg-aura-purple/20 text-white rounded-lg border border-aura-purple/30 transition-all duration-200 min-h-[50px] backdrop-blur-sm shadow-lg"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-        >
-          <div className="flex items-center gap-3">
-            {selectedCountryObj ? (
-              <>
-                <span className="text-xl">{selectedCountryObj.flag}</span>
-                <span className="font-medium">{selectedCountryObj.english_name}</span>
-              </>
-            ) : (
-              <>
-                <Globe className="h-5 w-5" />
-                <span className="font-medium">Select Country</span>
-              </>
-            )}
-          </div>
-          <ChevronDown className="h-5 w-5" />
-        </button>
+    <div className={`relative ${className}`}>
+      {/* Selected country button - improved visibility */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center justify-between w-full px-4 py-3 bg-gradient-to-r from-aura-purple/20 to-aura-darkpurple/20 hover:from-aura-purple/30 hover:to-aura-darkpurple/30 text-white rounded-lg border border-aura-purple/50 transition-all duration-200 min-h-[56px] backdrop-blur-sm shadow-lg group"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-3">
+          <MapPin className="h-5 w-5 text-aura-purple group-hover:text-white transition-colors" />
+          {selectedCountryObj ? (
+            <>
+              <span className="text-2xl">{selectedCountryObj.flag}</span>
+              <span className="font-semibold text-lg">{selectedCountryObj.english_name}</span>
+            </>
+          ) : (
+            <>
+              <Globe className="h-5 w-5" />
+              <span className="font-semibold">Select Your Country</span>
+            </>
+          )}
+        </div>
+        <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
 
-        {/* Full Screen Modal */}
-        {isOpen && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-            <div className="bg-aura-dark border border-aura-purple/30 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-4 border-b border-aura-purple/20">
-                <h3 className="text-lg font-semibold text-white">Select Country</h3>
+      {/* Dropdown Modal - Enhanced */}
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-sm" 
+            onClick={() => setIsOpen(false)} 
+          />
+          
+          {/* Modal */}
+          <div className="fixed inset-4 z-[9999] flex items-center justify-center">
+            <div className="bg-aura-dark/95 backdrop-blur-md border border-aura-purple/40 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-aura-purple/30 bg-gradient-to-r from-aura-purple/10 to-aura-darkpurple/10">
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-6 w-6 text-aura-purple" />
+                  <h3 className="text-xl font-bold text-white">Select Your Country</h3>
+                </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-white/60 hover:text-white transition-colors p-1"
+                  className="text-white/60 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* Search input */}
-              <div className="p-4 border-b border-aura-purple/20">
+              {/* Search */}
+              <div className="p-4 bg-aura-dark/50">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-purple h-5 w-5" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     placeholder="Search countries..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full py-3 pl-10 pr-4 bg-aura-dark border border-aura-purple/30 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all placeholder:text-white/50"
+                    className="w-full py-4 pl-12 pr-4 bg-aura-dark/80 border border-aura-purple/40 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-aura-purple transition-all placeholder:text-white/50 text-lg"
                   />
                 </div>
               </div>
 
               {/* Countries list */}
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-track-aura-dark scrollbar-thumb-aura-purple">
                 {displayedCountries.length > 0 ? (
-                  displayedCountries.map((country) => (
-                    <button
-                      key={country.iso_3166_1}
-                      onClick={() => handleCountrySelect(country.iso_3166_1)}
-                      className={`w-full flex items-center gap-3 p-4 hover:bg-aura-purple/20 transition-colors text-left ${
-                        selectedCountry === country.iso_3166_1
-                          ? 'bg-aura-purple text-white'
-                          : 'text-white'
-                      }`}
-                    >
-                      <span className="text-xl">{country.flag}</span>
-                      <span className="font-medium">{country.english_name}</span>
-                    </button>
-                  ))
+                  <>
+                    {!searchQuery && (
+                      <div className="px-4 py-2 text-aura-purple text-sm font-medium bg-aura-dark/30">
+                        Popular Countries
+                      </div>
+                    )}
+                    {displayedCountries.map((country) => (
+                      <button
+                        key={country.iso_3166_1}
+                        onClick={() => handleCountrySelect(country.iso_3166_1)}
+                        className={`w-full flex items-center gap-4 p-4 hover:bg-aura-purple/20 transition-all duration-200 text-left border-b border-white/5 last:border-b-0 ${
+                          selectedCountry === country.iso_3166_1
+                            ? 'bg-aura-purple/30 text-white border-aura-purple/50'
+                            : 'text-white hover:text-white'
+                        }`}
+                      >
+                        <span className="text-2xl">{country.flag}</span>
+                        <div className="flex-1">
+                          <span className="font-semibold text-lg">{country.english_name}</span>
+                          {country.native_name !== country.english_name && (
+                            <div className="text-white/60 text-sm">{country.native_name}</div>
+                          )}
+                        </div>
+                        {selectedCountry === country.iso_3166_1 && (
+                          <div className="w-3 h-3 bg-aura-purple rounded-full"></div>
+                        )}
+                      </button>
+                    ))}
+                  </>
                 ) : (
                   <div className="p-8 text-center text-white/60">
-                    No countries found
+                    <Globe className="h-12 w-12 mx-auto mb-3 text-white/30" />
+                    <p className="text-lg">No countries found</p>
+                    <p className="text-sm">Try adjusting your search</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </>
+        </>
+      )}
+    </div>
   );
 };
 

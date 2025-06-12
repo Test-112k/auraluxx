@@ -4,12 +4,16 @@ import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import CountrySelector from '@/components/common/CountrySelector';
+import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getRegionalContent, countryToLanguageMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const RegionalPage = () => {
   const [regionalContent, setRegionalContent] = useState<any[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(''); // Start empty, will be set by IP detection
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -33,11 +37,26 @@ const RegionalPage = () => {
       const data = await getRegionalContent(language, currentPage);
       
       if (data?.results) {
+        // Apply filters
+        let filteredResults = data.results;
+        
+        if (selectedGenre) {
+          filteredResults = filteredResults.filter((item: any) => 
+            item.genre_ids?.includes(parseInt(selectedGenre))
+          );
+        }
+        
+        if (selectedYear) {
+          filteredResults = filteredResults.filter((item: any) => 
+            item.release_date?.startsWith(selectedYear)
+          );
+        }
+        
         if (reset) {
-          setRegionalContent(data.results);
+          setRegionalContent(filteredResults);
           setPage(2); // Set to 2 for next load
         } else {
-          setRegionalContent(prev => [...prev, ...data.results]);
+          setRegionalContent(prev => [...prev, ...filteredResults]);
           setPage(currentPage + 1);
         }
         
@@ -54,7 +73,7 @@ const RegionalPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCountry, page]);
+  }, [selectedCountry, selectedGenre, selectedYear, page]);
 
   const loadMore = async () => {
     if (page <= totalPages) {
@@ -73,32 +92,40 @@ const RegionalPage = () => {
     setTotalPages(0);
   };
 
+  const handleFilterChange = () => {
+    setPage(1);
+    setRegionalContent([]);
+    setTotalPages(0);
+  };
+
   useEffect(() => {
     if (selectedCountry) {
       console.log('Fetching content for country:', selectedCountry);
       fetchRegionalContent(true);
     }
-  }, [selectedCountry]);
+  }, [selectedCountry, selectedGenre, selectedYear]);
 
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header Section - Better visibility */}
-        <div className="bg-aura-dark/50 backdrop-blur-sm rounded-lg p-6 mb-8 border border-aura-purple/20">
-          <div className="flex flex-col space-y-6">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-aura-purple/20 to-aura-darkpurple/20 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-aura-purple/30 shadow-xl">
+          <div className="flex flex-col space-y-8">
             <div className="text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Regional Content</h1>
-              <p className="text-white/80 text-base md:text-lg">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white to-aura-purple bg-clip-text text-transparent">
+                Regional Content
+              </h1>
+              <p className="text-white/80 text-lg md:text-xl leading-relaxed">
                 Discover movies and shows from different regions around the world
               </p>
             </div>
             
-            {/* Country Selector - Better positioned */}
-            <div className="flex flex-col md:flex-row items-center gap-4">
+            {/* Country Selector */}
+            <div className="flex flex-col lg:flex-row items-start gap-6">
               <div className="flex-shrink-0">
-                <p className="text-white font-medium text-lg">Select Your Country:</p>
+                <p className="text-white font-semibold text-xl mb-3">Choose Your Region:</p>
               </div>
-              <div className="w-full md:w-80">
+              <div className="w-full lg:w-96">
                 <CountrySelector 
                   selectedCountry={selectedCountry} 
                   onSelect={handleCountryChange} 
@@ -108,6 +135,27 @@ const RegionalPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Category Filters */}
+        {selectedCountry && (
+          <CategoryFilterBar
+            onGenreChange={(genre) => {
+              setSelectedGenre(genre);
+              handleFilterChange();
+            }}
+            onYearChange={(year) => {
+              setSelectedYear(year);
+              handleFilterChange();
+            }}
+            onLanguageChange={(language) => {
+              setSelectedLanguage(language);
+              handleFilterChange();
+            }}
+            selectedGenre={selectedGenre}
+            selectedYear={selectedYear}
+            selectedLanguage={selectedLanguage}
+          />
+        )}
         
         {/* Content Section */}
         <div className="relative">
@@ -144,11 +192,11 @@ const RegionalPage = () => {
             </InfiniteScroll>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="bg-aura-dark/50 backdrop-blur-sm rounded-lg p-8 text-center border border-aura-purple/20 max-w-md">
-                <div className="text-white/80 space-y-3">
-                  <h3 className="text-xl font-semibold text-white">No Content Available</h3>
-                  <p className="text-base">{error || 'No content available for this region.'}</p>
-                  <p className="text-sm">Please try selecting another country from the dropdown above.</p>
+              <div className="bg-gradient-to-r from-aura-purple/10 to-aura-darkpurple/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-aura-purple/20 max-w-md">
+                <div className="text-white/80 space-y-4">
+                  <h3 className="text-2xl font-bold text-white">No Content Available</h3>
+                  <p className="text-lg">{error || 'No content available for this region.'}</p>
+                  <p className="text-sm">Please try selecting another country or adjusting your filters.</p>
                 </div>
               </div>
             </div>
