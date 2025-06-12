@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
-import { getTrending, getPopular, getTopRated, getNowPlaying } from '@/services/tmdbApi';
+import { getTrending, getPopular, getTopRated, getNowPlaying, discover } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const filterOptions = [
@@ -32,42 +32,63 @@ const TvSeriesPage = () => {
     let data;
 
     try {
-      switch (activeFilter) {
-        case 'trending':
-          data = await getTrending('tv', 'week', currentPage);
-          break;
-        case 'top_rated':
-          data = await getTopRated('tv', currentPage);
-          break;
-        case 'now_playing':
-          data = await getNowPlaying('tv', currentPage);
-          break;
-        case 'popular':
-        default:
-          data = await getPopular('tv', currentPage);
-          break;
+      // If any filters are applied, use discover endpoint
+      if (selectedGenre || selectedYear || selectedLanguage) {
+        const discoverParams: any = {};
+        
+        if (selectedGenre) {
+          discoverParams.with_genres = selectedGenre;
+        }
+        
+        if (selectedYear) {
+          discoverParams.first_air_date_year = selectedYear;
+        }
+        
+        if (selectedLanguage) {
+          discoverParams.with_original_language = selectedLanguage;
+        }
+
+        // Apply sorting based on active filter
+        switch (activeFilter) {
+          case 'top_rated':
+            discoverParams.sort_by = 'vote_average.desc';
+            discoverParams['vote_count.gte'] = 100;
+            break;
+          case 'trending':
+            discoverParams.sort_by = 'popularity.desc';
+            break;
+          default:
+            discoverParams.sort_by = 'popularity.desc';
+            break;
+        }
+
+        data = await discover('tv', discoverParams, currentPage);
+      } else {
+        // Use standard endpoints when no filters are applied
+        switch (activeFilter) {
+          case 'trending':
+            data = await getTrending('tv', 'week', currentPage);
+            break;
+          case 'top_rated':
+            data = await getTopRated('tv', currentPage);
+            break;
+          case 'now_playing':
+            data = await getNowPlaying('tv', currentPage);
+            break;
+          case 'popular':
+          default:
+            data = await getPopular('tv', currentPage);
+            break;
+        }
       }
 
       if (data?.results) {
         // Filter out results without poster images for cleaner UI
-        let filteredResults = data.results.filter(item => item.poster_path);
-        
-        // Apply additional filters
-        if (selectedGenre) {
-          filteredResults = filteredResults.filter(item => 
-            item.genre_ids?.includes(parseInt(selectedGenre))
-          );
-        }
-        
-        if (selectedYear) {
-          filteredResults = filteredResults.filter(item => 
-            item.first_air_date?.startsWith(selectedYear)
-          );
-        }
+        const filteredResults = data.results.filter(item => item.poster_path);
         
         if (reset) {
           setTvSeries(filteredResults);
-          setPage(1);
+          setPage(2); // Set to 2 for next load
         } else {
           setTvSeries(prev => [...prev, ...filteredResults]);
           setPage(currentPage + 1);
@@ -80,10 +101,10 @@ const TvSeriesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, page, selectedGenre, selectedYear, selectedLanguage]);
+  }, [activeFilter, selectedGenre, selectedYear, selectedLanguage, page]);
 
   const loadMore = async () => {
-    if (page < totalPages) {
+    if (page <= totalPages) {
       await fetchTvSeries(false);
       return true;
     }
@@ -122,6 +143,7 @@ const TvSeriesPage = () => {
         selectedGenre={selectedGenre}
         selectedYear={selectedYear}
         selectedLanguage={selectedLanguage}
+        mediaType="tv"
       />
       
       <div className="auraluxx-container py-8">
@@ -160,13 +182,13 @@ const TvSeriesPage = () => {
           <InfiniteScroll
             loadMore={loadMore}
             loading={loading}
-            hasMore={page < totalPages}
+            hasMore={page <= totalPages}
             threshold={800}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {tvSeries.map((series) => (
                 <MediaCard
-                  key={series.id}
+                  key={`${series.id}-${activeFilter}`}
                   id={series.id}
                   title={series.name}
                   type="tv"

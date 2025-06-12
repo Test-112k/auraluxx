@@ -4,7 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
-import { getTrending, getPopular, getTopRated, getNowPlaying } from '@/services/tmdbApi';
+import CategoryFilterBar from '@/components/common/CategoryFilterBar';
+import { getTrending, getPopular, getTopRated, getNowPlaying, discover } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const filterOptions = [
@@ -21,6 +22,9 @@ const MoviePage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('');
   const activeFilter = searchParams.get('filter') || 'popular';
 
   const fetchMovies = useCallback(async (reset = false) => {
@@ -32,20 +36,54 @@ const MoviePage = () => {
 
       console.log(`Fetching movies: filter=${activeFilter}, page=${currentPage}, reset=${reset}`);
 
-      switch (activeFilter) {
-        case 'trending':
-          data = await getTrending('movie', 'week', currentPage);
-          break;
-        case 'top_rated':
-          data = await getTopRated('movie', currentPage);
-          break;
-        case 'now_playing':
-          data = await getNowPlaying('movie', currentPage);
-          break;
-        case 'popular':
-        default:
-          data = await getPopular('movie', currentPage);
-          break;
+      // If any filters are applied, use discover endpoint
+      if (selectedGenre || selectedYear || selectedLanguage) {
+        const discoverParams: any = {};
+        
+        if (selectedGenre) {
+          discoverParams.with_genres = selectedGenre;
+        }
+        
+        if (selectedYear) {
+          discoverParams.year = selectedYear;
+        }
+        
+        if (selectedLanguage) {
+          discoverParams.with_original_language = selectedLanguage;
+        }
+
+        // Apply sorting based on active filter
+        switch (activeFilter) {
+          case 'top_rated':
+            discoverParams.sort_by = 'vote_average.desc';
+            discoverParams['vote_count.gte'] = 100;
+            break;
+          case 'trending':
+            discoverParams.sort_by = 'popularity.desc';
+            break;
+          default:
+            discoverParams.sort_by = 'popularity.desc';
+            break;
+        }
+
+        data = await discover('movie', discoverParams, currentPage);
+      } else {
+        // Use standard endpoints when no filters are applied
+        switch (activeFilter) {
+          case 'trending':
+            data = await getTrending('movie', 'week', currentPage);
+            break;
+          case 'top_rated':
+            data = await getTopRated('movie', currentPage);
+            break;
+          case 'now_playing':
+            data = await getNowPlaying('movie', currentPage);
+            break;
+          case 'popular':
+          default:
+            data = await getPopular('movie', currentPage);
+            break;
+        }
       }
 
       if (data?.results) {
@@ -73,7 +111,7 @@ const MoviePage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, page]);
+  }, [activeFilter, selectedGenre, selectedYear, selectedLanguage, page]);
 
   const loadMore = useCallback(async () => {
     if (page <= totalPages && !loading) {
@@ -90,9 +128,24 @@ const MoviePage = () => {
     setError(null);
   }, [setSearchParams]);
 
+  const handleGenreChange = (genre: string) => {
+    setSelectedGenre(genre);
+    setPage(1);
+  };
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    setPage(1);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    setPage(1);
+  };
+
   useEffect(() => {
     fetchMovies(true);
-  }, [activeFilter]);
+  }, [activeFilter, selectedGenre, selectedYear, selectedLanguage]);
 
   // Memoize the loading skeleton to prevent unnecessary re-renders
   const loadingSkeleton = useMemo(() => (
@@ -111,7 +164,17 @@ const MoviePage = () => {
 
   return (
     <MainLayout>
-      <div className="auraluxx-container py-24">
+      <CategoryFilterBar
+        onGenreChange={handleGenreChange}
+        onYearChange={handleYearChange}
+        onLanguageChange={handleLanguageChange}
+        selectedGenre={selectedGenre}
+        selectedYear={selectedYear}
+        selectedLanguage={selectedLanguage}
+        mediaType="movie"
+      />
+      
+      <div className="auraluxx-container py-8">
         <h1 className="text-3xl font-bold text-white mb-8">Movies</h1>
         
         {/* Filter tabs */}

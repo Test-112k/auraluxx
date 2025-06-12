@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,51 +16,13 @@ interface CategoryFilterBarProps {
   selectedGenre?: string;
   selectedYear?: string;
   selectedLanguage?: string;
+  mediaType?: 'movie' | 'tv';
 }
 
-const genres = [
-  { label: 'All Genres', value: '' },
-  { label: 'Action', value: '28' },
-  { label: 'Adventure', value: '12' },
-  { label: 'Animation', value: '16' },
-  { label: 'Comedy', value: '35' },
-  { label: 'Crime', value: '80' },
-  { label: 'Documentary', value: '99' },
-  { label: 'Drama', value: '18' },
-  { label: 'Family', value: '10751' },
-  { label: 'Fantasy', value: '14' },
-  { label: 'Horror', value: '27' },
-  { label: 'Mystery', value: '9648' },
-  { label: 'Romance', value: '10749' },
-  { label: 'Sci-Fi', value: '878' },
-  { label: 'Thriller', value: '53' },
-  { label: 'War', value: '10752' },
-  { label: 'Western', value: '37' },
-];
-
-const years = [
-  { label: 'All Years', value: '' },
-  ...Array.from({ length: 25 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return { label: year.toString(), value: year.toString() };
-  }),
-];
-
-const languages = [
-  { label: 'All Languages', value: '' },
-  { label: 'English', value: 'en' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Italian', value: 'it' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Arabic', value: 'ar' },
-  { label: 'Hindi', value: 'hi' },
-];
+interface Genre {
+  id: number;
+  name: string;
+}
 
 const CategoryFilterBar = ({ 
   onGenreChange, 
@@ -68,11 +30,77 @@ const CategoryFilterBar = ({
   onLanguageChange,
   selectedGenre = '',
   selectedYear = '',
-  selectedLanguage = ''
+  selectedLanguage = '',
+  mediaType = 'movie'
 }: CategoryFilterBarProps) => {
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch genres from TMDB API
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/genre/${mediaType}/list?api_key=54d82ce065f64ee04381a81d3bcc2455&language=en-US`
+        );
+        const data = await response.json();
+        
+        if (data.genres) {
+          setGenres([{ id: 0, name: 'All Genres' }, ...data.genres]);
+        }
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+        // Fallback to static genres if API fails
+        setGenres([
+          { id: 0, name: 'All Genres' },
+          { id: 28, name: 'Action' },
+          { id: 12, name: 'Adventure' },
+          { id: 16, name: 'Animation' },
+          { id: 35, name: 'Comedy' },
+          { id: 80, name: 'Crime' },
+          { id: 18, name: 'Drama' },
+          { id: 14, name: 'Fantasy' },
+          { id: 27, name: 'Horror' },
+          { id: 9648, name: 'Mystery' },
+          { id: 10749, name: 'Romance' },
+          { id: 878, name: 'Science Fiction' },
+          { id: 53, name: 'Thriller' },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, [mediaType]);
+
+  const years = [
+    { label: 'All Years', value: '' },
+    ...Array.from({ length: 25 }, (_, i) => {
+      const year = new Date().getFullYear() - i;
+      return { label: year.toString(), value: year.toString() };
+    }),
+  ];
+
+  const languages = [
+    { label: 'All Languages', value: '' },
+    { label: 'English', value: 'en' },
+    { label: 'Spanish', value: 'es' },
+    { label: 'French', value: 'fr' },
+    { label: 'German', value: 'de' },
+    { label: 'Italian', value: 'it' },
+    { label: 'Japanese', value: 'ja' },
+    { label: 'Korean', value: 'ko' },
+    { label: 'Chinese', value: 'zh' },
+    { label: 'Portuguese', value: 'pt' },
+    { label: 'Russian', value: 'ru' },
+    { label: 'Arabic', value: 'ar' },
+    { label: 'Hindi', value: 'hi' },
+  ];
+
   const getSelectedGenreLabel = () => {
-    const genre = genres.find(g => g.value === selectedGenre);
-    return genre?.label || 'All Genres';
+    const genre = genres.find(g => g.id.toString() === selectedGenre);
+    return genre?.name || 'All Genres';
   };
 
   const getSelectedYearLabel = () => {
@@ -86,7 +114,7 @@ const CategoryFilterBar = ({
   };
 
   return (
-    <div className="sticky top-20 z-40 bg-aura-dark/95 backdrop-blur-sm border-b border-white/10 py-4">
+    <div className="sticky top-16 z-[150] bg-aura-dark/95 backdrop-blur-sm border-b border-white/10 py-4">
       <div className="auraluxx-container">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-white/70">
@@ -100,22 +128,23 @@ const CategoryFilterBar = ({
               <Button 
                 variant="outline" 
                 className="bg-white/5 hover:bg-white/10 border-white/10 text-white text-sm"
+                disabled={loading}
               >
-                {getSelectedGenreLabel()}
+                {loading ? 'Loading...' : getSelectedGenreLabel()}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
               align="start"
             >
               {genres.map((genre) => (
                 <DropdownMenuItem
-                  key={genre.value}
-                  onClick={() => onGenreChange?.(genre.value)}
+                  key={genre.id}
+                  onClick={() => onGenreChange?.(genre.id === 0 ? '' : genre.id.toString())}
                   className="hover:bg-white/10 focus:bg-white/10 cursor-pointer"
                 >
-                  {genre.label}
+                  {genre.name}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -133,7 +162,7 @@ const CategoryFilterBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
               align="start"
             >
               {years.map((year) => (
@@ -160,7 +189,7 @@ const CategoryFilterBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
               align="start"
             >
               {languages.map((language) => (

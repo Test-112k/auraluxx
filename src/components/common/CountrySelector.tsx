@@ -188,7 +188,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
         <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown Modal - Enhanced */}
+      {/* Dropdown Modal - Enhanced with higher z-index */}
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -197,7 +197,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className = '' }: CountryS
             onClick={() => setIsOpen(false)} 
           />
           
-          {/* Modal */}
+          {/* Modal - Higher z-index to appear above everything */}
           <div className="fixed inset-4 z-[9999] flex items-center justify-center">
             <div className="bg-aura-dark/95 backdrop-blur-md border border-aura-purple/40 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden">
               {/* Header */}
