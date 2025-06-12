@@ -89,14 +89,15 @@ export const searchMulti = (query: string, page = 1) => {
  * Get details for a specific movie, TV show, or person
  */
 export const getDetails = (mediaType: string, id: number) => {
-  return apiRequest(`/${mediaType}/${id}`, { append_to_response: 'credits,similar,videos' });
+  return apiRequest(`/${mediaType}/${id}`, { append_to_response: 'credits,similar,videos,recommendations' });
 };
 
 /**
- * Get similar content for a movie or TV show
+ * Get similar content for a movie or TV show - improved accuracy
  */
 export const getSimilar = (mediaType: string, id: number, page = 1) => {
-  return apiRequest(`/${mediaType}/${id}/similar`, { page });
+  // Use recommendations endpoint which provides more accurate similar content
+  return apiRequest(`/${mediaType}/${id}/recommendations`, { page });
 };
 
 /**
@@ -251,7 +252,7 @@ export const getCountries = async () => {
   }
 };
 
-// Mapping between country codes and language codes (simplified list)
+// Enhanced mapping between country codes and language codes with more comprehensive list
 export const countryToLanguagesMap: Record<string, { primary: string; languages: Array<{ code: string; name: string }> }> = {
   'US': {
     primary: 'en',
@@ -413,6 +414,72 @@ export const countryToLanguagesMap: Record<string, { primary: string; languages:
     primary: 'en',
     languages: [
       { code: 'en', name: 'English' }
+    ]
+  },
+  'NL': {
+    primary: 'nl',
+    languages: [
+      { code: 'nl', name: 'Dutch' }
+    ]
+  },
+  'SE': {
+    primary: 'sv',
+    languages: [
+      { code: 'sv', name: 'Swedish' }
+    ]
+  },
+  'NO': {
+    primary: 'no',
+    languages: [
+      { code: 'no', name: 'Norwegian' }
+    ]
+  },
+  'DK': {
+    primary: 'da',
+    languages: [
+      { code: 'da', name: 'Danish' }
+    ]
+  },
+  'FI': {
+    primary: 'fi',
+    languages: [
+      { code: 'fi', name: 'Finnish' }
+    ]
+  },
+  'PT': {
+    primary: 'pt',
+    languages: [
+      { code: 'pt', name: 'Portuguese' }
+    ]
+  },
+  'GR': {
+    primary: 'el',
+    languages: [
+      { code: 'el', name: 'Greek' }
+    ]
+  },
+  'PL': {
+    primary: 'pl',
+    languages: [
+      { code: 'pl', name: 'Polish' }
+    ]
+  },
+  'CZ': {
+    primary: 'cs',
+    languages: [
+      { code: 'cs', name: 'Czech' }
+    ]
+  },
+  'SK': {
+    primary: 'sk',
+    languages: [
+      { code: 'sk', name: 'Slovak' }
+    ]
+  },
+  'HU': {
+    primary: 'hu',
+    languages: [
+      { code: 'hu', name: 'Hungarian' }
     ]
   }
 };

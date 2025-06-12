@@ -37,7 +37,7 @@ const WatchPage = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch similar content
+  // Fetch similar content with improved query
   const { data: similarData, isLoading: similarLoading } = useQuery({
     queryKey: ['similar', type, id],
     queryFn: async () => {
@@ -52,9 +52,9 @@ const WatchPage = () => {
   // Set initial season and episode when details load
   useEffect(() => {
     if (details && type === 'tv' && details.seasons && details.seasons.length > 0) {
-      const firstSeason = details.seasons.find((s: any) => s.season_number > 0);
-      if (firstSeason) {
-        setSelectedSeason(firstSeason.season_number);
+      const firstValidSeason = details.seasons.find((s: any) => s.season_number > 0);
+      if (firstValidSeason) {
+        setSelectedSeason(firstValidSeason.season_number);
         setSelectedEpisode(1);
       }
     }
@@ -69,23 +69,24 @@ const WatchPage = () => {
   const currentSeasonDetails = details?.seasons?.find((s: any) => s.season_number === selectedSeason);
   const numberOfEpisodes = currentSeasonDetails?.episode_count || 0;
 
-  // Get trailer video key
+  // Get trailer video key - improved to work for all content types
   const getTrailerVideoKey = () => {
     if (!details?.videos?.results) return null;
     
-    // Find official trailer
-    const trailer = details.videos.results.find((video: any) => 
+    // Find official trailer first
+    const officialTrailer = details.videos.results.find((video: any) => 
       video.site === 'YouTube' && 
-      (video.type === 'Trailer' || video.type === 'Official Trailer') &&
+      video.type === 'Trailer' &&
       video.official === true
     );
     
-    // Fallback to any YouTube trailer
-    const fallbackTrailer = details.videos.results.find((video: any) => 
-      video.site === 'YouTube' && video.type === 'Trailer'
+    // Find any trailer as fallback
+    const anyTrailer = details.videos.results.find((video: any) => 
+      video.site === 'YouTube' && 
+      (video.type === 'Trailer' || video.type === 'Teaser')
     );
     
-    return trailer?.key || fallbackTrailer?.key || null;
+    return officialTrailer?.key || anyTrailer?.key || null;
   };
 
   // Render loading skeleton
@@ -193,11 +194,11 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* TV Show Season/Episode Selector */}
-          {isTvShow && (
-            <div className="flex flex-wrap gap-4 mb-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-white/70">Season</label>
+          {/* Improved TV Show Season/Episode Selector */}
+          {isTvShow && numberOfSeasons > 0 && (
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-40">
+                <label className="text-sm font-medium text-white/70">Season</label>
                 <Select
                   value={selectedSeason.toString()}
                   onValueChange={(value) => {
@@ -205,29 +206,32 @@ const WatchPage = () => {
                     setSelectedEpisode(1); // Reset episode when season changes
                   }}
                 >
-                  <SelectTrigger className="w-32 bg-white/10 border-white/10">
-                    <SelectValue placeholder="Season" />
+                  <SelectTrigger className="bg-white/10 border-white/10 text-white">
+                    <SelectValue placeholder="Select Season" />
                   </SelectTrigger>
-                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
-                    {Array.from({ length: numberOfSeasons }, (_, i) => i + 1).map((season) => (
-                      <SelectItem key={season} value={season.toString()}>
-                        Season {season}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white max-h-60">
+                    {details.seasons
+                      ?.filter((season: any) => season.season_number > 0)
+                      .map((season: any) => (
+                        <SelectItem key={season.season_number} value={season.season_number.toString()}>
+                          Season {season.season_number}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
               
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-white/70">Episode</label>
+              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-40">
+                <label className="text-sm font-medium text-white/70">Episode</label>
                 <Select
                   value={selectedEpisode.toString()}
                   onValueChange={(value) => setSelectedEpisode(parseInt(value))}
+                  disabled={numberOfEpisodes === 0}
                 >
-                  <SelectTrigger className="w-32 bg-white/10 border-white/10">
-                    <SelectValue placeholder="Episode" />
+                  <SelectTrigger className="bg-white/10 border-white/10 text-white">
+                    <SelectValue placeholder="Select Episode" />
                   </SelectTrigger>
-                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white">
+                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white max-h-60">
                     {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
                       <SelectItem key={episode} value={episode.toString()}>
                         Episode {episode}
@@ -262,8 +266,8 @@ const WatchPage = () => {
             </div>
           )}
           
-          {/* YouTube Trailer - only for movies */}
-          {!isTvShow && trailerVideoKey && (
+          {/* YouTube Trailer - now shows for all content types */}
+          {trailerVideoKey && (
             <YouTubeTrailer 
               videoKey={trailerVideoKey}
               title={title}
