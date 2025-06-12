@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -204,7 +203,7 @@ const HeroSlideshow = () => {
           }`}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent z-10"></div>
           
           {/* Placeholder while image loads */}
           {!imageLoadingStates[slideItem.id] && (
@@ -217,7 +216,7 @@ const HeroSlideshow = () => {
           )}
           
           <img
-            src={getImageUrl(slideItem.backdrop_path, 'w1280')} // Use smaller size for faster loading
+            src={getImageUrl(slideItem.backdrop_path, 'w1280')}
             alt={slideItem.title || slideItem.name}
             className={`w-full h-full object-cover object-center transition-all duration-500 ${
               imageLoadingStates[slideItem.id] ? 'opacity-100' : 'opacity-0'
@@ -228,23 +227,23 @@ const HeroSlideshow = () => {
         </div>
       ))}
 
-      {/* Content */}
+      {/* Content - Enhanced text visibility for desktop */}
       <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 lg:px-16">
-        <div className="auraluxx-container max-w-3xl">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 animate-fade-in">
+        <div className="auraluxx-container max-w-4xl">
+          <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-white mb-4 md:mb-6 animate-fade-in leading-tight drop-shadow-2xl">
             {title}
           </h1>
-          <p className="text-white/80 text-base md:text-lg mb-6 line-clamp-3 md:line-clamp-4 animate-fade-in">
-            {truncateText(slide.overview, 200)}
+          <p className="text-white/90 text-base md:text-xl lg:text-2xl mb-6 md:mb-8 line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
+            {truncateText(slide.overview, 250)}
           </p>
           <div className="flex items-center space-x-4 animate-fade-in">
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
-              <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white">
-                <Play size={18} className="mr-2" /> Watch Now
+              <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
+                <Play size={20} className="mr-2" /> Watch Now
               </Button>
             </Link>
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
-              <Button variant="outline" className="text-white border-white/50 hover:bg-white/5">
+              <Button variant="outline" className="text-white border-white/50 hover:bg-white/10 px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
                 More Info
               </Button>
             </Link>

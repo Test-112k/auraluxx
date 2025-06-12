@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -8,6 +9,7 @@ import CategoryButtons from '@/components/common/CategoryButtons';
 import VideoPlayer from '@/components/common/VideoPlayer';
 import ApiSelector from '@/components/common/ApiSelector';
 import MediaDetails from '@/components/common/MediaDetails';
+import YouTubeTrailer from '@/components/common/YouTubeTrailer';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -66,6 +68,25 @@ const WatchPage = () => {
   const numberOfSeasons = details?.number_of_seasons || 0;
   const currentSeasonDetails = details?.seasons?.find((s: any) => s.season_number === selectedSeason);
   const numberOfEpisodes = currentSeasonDetails?.episode_count || 0;
+
+  // Get trailer video key
+  const getTrailerVideoKey = () => {
+    if (!details?.videos?.results) return null;
+    
+    // Find official trailer
+    const trailer = details.videos.results.find((video: any) => 
+      video.site === 'YouTube' && 
+      (video.type === 'Trailer' || video.type === 'Official Trailer') &&
+      video.official === true
+    );
+    
+    // Fallback to any YouTube trailer
+    const fallbackTrailer = details.videos.results.find((video: any) => 
+      video.site === 'YouTube' && video.type === 'Trailer'
+    );
+    
+    return trailer?.key || fallbackTrailer?.key || null;
+  };
 
   // Render loading skeleton
   if (detailsLoading) {
@@ -130,6 +151,7 @@ const WatchPage = () => {
   const isTvShow = type === 'tv';
   const posterPath = details.poster_path;
   const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
+  const trailerVideoKey = getTrailerVideoKey();
 
   return (
     <MainLayout>
@@ -238,6 +260,14 @@ const WatchPage = () => {
             <div className="flex justify-center my-10 bg-white/5 p-3 rounded-lg">
               <Ad size="300x250" />
             </div>
+          )}
+          
+          {/* YouTube Trailer - only for movies */}
+          {!isTvShow && trailerVideoKey && (
+            <YouTubeTrailer 
+              videoKey={trailerVideoKey}
+              title={title}
+            />
           )}
           
           {/* Content Info */}

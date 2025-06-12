@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
@@ -123,23 +122,37 @@ export const getNowPlaying = (mediaType: 'movie' | 'tv', page = 1) => {
 };
 
 /**
- * Discover items with filters - Enhanced with better date filtering
+ * Discover items with filters - Enhanced with better date filtering accuracy
  */
 export const discover = (mediaType: string, params: Record<string, any> = {}, page = 1) => {
   const enhancedParams: Record<string, any> = { ...params, page };
   
-  // Enhanced date filtering for better accuracy
-  if (enhancedParams.primary_release_year || enhancedParams.first_air_date_year) {
-    const year = enhancedParams.primary_release_year || enhancedParams.first_air_date_year;
+  // Enhanced date filtering for better accuracy - handle both year and date range filtering
+  if (enhancedParams.year) {
+    const year = enhancedParams.year;
     if (mediaType === 'movie') {
       enhancedParams['primary_release_date.gte'] = `${year}-01-01`;
       enhancedParams['primary_release_date.lte'] = `${year}-12-31`;
-      delete enhancedParams.primary_release_year;
     } else {
       enhancedParams['first_air_date.gte'] = `${year}-01-01`;
       enhancedParams['first_air_date.lte'] = `${year}-12-31`;
-      delete enhancedParams.first_air_date_year;
     }
+    delete enhancedParams.year;
+  }
+  
+  // Handle legacy year parameters for backward compatibility
+  if (enhancedParams.primary_release_year) {
+    const year = enhancedParams.primary_release_year;
+    enhancedParams['primary_release_date.gte'] = `${year}-01-01`;
+    enhancedParams['primary_release_date.lte'] = `${year}-12-31`;
+    delete enhancedParams.primary_release_year;
+  }
+  
+  if (enhancedParams.first_air_date_year) {
+    const year = enhancedParams.first_air_date_year;
+    enhancedParams['first_air_date.gte'] = `${year}-01-01`;
+    enhancedParams['first_air_date.lte'] = `${year}-12-31`;
+    delete enhancedParams.first_air_date_year;
   }
   
   return apiRequest(`/discover/${mediaType}`, enhancedParams);
@@ -156,10 +169,10 @@ export const getRegionalContent = (language: string, page = 1, filters: Record<s
     ...filters
   };
   
-  // Apply date range filtering if year is specified
-  if (filters.year) {
-    params['primary_release_date.gte'] = `${filters.year}-01-01`;
-    params['primary_release_date.lte'] = `${filters.year}-12-31`;
+  // Apply accurate date range filtering if year is specified
+  if (params.year) {
+    params['primary_release_date.gte'] = `${params.year}-01-01`;
+    params['primary_release_date.lte'] = `${params.year}-12-31`;
     delete params.year;
   }
   
