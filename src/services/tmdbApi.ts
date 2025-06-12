@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 const TMDB_API_KEY = '54d82ce065f64ee04381a81d3bcc2455';
@@ -123,21 +122,47 @@ export const getNowPlaying = (mediaType: 'movie' | 'tv', page = 1) => {
 };
 
 /**
- * Discover items with filters
+ * Discover items with filters - Enhanced with better date filtering
  */
 export const discover = (mediaType: string, params = {}, page = 1) => {
-  return apiRequest(`/discover/${mediaType}`, { ...params, page });
+  const enhancedParams = { ...params, page };
+  
+  // Enhanced date filtering for better accuracy
+  if (params.primary_release_year || params.first_air_date_year) {
+    const year = params.primary_release_year || params.first_air_date_year;
+    if (mediaType === 'movie') {
+      enhancedParams['primary_release_date.gte'] = `${year}-01-01`;
+      enhancedParams['primary_release_date.lte'] = `${year}-12-31`;
+      delete enhancedParams.primary_release_year;
+    } else {
+      enhancedParams['first_air_date.gte'] = `${year}-01-01`;
+      enhancedParams['first_air_date.lte'] = `${year}-12-31`;
+      delete enhancedParams.first_air_date_year;
+    }
+  }
+  
+  return apiRequest(`/discover/${mediaType}`, enhancedParams);
 };
 
 /**
- * Get popular movies from a specific country (region)
+ * Get regional content with enhanced filtering
  */
-export const getRegionalContent = (region: string, page = 1) => {
-  return apiRequest('/discover/movie', { 
-    with_original_language: region, 
+export const getRegionalContent = (language: string, page = 1, filters = {}) => {
+  const params = {
+    with_original_language: language,
     sort_by: 'popularity.desc',
-    page
-  });
+    page,
+    ...filters
+  };
+  
+  // Apply date range filtering if year is specified
+  if (filters.year) {
+    params['primary_release_date.gte'] = `${filters.year}-01-01`;
+    params['primary_release_date.lte'] = `${filters.year}-12-31`;
+    delete params.year;
+  }
+  
+  return apiRequest('/discover/movie', params);
 };
 
 /**
@@ -213,26 +238,172 @@ export const getCountries = async () => {
 };
 
 // Mapping between country codes and language codes (simplified list)
-export const countryToLanguageMap: Record<string, string> = {
-  'US': 'en', // United States - English
-  'GB': 'en', // United Kingdom - English
-  'IN': 'hi', // India - Hindi
-  'JP': 'ja', // Japan - Japanese
-  'KR': 'ko', // South Korea - Korean
-  'FR': 'fr', // France - French
-  'DE': 'de', // Germany - German
-  'IT': 'it', // Italy - Italian
-  'ES': 'es', // Spain - Spanish
-  'CN': 'zh', // China - Chinese
-  'HK': 'zh', // Hong Kong - Chinese
-  'TW': 'zh', // Taiwan - Chinese
-  'RU': 'ru', // Russia - Russian
-  'BR': 'pt', // Brazil - Portuguese
-  'MX': 'es', // Mexico - Spanish
-  'TH': 'th', // Thailand - Thai
-  'TR': 'tr', // Turkey - Turkish
-  'PH': 'tl', // Philippines - Tagalog
-  'ID': 'id', // Indonesia - Indonesian
-  'NG': 'en', // Nigeria - English (Nollywood)
-  'AR': 'es', // Argentina - Spanish
+export const countryToLanguagesMap: Record<string, { primary: string; languages: Array<{ code: string; name: string }> }> = {
+  'US': {
+    primary: 'en',
+    languages: [
+      { code: 'en', name: 'English' },
+      { code: 'es', name: 'Spanish' }
+    ]
+  },
+  'GB': {
+    primary: 'en',
+    languages: [
+      { code: 'en', name: 'English' }
+    ]
+  },
+  'IN': {
+    primary: 'hi',
+    languages: [
+      { code: 'hi', name: 'Hindi' },
+      { code: 'bn', name: 'Bengali' },
+      { code: 'ta', name: 'Tamil' },
+      { code: 'te', name: 'Telugu' },
+      { code: 'mr', name: 'Marathi' },
+      { code: 'gu', name: 'Gujarati' },
+      { code: 'kn', name: 'Kannada' },
+      { code: 'ml', name: 'Malayalam' },
+      { code: 'pa', name: 'Punjabi' },
+      { code: 'or', name: 'Odia' },
+      { code: 'as', name: 'Assamese' },
+      { code: 'en', name: 'English' }
+    ]
+  },
+  'JP': {
+    primary: 'ja',
+    languages: [
+      { code: 'ja', name: 'Japanese' }
+    ]
+  },
+  'KR': {
+    primary: 'ko',
+    languages: [
+      { code: 'ko', name: 'Korean' }
+    ]
+  },
+  'CN': {
+    primary: 'zh',
+    languages: [
+      { code: 'zh', name: 'Mandarin Chinese' },
+      { code: 'yue', name: 'Cantonese' }
+    ]
+  },
+  'HK': {
+    primary: 'zh',
+    languages: [
+      { code: 'yue', name: 'Cantonese' },
+      { code: 'zh', name: 'Mandarin Chinese' },
+      { code: 'en', name: 'English' }
+    ]
+  },
+  'TW': {
+    primary: 'zh',
+    languages: [
+      { code: 'zh', name: 'Traditional Chinese' }
+    ]
+  },
+  'FR': {
+    primary: 'fr',
+    languages: [
+      { code: 'fr', name: 'French' }
+    ]
+  },
+  'DE': {
+    primary: 'de',
+    languages: [
+      { code: 'de', name: 'German' }
+    ]
+  },
+  'IT': {
+    primary: 'it',
+    languages: [
+      { code: 'it', name: 'Italian' }
+    ]
+  },
+  'ES': {
+    primary: 'es',
+    languages: [
+      { code: 'es', name: 'Spanish' },
+      { code: 'ca', name: 'Catalan' },
+      { code: 'eu', name: 'Basque' },
+      { code: 'gl', name: 'Galician' }
+    ]
+  },
+  'RU': {
+    primary: 'ru',
+    languages: [
+      { code: 'ru', name: 'Russian' }
+    ]
+  },
+  'BR': {
+    primary: 'pt',
+    languages: [
+      { code: 'pt', name: 'Portuguese' }
+    ]
+  },
+  'MX': {
+    primary: 'es',
+    languages: [
+      { code: 'es', name: 'Spanish' }
+    ]
+  },
+  'TH': {
+    primary: 'th',
+    languages: [
+      { code: 'th', name: 'Thai' }
+    ]
+  },
+  'TR': {
+    primary: 'tr',
+    languages: [
+      { code: 'tr', name: 'Turkish' }
+    ]
+  },
+  'PH': {
+    primary: 'tl',
+    languages: [
+      { code: 'tl', name: 'Filipino' },
+      { code: 'en', name: 'English' }
+    ]
+  },
+  'ID': {
+    primary: 'id',
+    languages: [
+      { code: 'id', name: 'Indonesian' },
+      { code: 'jv', name: 'Javanese' }
+    ]
+  },
+  'NG': {
+    primary: 'en',
+    languages: [
+      { code: 'en', name: 'English' },
+      { code: 'ha', name: 'Hausa' },
+      { code: 'ig', name: 'Igbo' },
+      { code: 'yo', name: 'Yoruba' }
+    ]
+  },
+  'AR': {
+    primary: 'es',
+    languages: [
+      { code: 'es', name: 'Spanish' }
+    ]
+  },
+  'CA': {
+    primary: 'en',
+    languages: [
+      { code: 'en', name: 'English' },
+      { code: 'fr', name: 'French' }
+    ]
+  },
+  'AU': {
+    primary: 'en',
+    languages: [
+      { code: 'en', name: 'English' }
+    ]
+  }
 };
+
+// Backward compatibility
+export const countryToLanguageMap: Record<string, string> = Object.fromEntries(
+  Object.entries(countryToLanguagesMap).map(([country, { primary }]) => [country, primary])
+);

@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { countryToLanguagesMap } from '@/services/tmdbApi';
 
 interface CategoryFilterBarProps {
   onGenreChange?: (genre: string) => void;
@@ -17,6 +18,7 @@ interface CategoryFilterBarProps {
   selectedYear?: string;
   selectedLanguage?: string;
   mediaType?: 'movie' | 'tv';
+  selectedCountry?: string; // For regional filtering
 }
 
 interface Genre {
@@ -31,7 +33,8 @@ const CategoryFilterBar = ({
   selectedGenre = '',
   selectedYear = '',
   selectedLanguage = '',
-  mediaType = 'movie'
+  mediaType = 'movie',
+  selectedCountry = ''
 }: CategoryFilterBarProps) => {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,29 +77,49 @@ const CategoryFilterBar = ({
     fetchGenres();
   }, [mediaType]);
 
+  // Enhanced years list with more accurate date ranges
   const years = [
     { label: 'All Years', value: '' },
-    ...Array.from({ length: 25 }, (_, i) => {
+    ...Array.from({ length: 30 }, (_, i) => {
       const year = new Date().getFullYear() - i;
       return { label: year.toString(), value: year.toString() };
     }),
   ];
 
-  const languages = [
-    { label: 'All Languages', value: '' },
-    { label: 'English', value: 'en' },
-    { label: 'Spanish', value: 'es' },
-    { label: 'French', value: 'fr' },
-    { label: 'German', value: 'de' },
-    { label: 'Italian', value: 'it' },
-    { label: 'Japanese', value: 'ja' },
-    { label: 'Korean', value: 'ko' },
-    { label: 'Chinese', value: 'zh' },
-    { label: 'Portuguese', value: 'pt' },
-    { label: 'Russian', value: 'ru' },
-    { label: 'Arabic', value: 'ar' },
-    { label: 'Hindi', value: 'hi' },
-  ];
+  // Get languages based on selected country or use default languages
+  const getLanguages = () => {
+    const defaultLanguages = [
+      { label: 'All Languages', value: '' },
+      { label: 'English', value: 'en' },
+      { label: 'Spanish', value: 'es' },
+      { label: 'French', value: 'fr' },
+      { label: 'German', value: 'de' },
+      { label: 'Italian', value: 'it' },
+      { label: 'Japanese', value: 'ja' },
+      { label: 'Korean', value: 'ko' },
+      { label: 'Chinese', value: 'zh' },
+      { label: 'Portuguese', value: 'pt' },
+      { label: 'Russian', value: 'ru' },
+      { label: 'Arabic', value: 'ar' },
+      { label: 'Hindi', value: 'hi' },
+    ];
+
+    // If country is selected and has local languages, use them
+    if (selectedCountry && countryToLanguagesMap[selectedCountry]) {
+      const countryLanguages = countryToLanguagesMap[selectedCountry].languages;
+      return [
+        { label: 'All Languages', value: '' },
+        ...countryLanguages.map(lang => ({
+          label: lang.name,
+          value: lang.code
+        }))
+      ];
+    }
+
+    return defaultLanguages;
+  };
+
+  const languages = getLanguages();
 
   const getSelectedGenreLabel = () => {
     const genre = genres.find(g => g.id.toString() === selectedGenre);

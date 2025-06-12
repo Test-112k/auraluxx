@@ -5,12 +5,12 @@ import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import CountrySelector from '@/components/common/CountrySelector';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
-import { getRegionalContent, countryToLanguageMap } from '@/services/tmdbApi';
+import { getRegionalContent, countryToLanguagesMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const RegionalPage = () => {
   const [regionalContent, setRegionalContent] = useState<any[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState(''); // Start empty, will be set by IP detection
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -20,41 +20,44 @@ const RegionalPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRegionalContent = useCallback(async (reset = false) => {
-    if (!selectedCountry) return; // Don't fetch if no country selected yet
+    if (!selectedCountry) return;
     
     setLoading(true);
     setError(null);
-    const language = countryToLanguageMap[selectedCountry];
     const currentPage = reset ? 1 : page;
     
-    if (!language) {
+    // Get the primary language or selected language for the country
+    const countryData = countryToLanguagesMap[selectedCountry];
+    if (!countryData) {
       setLoading(false);
       setError('Language mapping not found for selected country');
       return;
     }
     
+    // Use selected language or default to primary language
+    const language = selectedLanguage || countryData.primary;
+    
     try {
-      const data = await getRegionalContent(language, currentPage);
+      // Prepare filters for enhanced API call
+      const filters: any = {};
+      
+      if (selectedGenre) {
+        filters.with_genres = selectedGenre;
+      }
+      
+      if (selectedYear) {
+        filters.year = selectedYear; // Will be converted to date range in API
+      }
+      
+      const data = await getRegionalContent(language, currentPage, filters);
       
       if (data?.results) {
-        // Apply filters
-        let filteredResults = data.results;
-        
-        if (selectedGenre) {
-          filteredResults = filteredResults.filter((item: any) => 
-            item.genre_ids?.includes(parseInt(selectedGenre))
-          );
-        }
-        
-        if (selectedYear) {
-          filteredResults = filteredResults.filter((item: any) => 
-            item.release_date?.startsWith(selectedYear)
-          );
-        }
+        // Filter out results without poster images for cleaner UI
+        const filteredResults = data.results.filter(item => item.poster_path);
         
         if (reset) {
           setRegionalContent(filteredResults);
-          setPage(2); // Set to 2 for next load
+          setPage(2);
         } else {
           setRegionalContent(prev => [...prev, ...filteredResults]);
           setPage(currentPage + 1);
@@ -65,7 +68,7 @@ const RegionalPage = () => {
         if (reset) {
           setRegionalContent([]);
         }
-        setError('No content available for this region');
+        setError('No content available for this region with current filters');
       }
     } catch (error) {
       console.error('Error fetching regional content:', error);
@@ -73,7 +76,7 @@ const RegionalPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCountry, selectedGenre, selectedYear, page]);
+  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, page]);
 
   const loadMore = async () => {
     if (page <= totalPages) {
@@ -87,6 +90,7 @@ const RegionalPage = () => {
     if (countryCode === selectedCountry) return;
     console.log('Country changed to:', countryCode);
     setSelectedCountry(countryCode);
+    setSelectedLanguage(''); // Reset language when country changes
     setPage(1);
     setRegionalContent([]);
     setTotalPages(0);
@@ -100,10 +104,14 @@ const RegionalPage = () => {
 
   useEffect(() => {
     if (selectedCountry) {
-      console.log('Fetching content for country:', selectedCountry);
+      console.log('Fetching content for country:', selectedCountry, 'with filters:', {
+        genre: selectedGenre,
+        year: selectedYear,
+        language: selectedLanguage
+      });
       fetchRegionalContent(true);
     }
-  }, [selectedCountry, selectedGenre, selectedYear]);
+  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage]);
 
   return (
     <MainLayout>
@@ -116,7 +124,7 @@ const RegionalPage = () => {
                 Regional Content
               </h1>
               <p className="text-white/80 text-lg md:text-xl leading-relaxed">
-                Discover movies and shows from different regions around the world
+                Discover movies and shows from different regions around the world in their local languages
               </p>
             </div>
             
@@ -154,6 +162,8 @@ const RegionalPage = () => {
             selectedGenre={selectedGenre}
             selectedYear={selectedYear}
             selectedLanguage={selectedLanguage}
+            selectedCountry={selectedCountry}
+            mediaType="movie"
           />
         )}
         
@@ -195,7 +205,7 @@ const RegionalPage = () => {
               <div className="bg-gradient-to-r from-aura-purple/10 to-aura-darkpurple/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-aura-purple/20 max-w-md">
                 <div className="text-white/80 space-y-4">
                   <h3 className="text-2xl font-bold text-white">No Content Available</h3>
-                  <p className="text-lg">{error || 'No content available for this region.'}</p>
+                  <p className="text-lg">{error || 'No content available for this region with current filters.'}</p>
                   <p className="text-sm">Please try selecting another country or adjusting your filters.</p>
                 </div>
               </div>

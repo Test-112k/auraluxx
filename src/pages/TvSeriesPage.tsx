@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -40,6 +39,7 @@ const TvSeriesPage = () => {
           discoverParams.with_genres = selectedGenre;
         }
         
+        // Enhanced year filtering using date ranges
         if (selectedYear) {
           discoverParams.first_air_date_year = selectedYear;
         }
