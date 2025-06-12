@@ -126,11 +126,11 @@ export const getNowPlaying = (mediaType: 'movie' | 'tv', page = 1) => {
  * Discover items with filters - Enhanced with better date filtering
  */
 export const discover = (mediaType: string, params: Record<string, any> = {}, page = 1) => {
-  const enhancedParams = { ...params, page };
+  const enhancedParams: Record<string, any> = { ...params, page };
   
   // Enhanced date filtering for better accuracy
-  if (params.primary_release_year || params.first_air_date_year) {
-    const year = params.primary_release_year || params.first_air_date_year;
+  if (enhancedParams.primary_release_year || enhancedParams.first_air_date_year) {
+    const year = enhancedParams.primary_release_year || enhancedParams.first_air_date_year;
     if (mediaType === 'movie') {
       enhancedParams['primary_release_date.gte'] = `${year}-01-01`;
       enhancedParams['primary_release_date.lte'] = `${year}-12-31`;
