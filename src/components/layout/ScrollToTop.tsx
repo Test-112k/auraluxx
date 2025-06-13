@@ -9,8 +9,8 @@ const ScrollToTop = () => {
   // Show button when scrolled down
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show button when user scrolls down 500px from the top
-      if (window.scrollY > 500) {
+      // Show button when user scrolls down 300px from the top
+      if (window.scrollY > 300) {
         setIsVisible(true);
       } else {
         setIsVisible(false);

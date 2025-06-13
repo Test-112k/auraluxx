@@ -117,21 +117,25 @@ const CountrySelector = ({ selectedCountry, onSelect, className }: CountrySelect
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[400px] p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/20 shadow-2xl z-[10000]" 
+        className="w-[400px] p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/20 shadow-2xl z-[10002]" 
         align="start"
         side="bottom"
         sideOffset={8}
+        avoidCollisions={true}
+        collisionPadding={16}
       >
         <Command className="bg-transparent">
-          <CommandInput 
-            placeholder="Search countries..." 
-            className="border-none bg-transparent text-white placeholder:text-white/50 h-12 px-4"
-          />
-          <CommandList className="max-h-[320px] overflow-y-auto">
+          <div className="p-2">
+            <CommandInput 
+              placeholder="Search countries..." 
+              className="border-none bg-white/10 text-white placeholder:text-white/50 h-10 px-3 rounded-lg"
+            />
+          </div>
+          <CommandList className="max-h-[280px] overflow-y-auto px-2">
             <CommandEmpty className="py-8 text-center text-white/70">
               No countries found.
             </CommandEmpty>
-            <CommandGroup className="p-2">
+            <CommandGroup className="space-y-1">
               {countries.map((country) => (
                 <CommandItem
                   key={country.code}
@@ -140,7 +144,7 @@ const CountrySelector = ({ selectedCountry, onSelect, className }: CountrySelect
                     onSelect(country.code);
                     setOpen(false);
                   }}
-                  className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer rounded-lg p-3 my-1"
+                  className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer rounded-lg p-3"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{country.flag}</span>

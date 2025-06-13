@@ -198,9 +198,9 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Enhanced TV Show Season/Episode Selector with improved positioning */}
+          {/* Enhanced TV Show Season/Episode Selector with improved mobile positioning */}
           {isTvShow && numberOfSeasons > 0 && (
-            <div className="bg-white/5 rounded-xl p-6 mb-6 border border-white/10">
+            <div className="bg-white/5 rounded-xl p-4 md:p-6 mb-6 border border-white/10">
               <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Season Selector */}
@@ -219,17 +219,19 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[9999]"
+                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[10001]"
                       align="start"
                       side="bottom"
                       sideOffset={8}
+                      avoidCollisions={true}
+                      collisionPadding={20}
                     >
                       <Command className="bg-transparent">
                         <CommandInput 
                           placeholder="Search seasons..." 
                           className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
                         />
-                        <CommandList className="max-h-60">
+                        <CommandList className="max-h-48 md:max-h-60">
                           <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
                           <CommandGroup className="p-2">
                             {details.seasons
@@ -283,17 +285,19 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[9999]"
+                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[10001]"
                       align="start"
                       side="bottom"
                       sideOffset={8}
+                      avoidCollisions={true}
+                      collisionPadding={20}
                     >
                       <Command className="bg-transparent">
                         <CommandInput 
                           placeholder="Search episodes..." 
                           className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
                         />
-                        <CommandList className="max-h-60">
+                        <CommandList className="max-h-48 md:max-h-60">
                           <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
                           <CommandGroup className="p-2">
                             {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
