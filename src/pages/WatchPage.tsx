@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getDetails, getRecommendations } from '@/services/tmdbApi';
+import { getDetails, getSimilar } from '@/services/tmdbApi';
 import { toast } from '@/components/ui/use-toast';
 import Ad from '@/components/ads/Ad';
 import { useAds } from '@/contexts/AdContext';
@@ -41,13 +41,13 @@ const WatchPage = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch recommendations with improved query
+  // Fetch similar/recommended content using getSimilar
   const { data: recommendationsData, isLoading: recommendationsLoading } = useQuery({
-    queryKey: ['recommendations', type, id],
+    queryKey: ['similar', type, id],
     queryFn: async () => {
       if (!type || !id) throw new Error('Missing parameters');
       const mediaType = type === 'movie' ? 'movie' : 'tv';
-      return await getRecommendations(mediaType, Number(id));
+      return await getSimilar(mediaType, Number(id));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!details,
