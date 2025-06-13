@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -12,8 +11,11 @@ import MediaDetails from '@/components/common/MediaDetails';
 import YouTubeTrailer from '@/components/common/YouTubeTrailer';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getDetails, getSimilar } from '@/services/tmdbApi';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { getDetails, getRecommendations } from '@/services/tmdbApi';
 import { toast } from '@/components/ui/use-toast';
 import Ad from '@/components/ads/Ad';
 import { useAds } from '@/contexts/AdContext';
@@ -24,6 +26,8 @@ const WatchPage = () => {
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
   const [selectedApi, setSelectedApi] = useState<'embed' | 'torrent' | 'agg'>('embed');
+  const [seasonOpen, setSeasonOpen] = useState(false);
+  const [episodeOpen, setEpisodeOpen] = useState(false);
   const { isAdEnabled } = useAds();
   
   // Fetch media details
@@ -37,13 +41,13 @@ const WatchPage = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch similar content with improved query
-  const { data: similarData, isLoading: similarLoading } = useQuery({
-    queryKey: ['similar', type, id],
+  // Fetch recommendations with improved query
+  const { data: recommendationsData, isLoading: recommendationsLoading } = useQuery({
+    queryKey: ['recommendations', type, id],
     queryFn: async () => {
       if (!type || !id) throw new Error('Missing parameters');
       const mediaType = type === 'movie' ? 'movie' : 'tv';
-      return await getSimilar(mediaType, Number(id));
+      return await getRecommendations(mediaType, Number(id));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!details,
@@ -148,7 +152,7 @@ const WatchPage = () => {
   const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]);
   const genres = details.genres || [];
   const credits = details.credits || { cast: [], crew: [] };
-  const similarContent = similarData?.results || [];
+  const recommendedContent = recommendationsData?.results || [];
   const isTvShow = type === 'tv';
   const posterPath = details.poster_path;
   const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
@@ -194,51 +198,111 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Improved TV Show Season/Episode Selector */}
+          {/* Optimized TV Show Season/Episode Selector with Popover */}
           {isTvShow && numberOfSeasons > 0 && (
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-40">
+              {/* Season Selector */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-48">
                 <label className="text-sm font-medium text-white/70">Season</label>
-                <Select
-                  value={selectedSeason.toString()}
-                  onValueChange={(value) => {
-                    setSelectedSeason(parseInt(value));
-                    setSelectedEpisode(1); // Reset episode when season changes
-                  }}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/10 text-white">
-                    <SelectValue placeholder="Select Season" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white max-h-60">
-                    {details.seasons
-                      ?.filter((season: any) => season.season_number > 0)
-                      .map((season: any) => (
-                        <SelectItem key={season.season_number} value={season.season_number.toString()}>
-                          Season {season.season_number}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={seasonOpen}
+                      className="justify-between bg-white/10 border-white/10 text-white hover:bg-white/20"
+                    >
+                      Season {selectedSeason}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-0 bg-aura-darkpurple border-white/10">
+                    <Command className="bg-transparent">
+                      <CommandInput 
+                        placeholder="Search seasons..." 
+                        className="border-none bg-transparent text-white placeholder:text-white/50"
+                      />
+                      <CommandList className="max-h-60">
+                        <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
+                        <CommandGroup>
+                          {details.seasons
+                            ?.filter((season: any) => season.season_number > 0)
+                            .map((season: any) => (
+                              <CommandItem
+                                key={season.season_number}
+                                value={`season-${season.season_number}`}
+                                onSelect={() => {
+                                  setSelectedSeason(season.season_number);
+                                  setSelectedEpisode(1);
+                                  setSeasonOpen(false);
+                                }}
+                                className="text-white hover:bg-white/10 cursor-pointer"
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedSeason === season.season_number ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                Season {season.season_number}
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               
-              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-40">
+              {/* Episode Selector */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-48">
                 <label className="text-sm font-medium text-white/70">Episode</label>
-                <Select
-                  value={selectedEpisode.toString()}
-                  onValueChange={(value) => setSelectedEpisode(parseInt(value))}
-                  disabled={numberOfEpisodes === 0}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/10 text-white">
-                    <SelectValue placeholder="Select Episode" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-aura-darkpurple border-white/10 text-white max-h-60">
-                    {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
-                      <SelectItem key={episode} value={episode.toString()}>
-                        Episode {episode}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={episodeOpen}
+                      className="justify-between bg-white/10 border-white/10 text-white hover:bg-white/20"
+                      disabled={numberOfEpisodes === 0}
+                    >
+                      Episode {selectedEpisode}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-0 bg-aura-darkpurple border-white/10">
+                    <Command className="bg-transparent">
+                      <CommandInput 
+                        placeholder="Search episodes..." 
+                        className="border-none bg-transparent text-white placeholder:text-white/50"
+                      />
+                      <CommandList className="max-h-60">
+                        <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
+                        <CommandGroup>
+                          {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
+                            <CommandItem
+                              key={episode}
+                              value={`episode-${episode}`}
+                              onSelect={() => {
+                                setSelectedEpisode(episode);
+                                setEpisodeOpen(false);
+                              }}
+                              className="text-white hover:bg-white/10 cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedEpisode === episode ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              Episode {episode}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           )}
@@ -294,16 +358,16 @@ const WatchPage = () => {
           </div>
         )}
         
-        {/* Similar Content */}
-        {similarContent.length > 0 ? (
+        {/* Recommended Content */}
+        {recommendedContent.length > 0 ? (
           <MediaSlider
-            title="You Might Also Like"
-            items={similarContent}
+            title="Recommended for You"
+            items={recommendedContent}
             mediaType={type as 'movie' | 'tv'}
           />
-        ) : similarLoading ? (
+        ) : recommendationsLoading ? (
           <div className="pt-8">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6">You Might Also Like</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Recommended for You</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {Array(6).fill(0).map((_, i) => (
                 <LoadingSkeleton key={i} type="card" />

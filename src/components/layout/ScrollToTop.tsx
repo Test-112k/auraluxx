@@ -9,20 +9,34 @@ const ScrollToTop = () => {
   // Show button when scrolled down
   useEffect(() => {
     const toggleVisibility = () => {
-      console.log('Scroll position:', window.scrollY); // Debug log
-      if (window.scrollY > 300) {
+      // Show button when user scrolls down 500px from the top
+      if (window.scrollY > 500) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
       }
     };
 
-    window.addEventListener('scroll', toggleVisibility);
+    // Add scroll event listener with throttle for better performance
+    let timeoutId: NodeJS.Timeout;
+    const handleScroll = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(toggleVisibility, 10);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     // Check initial scroll position
     toggleVisibility();
     
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -31,8 +45,6 @@ const ScrollToTop = () => {
       behavior: 'smooth'
     });
   };
-
-  console.log('ScrollToTop isVisible:', isVisible); // Debug log
 
   return (
     <Button
@@ -44,7 +56,6 @@ const ScrollToTop = () => {
       }`}
       size="icon"
       aria-label="Scroll to top"
-      style={{ display: 'block' }}
     >
       <ArrowUp className="h-5 w-5" />
     </Button>
