@@ -198,111 +198,129 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Optimized TV Show Season/Episode Selector with Popover */}
+          {/* Enhanced TV Show Season/Episode Selector with improved positioning */}
           {isTvShow && numberOfSeasons > 0 && (
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              {/* Season Selector */}
-              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-48">
-                <label className="text-sm font-medium text-white/70">Season</label>
-                <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={seasonOpen}
-                      className="justify-between bg-white/10 border-white/10 text-white hover:bg-white/20"
+            <div className="bg-white/5 rounded-xl p-6 mb-6 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Season Selector */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-white/70 block">Season</label>
+                  <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={seasonOpen}
+                        className="w-full justify-between bg-white/10 border-white/10 text-white hover:bg-white/20 h-12"
+                      >
+                        <span className="font-medium">Season {selectedSeason}</span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[9999]"
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
                     >
-                      Season {selectedSeason}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-48 p-0 bg-aura-darkpurple border-white/10">
-                    <Command className="bg-transparent">
-                      <CommandInput 
-                        placeholder="Search seasons..." 
-                        className="border-none bg-transparent text-white placeholder:text-white/50"
-                      />
-                      <CommandList className="max-h-60">
-                        <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
-                        <CommandGroup>
-                          {details.seasons
-                            ?.filter((season: any) => season.season_number > 0)
-                            .map((season: any) => (
+                      <Command className="bg-transparent">
+                        <CommandInput 
+                          placeholder="Search seasons..." 
+                          className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
+                        />
+                        <CommandList className="max-h-60">
+                          <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
+                          <CommandGroup className="p-2">
+                            {details.seasons
+                              ?.filter((season: any) => season.season_number > 0)
+                              .map((season: any) => (
+                                <CommandItem
+                                  key={season.season_number}
+                                  value={`season-${season.season_number}`}
+                                  onSelect={() => {
+                                    setSelectedSeason(season.season_number);
+                                    setSelectedEpisode(1);
+                                    setSeasonOpen(false);
+                                  }}
+                                  className="text-white hover:bg-white/10 cursor-pointer rounded-lg p-2 flex items-center justify-between"
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">Season {season.season_number}</span>
+                                    <span className="text-xs text-white/60">
+                                      {season.episode_count} episodes
+                                    </span>
+                                  </div>
+                                  <Check
+                                    className={cn(
+                                      "h-4 w-4 text-aura-accent",
+                                      selectedSeason === season.season_number ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                {/* Episode Selector */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-white/70 block">Episode</label>
+                  <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={episodeOpen}
+                        className="w-full justify-between bg-white/10 border-white/10 text-white hover:bg-white/20 h-12"
+                        disabled={numberOfEpisodes === 0}
+                      >
+                        <span className="font-medium">Episode {selectedEpisode}</span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[9999]"
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                    >
+                      <Command className="bg-transparent">
+                        <CommandInput 
+                          placeholder="Search episodes..." 
+                          className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
+                        />
+                        <CommandList className="max-h-60">
+                          <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
+                          <CommandGroup className="p-2">
+                            {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
                               <CommandItem
-                                key={season.season_number}
-                                value={`season-${season.season_number}`}
+                                key={episode}
+                                value={`episode-${episode}`}
                                 onSelect={() => {
-                                  setSelectedSeason(season.season_number);
-                                  setSelectedEpisode(1);
-                                  setSeasonOpen(false);
+                                  setSelectedEpisode(episode);
+                                  setEpisodeOpen(false);
                                 }}
-                                className="text-white hover:bg-white/10 cursor-pointer"
+                                className="text-white hover:bg-white/10 cursor-pointer rounded-lg p-2 flex items-center justify-between"
                               >
+                                <span className="font-medium">Episode {episode}</span>
                                 <Check
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedSeason === season.season_number ? "opacity-100" : "opacity-0"
+                                    "h-4 w-4 text-aura-accent",
+                                    selectedEpisode === episode ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                Season {season.season_number}
                               </CommandItem>
                             ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              {/* Episode Selector */}
-              <div className="flex flex-col gap-2 min-w-0 flex-1 sm:flex-none sm:w-48">
-                <label className="text-sm font-medium text-white/70">Episode</label>
-                <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={episodeOpen}
-                      className="justify-between bg-white/10 border-white/10 text-white hover:bg-white/20"
-                      disabled={numberOfEpisodes === 0}
-                    >
-                      Episode {selectedEpisode}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-48 p-0 bg-aura-darkpurple border-white/10">
-                    <Command className="bg-transparent">
-                      <CommandInput 
-                        placeholder="Search episodes..." 
-                        className="border-none bg-transparent text-white placeholder:text-white/50"
-                      />
-                      <CommandList className="max-h-60">
-                        <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
-                        <CommandGroup>
-                          {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
-                            <CommandItem
-                              key={episode}
-                              value={`episode-${episode}`}
-                              onSelect={() => {
-                                setSelectedEpisode(episode);
-                                setEpisodeOpen(false);
-                              }}
-                              className="text-white hover:bg-white/10 cursor-pointer"
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedEpisode === episode ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              Episode {episode}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
           )}
