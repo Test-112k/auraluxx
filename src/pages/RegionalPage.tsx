@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
-import ImprovedCountrySelector from '@/components/common/ImprovedCountrySelector';
+import CountrySelector from '@/components/common/CountrySelector';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getRegionalContent, countryToLanguagesMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -128,18 +128,14 @@ const RegionalPage = () => {
               </p>
             </div>
             
-            {/* Improved Country Selector */}
-            <div className="flex flex-col lg:flex-row items-start gap-6">
-              <div className="flex-shrink-0">
-                <p className="text-white font-semibold text-xl mb-3">Choose Your Region:</p>
-              </div>
-              <div className="w-full lg:w-96">
-                <ImprovedCountrySelector 
-                  selectedCountry={selectedCountry} 
-                  onCountryChange={handleCountryChange} 
-                  className="w-full"
-                />
-              </div>
+            {/* Country Selector */}
+            <div className="flex flex-col space-y-4">
+              <p className="text-white font-semibold text-xl">Choose Your Region:</p>
+              <CountrySelector 
+                selectedCountry={selectedCountry} 
+                onSelect={handleCountryChange} 
+                className="w-full max-w-2xl"
+              />
             </div>
           </div>
         </div>

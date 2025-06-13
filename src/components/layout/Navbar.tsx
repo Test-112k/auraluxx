@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -44,7 +45,7 @@ const Navbar = () => {
   return (
     <>
       <nav 
-        className={`fixed top-0 left-0 right-0 z-[200] w-full transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 ${
           isScrolled ? 'bg-aura-dark/98 shadow-lg backdrop-blur-md' : 'bg-aura-dark/95 backdrop-blur-sm'
         }`}
       >
