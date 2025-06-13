@@ -1,6 +1,6 @@
 
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import AnimePage from "./pages/AnimePage";
 import RegionalPage from "./pages/RegionalPage";
 import SearchPage from "./pages/SearchPage";
 import WatchPage from "./pages/WatchPage";
+import SpeedtestPage from "./pages/SpeedtestPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import DmcaPage from "./pages/DmcaPage";
@@ -43,7 +44,8 @@ const App = () => (
             <Route path="/regional" element={<RegionalPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/watch/:type/:id" element={<WatchPage />} />
-            <Route path="/watch/:type/:id/" element={<WatchPage />} /> {/* Added this route with trailing slash */}
+            <Route path="/watch/:type/:id/" element={<WatchPage />} />
+            <Route path="/speedtest" element={<SpeedtestPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/dmca" element={<DmcaPage />} />

@@ -198,13 +198,13 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Enhanced TV Show Season/Episode Selector with improved mobile positioning */}
+          {/* Fixed TV Show Season/Episode Selector */}
           {isTvShow && numberOfSeasons > 0 && (
-            <div className="bg-white/5 rounded-xl p-4 md:p-6 mb-6 border border-white/10">
+            <div className="bg-white/5 rounded-xl p-4 md:p-6 mb-6 border border-white/10 relative">
               <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Season Selector */}
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block">Season</label>
                   <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
                     <PopoverTrigger asChild>
@@ -219,19 +219,20 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[10001]"
+                      className="w-full max-w-[300px] p-0 bg-aura-dark/98 backdrop-blur-lg border-white/20 shadow-2xl"
                       align="start"
                       side="bottom"
-                      sideOffset={8}
+                      sideOffset={4}
                       avoidCollisions={true}
-                      collisionPadding={20}
+                      collisionPadding={16}
+                      style={{ zIndex: 50 }}
                     >
                       <Command className="bg-transparent">
                         <CommandInput 
                           placeholder="Search seasons..." 
                           className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
                         />
-                        <CommandList className="max-h-48 md:max-h-60">
+                        <CommandList className="max-h-48">
                           <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
                           <CommandGroup className="p-2">
                             {details.seasons
@@ -269,7 +270,7 @@ const WatchPage = () => {
                 </div>
                 
                 {/* Episode Selector */}
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block">Episode</label>
                   <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
                     <PopoverTrigger asChild>
@@ -285,19 +286,20 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-64 p-0 bg-aura-darkpurple/95 backdrop-blur-md border-white/10 shadow-2xl z-[10001]"
+                      className="w-full max-w-[300px] p-0 bg-aura-dark/98 backdrop-blur-lg border-white/20 shadow-2xl"
                       align="start"
                       side="bottom"
-                      sideOffset={8}
+                      sideOffset={4}
                       avoidCollisions={true}
-                      collisionPadding={20}
+                      collisionPadding={16}
+                      style={{ zIndex: 50 }}
                     >
                       <Command className="bg-transparent">
                         <CommandInput 
                           placeholder="Search episodes..." 
                           className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
                         />
-                        <CommandList className="max-h-48 md:max-h-60">
+                        <CommandList className="max-h-48">
                           <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
                           <CommandGroup className="p-2">
                             {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (

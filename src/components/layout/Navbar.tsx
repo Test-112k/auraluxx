@@ -72,6 +72,9 @@ const Navbar = () => {
               <Link to="/regional" className="text-white hover:text-aura-purple transition-colors">
                 Regional
               </Link>
+              <Link to="/speedtest" className="text-white hover:text-aura-purple transition-colors">
+                Speed Test
+              </Link>
               <a 
                 href={telegramUrl}
                 target="_blank"

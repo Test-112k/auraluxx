@@ -103,6 +103,13 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
           >
             Regional
           </Link>
+          <Link 
+            to="/speedtest" 
+            onClick={onClose}
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
+          >
+            Speed Test
+          </Link>
           <a 
             href={telegramUrl}
             target="_blank"
