@@ -245,13 +245,13 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Season" />
                     </SelectTrigger>
                     <SelectContent
-                      position="item-aligned" // Changed position
-                      onCloseAutoFocus={(event) => {
-                        event.preventDefault(); // Only prevent default, let Radix handle focus return
-                      }}
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
                       className={cn(
-                        "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto"
+                        "p-1 bg-aura-darkpurple/95 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[9999]",
+                        "max-h-[200px] w-full min-w-[220px] max-w-sm overflow-y-auto"
                       )}
                     >
                       <SelectGroup>
@@ -295,13 +295,13 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Episode" />
                     </SelectTrigger>
                     <SelectContent 
-                      position="item-aligned" // Changed position
-                      onCloseAutoFocus={(event) => {
-                        event.preventDefault(); // Only prevent default, let Radix handle focus return
-                      }}
-                       className={cn(
-                        "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto"
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      className={cn(
+                        "p-1 bg-aura-darkpurple/95 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[9999]",
+                        "max-h-[200px] w-full min-w-[220px] max-w-sm overflow-y-auto"
                       )}
                     >
                       <SelectGroup>
