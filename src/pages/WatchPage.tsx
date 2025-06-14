@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -33,6 +33,10 @@ const WatchPage = () => {
   const [selectedEpisode, setSelectedEpisode] = useState<number>(0); // Default to 0
   const [selectedApi, setSelectedApi] = useState<'embed' | 'torrent' | 'agg'>('embed');
   const { isAdEnabled } = useAds();
+  
+  // Refs for SelectTriggers
+  const seasonTriggerRef = useRef<HTMLButtonElement>(null);
+  const episodeTriggerRef = useRef<HTMLButtonElement>(null);
   
   // Fetch media details
   const { data: details, isLoading: detailsLoading, error: detailsError } = useQuery({
@@ -232,6 +236,7 @@ const WatchPage = () => {
                     }}
                   >
                     <SelectTrigger 
+                      ref={seasonTriggerRef} // Added ref
                       className={cn(
                         "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                       )}
@@ -239,10 +244,14 @@ const WatchPage = () => {
                     >
                       <SelectValue placeholder="Select Season" />
                     </SelectTrigger>
-                    <SelectContent 
+                    <SelectContent
+                      onCloseAutoFocus={(event) => { // Added onCloseAutoFocus
+                        event.preventDefault();
+                        seasonTriggerRef.current?.focus({ preventScroll: true });
+                      }}
                       className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto" // Adjusted max-h and added overflow-y-auto
+                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto"
                       )}
                     >
                       <SelectGroup>
@@ -277,6 +286,7 @@ const WatchPage = () => {
                     disabled={numberOfEpisodes === 0 || selectedSeason === 0} // Disable if no episodes or no season selected
                   >
                     <SelectTrigger 
+                      ref={episodeTriggerRef} // Added ref
                       className={cn(
                         "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                       )}
@@ -285,9 +295,13 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Episode" />
                     </SelectTrigger>
                     <SelectContent 
+                      onCloseAutoFocus={(event) => { // Added onCloseAutoFocus
+                        event.preventDefault();
+                        episodeTriggerRef.current?.focus({ preventScroll: true });
+                      }}
                        className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto" // Adjusted max-h and added overflow-y-auto
+                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto"
                       )}
                     >
                       <SelectGroup>
