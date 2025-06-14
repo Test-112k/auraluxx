@@ -29,8 +29,8 @@ import { useAds } from '@/contexts/AdContext';
 const WatchPage = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
-  const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
+  const [selectedSeason, setSelectedSeason] = useState<number>(0); // Default to 0 to show placeholder initially
+  const [selectedEpisode, setSelectedEpisode] = useState<number>(0); // Default to 0
   const [selectedApi, setSelectedApi] = useState<'embed' | 'torrent' | 'agg'>('embed');
   const { isAdEnabled } = useAds();
   
@@ -57,19 +57,35 @@ const WatchPage = () => {
     enabled: !!details,
   });
   
-  // Set initial season and episode when details load
+  // Set initial season and episode when details load or type/id changes
   useEffect(() => {
-    if (details && type === 'tv' && details.seasons && details.seasons.length > 0) {
-      const firstValidSeason = details.seasons.find((s: any) => s.season_number > 0);
-      if (firstValidSeason) {
-        setSelectedSeason(firstValidSeason.season_number);
-        setSelectedEpisode(1);
+    if (details && type === 'tv') {
+      const validSeasonsWithEpisodes = details.seasons
+        ?.filter((s: any) => s.season_number > 0 && s.episode_count > 0)
+        .sort((a: any, b: any) => a.season_number - b.season_number) || [];
+
+      if (validSeasonsWithEpisodes.length > 0) {
+        // Check if the current selectedSeason (if > 0) is still valid
+        const currentSelectedSeasonIsValid = selectedSeason > 0 && 
+          validSeasonsWithEpisodes.some(s => s.season_number === selectedSeason);
+
+        if (!currentSelectedSeasonIsValid) {
+          // If not valid, or selectedSeason is 0, set to the first valid season
+          setSelectedSeason(validSeasonsWithEpisodes[0].season_number);
+          setSelectedEpisode(1); // Reset to episode 1 for the new season
+        }
+        // If currentSelectedSeasonIsValid, keep it. Episode selection handled by onValueChange or remains.
       } else {
-        setSelectedSeason(1); 
-        setSelectedEpisode(1);
+        // No seasons with season_number > 0 and episodes > 0
+        setSelectedSeason(0); // Use 0 to indicate no selection / show placeholder
+        setSelectedEpisode(0);
       }
+    } else if (type === 'movie') {
+      // Reset season/episode for movies if navigating from a TV show
+      setSelectedSeason(0);
+      setSelectedEpisode(0);
     }
-  }, [details, type]);
+  }, [details, type]); // Not including selectedSeason here to avoid potential loops from user interaction
 
   const handleBackClick = () => {
     navigate(-1);
@@ -77,7 +93,7 @@ const WatchPage = () => {
 
   // Get the number of seasons and episodes for TV series
   const numberOfSeasons = details?.number_of_seasons || 0;
-  const currentSeasonDetails = details?.seasons?.find((s: any) => s.season_number === selectedSeason);
+  const currentSeasonDetails = details?.seasons?.find((s: any) => s.season_number === selectedSeason && s.season_number > 0);
   const numberOfEpisodes = currentSeasonDetails?.episode_count || 0;
 
   // Get trailer video key - improved to work for all content types
@@ -200,7 +216,7 @@ const WatchPage = () => {
         )}
         
         <div className="max-w-[1400px] mx-auto">
-          {isTvShow && numberOfSeasons > 0 && (
+          {isTvShow && (details?.seasons?.filter((s:any) => s.season_number > 0 && s.episode_count > 0).length > 0 || numberOfSeasons > 0) && ( // Show if there are selectable seasons or TMDB reports seasons
             <div className="bg-white/5 rounded-2xl p-4 md:p-6 mb-6 border border-white/10 relative shadow-lg">
               <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -211,7 +227,7 @@ const WatchPage = () => {
                     onValueChange={(value) => {
                       if (value) {
                         setSelectedSeason(Number(value));
-                        setSelectedEpisode(1);
+                        setSelectedEpisode(1); // Reset episode to 1 when season changes
                       }
                     }}
                   >
@@ -226,25 +242,25 @@ const WatchPage = () => {
                     <SelectContent 
                       className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[60vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs"
+                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto" // Adjusted max-h and added overflow-y-auto
                       )}
-                      // position="popper" is default and generally preferred for standard dropdown behavior
                     >
                       <SelectGroup>
                         <SelectLabel className="text-white/70">Seasons</SelectLabel>
                         {details.seasons
-                          ?.filter((season: any) => season.season_number > 0)
+                          ?.filter((season: any) => season.season_number > 0 && season.episode_count > 0) // Ensure season is positive and has episodes
+                          .sort((a: any, b: any) => a.season_number - b.season_number) // Sort seasons numerically
                           .map((season: any) => (
                             <SelectItem
-                              key={season.season_number}
+                              key={season.id || season.season_number} // Use season.id if available for more stable key
                               value={season.season_number.toString()}
                               className="text-white hover:!bg-white/15 focus:!bg-white/20 cursor-pointer rounded-lg"
                             >
                               Season {season.season_number} ({season.episode_count} episodes)
                             </SelectItem>
                           ))}
-                         {details.seasons?.filter((season: any) => season.season_number > 0).length === 0 && (
-                            <div className="px-3 py-2 text-white/70 text-sm">No seasons available.</div>
+                         {details.seasons?.filter((season: any) => season.season_number > 0 && season.episode_count > 0).length === 0 && (
+                            <div className="px-3 py-2 text-white/70 text-sm">No seasons with episodes available.</div>
                          )}
                       </SelectGroup>
                     </SelectContent>
@@ -258,7 +274,7 @@ const WatchPage = () => {
                     onValueChange={(value) => {
                       if (value) setSelectedEpisode(Number(value));
                     }}
-                    disabled={numberOfEpisodes === 0}
+                    disabled={numberOfEpisodes === 0 || selectedSeason === 0} // Disable if no episodes or no season selected
                   >
                     <SelectTrigger 
                       className={cn(
@@ -271,9 +287,8 @@ const WatchPage = () => {
                     <SelectContent 
                        className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                        "max-h-[60vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs"
+                        "max-h-[45vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs overflow-y-auto" // Adjusted max-h and added overflow-y-auto
                       )}
-                      // position="popper" is default
                     >
                       <SelectGroup>
                         <SelectLabel className="text-white/70">Episodes</SelectLabel>
@@ -286,8 +301,11 @@ const WatchPage = () => {
                             Episode {episode}
                           </SelectItem>
                         ))}
-                        {numberOfEpisodes === 0 && (
+                        {numberOfEpisodes === 0 && selectedSeason > 0 && ( // Show only if a season is selected but has no episodes
                            <div className="px-3 py-2 text-white/70 text-sm">No episodes in this season.</div>
+                        )}
+                        {selectedSeason === 0 && ( // Guide user if no season is selected
+                           <div className="px-3 py-2 text-white/70 text-sm">Please select a season first.</div>
                         )}
                       </SelectGroup>
                     </SelectContent>
@@ -306,8 +324,8 @@ const WatchPage = () => {
             id={id || ''} 
             type={type as 'movie' | 'tv'} 
             title={title} 
-            season={isTvShow ? selectedSeason : undefined}
-            episode={isTvShow ? selectedEpisode : undefined}
+            season={isTvShow && selectedSeason > 0 ? selectedSeason : undefined}
+            episode={isTvShow && selectedEpisode > 0 ? selectedEpisode : undefined}
             apiType={selectedApi}
           />
           
