@@ -221,7 +221,11 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
+                      className={cn(
+                        "w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in",
+                        "fixed left-1/2 -translate-x-1/2 sm:static sm:left-auto sm:translate-x-0",
+                        "top-[60vh] sm:top-auto"
+                      )}
                       align="start"
                       side="bottom"
                       sideOffset={4}
@@ -230,8 +234,12 @@ const WatchPage = () => {
                       style={{
                         maxHeight: 260,
                         overflowY: 'auto',
-                        zIndex: 80,
-                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)'
+                        zIndex: 160,
+                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)',
+                        width: "96vw",
+                        maxWidth: 400,
+                        left: '2vw',
+                        right: '2vw'
                       }}
                     >
                       <Command className="bg-transparent">
@@ -293,7 +301,11 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
+                      className={cn(
+                        "w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in",
+                        "fixed left-1/2 -translate-x-1/2 sm:static sm:left-auto sm:translate-x-0",
+                        "top-[60vh] sm:top-auto"
+                      )}
                       align="start"
                       side="bottom"
                       sideOffset={4}
@@ -302,8 +314,12 @@ const WatchPage = () => {
                       style={{
                         maxHeight: 260,
                         overflowY: 'auto',
-                        zIndex: 80,
-                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)'
+                        zIndex: 160,
+                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)',
+                        width: "96vw",
+                        maxWidth: 400,
+                        left: '2vw',
+                        right: '2vw'
                       }}
                     >
                       <Command className="bg-transparent">

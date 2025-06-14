@@ -8,9 +8,9 @@ import { getTrending, getPopular, getTopRated, getNowPlaying, discover } from '@
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const filterOptions = [
+  { label: 'Top Rated', value: 'top_rated' },
   { label: 'Popular', value: 'popular' },
   { label: 'Trending', value: 'trending' },
-  { label: 'Top Rated', value: 'top_rated' },
   { label: 'On The Air', value: 'now_playing' },
 ];
 

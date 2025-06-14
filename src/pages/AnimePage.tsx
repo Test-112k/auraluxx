@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,9 +8,9 @@ import { getAnimeContent } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const filterOptions = [
+  { label: 'Top Rated', value: 'top_rated' },
   { label: 'Popular', value: 'popular' },
   { label: 'Recent', value: 'recent' },
-  { label: 'Top Rated', value: 'top_rated' },
 ];
 
 const AnimePage = () => {
