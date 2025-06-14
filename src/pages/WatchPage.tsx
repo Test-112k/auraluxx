@@ -245,6 +245,7 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Season" />
                     </SelectTrigger>
                     <SelectContent
+                      position="item-aligned" // Changed position
                       onCloseAutoFocus={(event) => {
                         event.preventDefault(); // Only prevent default, let Radix handle focus return
                       }}
@@ -294,6 +295,7 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Episode" />
                     </SelectTrigger>
                     <SelectContent 
+                      position="item-aligned" // Changed position
                       onCloseAutoFocus={(event) => {
                         event.preventDefault(); // Only prevent default, let Radix handle focus return
                       }}
