@@ -236,7 +236,7 @@ const WatchPage = () => {
                     }}
                   >
                     <SelectTrigger 
-                      ref={seasonTriggerRef} // Added ref
+                      ref={seasonTriggerRef}
                       className={cn(
                         "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                       )}
@@ -245,9 +245,8 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Season" />
                     </SelectTrigger>
                     <SelectContent
-                      onCloseAutoFocus={(event) => { // Added onCloseAutoFocus
-                        event.preventDefault();
-                        seasonTriggerRef.current?.focus({ preventScroll: true });
+                      onCloseAutoFocus={(event) => {
+                        event.preventDefault(); // Only prevent default, let Radix handle focus return
                       }}
                       className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
@@ -257,11 +256,11 @@ const WatchPage = () => {
                       <SelectGroup>
                         <SelectLabel className="text-white/70">Seasons</SelectLabel>
                         {details.seasons
-                          ?.filter((season: any) => season.season_number > 0 && season.episode_count > 0) // Ensure season is positive and has episodes
-                          .sort((a: any, b: any) => a.season_number - b.season_number) // Sort seasons numerically
+                          ?.filter((season: any) => season.season_number > 0 && season.episode_count > 0) 
+                          .sort((a: any, b: any) => a.season_number - b.season_number)
                           .map((season: any) => (
                             <SelectItem
-                              key={season.id || season.season_number} // Use season.id if available for more stable key
+                              key={season.id || season.season_number}
                               value={season.season_number.toString()}
                               className="text-white hover:!bg-white/15 focus:!bg-white/20 cursor-pointer rounded-lg"
                             >
@@ -283,10 +282,10 @@ const WatchPage = () => {
                     onValueChange={(value) => {
                       if (value) setSelectedEpisode(Number(value));
                     }}
-                    disabled={numberOfEpisodes === 0 || selectedSeason === 0} // Disable if no episodes or no season selected
+                    disabled={numberOfEpisodes === 0 || selectedSeason === 0}
                   >
                     <SelectTrigger 
-                      ref={episodeTriggerRef} // Added ref
+                      ref={episodeTriggerRef}
                       className={cn(
                         "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                       )}
@@ -295,9 +294,8 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Episode" />
                     </SelectTrigger>
                     <SelectContent 
-                      onCloseAutoFocus={(event) => { // Added onCloseAutoFocus
-                        event.preventDefault();
-                        episodeTriggerRef.current?.focus({ preventScroll: true });
+                      onCloseAutoFocus={(event) => {
+                        event.preventDefault(); // Only prevent default, let Radix handle focus return
                       }}
                        className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
@@ -315,10 +313,10 @@ const WatchPage = () => {
                             Episode {episode}
                           </SelectItem>
                         ))}
-                        {numberOfEpisodes === 0 && selectedSeason > 0 && ( // Show only if a season is selected but has no episodes
+                        {numberOfEpisodes === 0 && selectedSeason > 0 && (
                            <div className="px-3 py-2 text-white/70 text-sm">No episodes in this season.</div>
                         )}
-                        {selectedSeason === 0 && ( // Guide user if no season is selected
+                        {selectedSeason === 0 && (
                            <div className="px-3 py-2 text-white/70 text-sm">Please select a season first.</div>
                         )}
                       </SelectGroup>
