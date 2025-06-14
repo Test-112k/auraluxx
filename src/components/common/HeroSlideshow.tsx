@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,11 @@ const HeroSlideshow = () => {
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number | null>(null);
+  
+  // Touch handling state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fetchSlides = useCallback(async () => {
     setLoading(true);
@@ -100,16 +105,12 @@ const HeroSlideshow = () => {
     
     autoplayRef.current = setInterval(() => {
       nextSlide();
-    }, 8000); // Increased from 6s to 8s for better UX on slow connections
+    }, 6000); // Reduced back to 6s for better UX
     
     return () => {
       if (autoplayRef.current) clearInterval(autoplayRef.current);
     };
   }, [slides, nextSlide, autoplay]);
-
-  // Pause autoplay on hover
-  const handleMouseEnter = () => setAutoplay(false);
-  const handleMouseLeave = () => setAutoplay(true);
 
   // Load initial data
   useEffect(() => {
@@ -132,30 +133,64 @@ const HeroSlideshow = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextSlide, prevSlide]);
 
-  // Add touch support for mobile swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  // Improved touch handling
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    });
+    setIsDragging(false);
+    setAutoplay(false); // Pause autoplay during touch
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
     
-    const touchEndX = e.touches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-
-    // Swipe threshold
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        nextSlide(); // Swipe left
-      } else {
-        prevSlide(); // Swipe right
-      }
-      touchStartX.current = null;
+    const currentTouch = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    };
+    
+    setTouchEnd(currentTouch);
+    
+    // Check if user is swiping horizontally (not vertically scrolling)
+    const deltaX = Math.abs(currentTouch.x - touchStart.x);
+    const deltaY = Math.abs(currentTouch.y - touchStart.y);
+    
+    if (deltaX > deltaY && deltaX > 10) {
+      setIsDragging(true);
+      e.preventDefault(); // Prevent vertical scroll when swiping horizontally
     }
   };
 
-  const handleTouchEnd = () => {
-    touchStartX.current = null;
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) {
+      setAutoplay(true);
+      return;
+    }
+
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    const isLeftSwipe = distanceX > minSwipeDistance;
+    const isRightSwipe = distanceX < -minSwipeDistance;
+    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX);
+
+    // Only handle horizontal swipes
+    if (!isVerticalSwipe) {
+      if (isLeftSwipe) {
+        nextSlide();
+      } else if (isRightSwipe) {
+        prevSlide();
+      }
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+    setIsDragging(false);
+    setAutoplay(true);
   };
 
   const renderSkeleton = () => (
@@ -177,22 +212,14 @@ const HeroSlideshow = () => {
   return (
     <div 
       ref={slideshowRef}
-      className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden" 
+      className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden select-none" 
       onMouseEnter={() => setAutoplay(false)}
       onMouseLeave={() => setAutoplay(true)}
-      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
-      onTouchMove={(e) => {
-        if (touchStartX.current === null) return;
-        const touchEndX = e.touches[0].clientX;
-        const diff = touchStartX.current - touchEndX;
-        if (Math.abs(diff) > 50) {
-          if (diff > 0) nextSlide();
-          else prevSlide();
-          touchStartX.current = null;
-        }
-      }}
-      onTouchEnd={() => { touchStartX.current = null; }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
       tabIndex={0}
+      style={{ touchAction: isDragging ? 'none' : 'pan-y' }}
     >
       {/* Backdrop Images with progressive loading */}
       {slides.map((slideItem, index) => (
@@ -223,12 +250,13 @@ const HeroSlideshow = () => {
             }`}
             onLoad={() => handleImageLoad(slideItem.id)}
             loading="lazy"
+            draggable={false}
           />
         </div>
       ))}
 
       {/* Content - Improved mobile view with better text sizing and layout */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-6 lg:px-16">
+      <div className="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-6 lg:px-16 pointer-events-none">
         <div className="auraluxx-container max-w-4xl">
           <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-3 md:mb-6 animate-fade-in leading-tight drop-shadow-2xl">
             {title}
@@ -236,7 +264,7 @@ const HeroSlideshow = () => {
           <p className="text-white/90 text-sm sm:text-base md:text-xl lg:text-2xl mb-4 md:mb-8 line-clamp-2 sm:line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
             {truncateText(slide.overview, window.innerWidth < 768 ? 150 : 250)}
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 animate-fade-in pointer-events-auto">
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
               <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg w-full sm:w-auto">
                 <Play size={16} className="mr-2" /> Watch Now
@@ -256,7 +284,7 @@ const HeroSlideshow = () => {
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`h-1.5 rounded-full transition-all ${
+            className={`h-1.5 rounded-full transition-all touch-manipulation ${
               index === currentSlide ? 'w-6 md:w-8 bg-aura-purple' : 'w-2 bg-white/40'
             }`}
             onClick={() => setCurrentSlide(index)}
@@ -264,6 +292,14 @@ const HeroSlideshow = () => {
             type="button"
           />
         ))}
+      </div>
+
+      {/* Mobile swipe indicators */}
+      <div className="absolute top-1/2 left-4 transform -translate-y-1/2 z-30 md:hidden">
+        <div className="w-1 h-8 bg-white/20 rounded-full"></div>
+      </div>
+      <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-30 md:hidden">
+        <div className="w-1 h-8 bg-white/20 rounded-full"></div>
       </div>
     </div>
   );

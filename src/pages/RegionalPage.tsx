@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
-import CountrySelector from '@/components/common/CountrySelector';
+import ImprovedCountrySelector from '@/components/common/ImprovedCountrySelector';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getRegionalContent, countryToLanguagesMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -16,7 +16,7 @@ const RegionalPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRegionalContent = useCallback(async (reset = false) => {
@@ -46,9 +46,16 @@ const RegionalPage = () => {
       }
       
       if (selectedYear) {
-        filters.year = selectedYear; // Will be converted to date range in API
+        filters.year = selectedYear;
       }
       
+      console.log('Fetching regional content with:', {
+        country: selectedCountry,
+        language,
+        page: currentPage,
+        filters
+      });
+
       const data = await getRegionalContent(language, currentPage, filters);
       
       if (data?.results) {
@@ -64,6 +71,10 @@ const RegionalPage = () => {
         }
         
         setTotalPages(data.total_pages);
+        
+        if (filteredResults.length === 0 && currentPage === 1) {
+          setError('No content available for this region with current filters');
+        }
       } else {
         if (reset) {
           setRegionalContent([]);
@@ -72,7 +83,7 @@ const RegionalPage = () => {
       }
     } catch (error) {
       console.error('Error fetching regional content:', error);
-      setError('Failed to load content for this region');
+      setError('Failed to load content for this region. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -94,12 +105,14 @@ const RegionalPage = () => {
     setPage(1);
     setRegionalContent([]);
     setTotalPages(0);
+    setError(null);
   };
 
   const handleFilterChange = () => {
     setPage(1);
     setRegionalContent([]);
     setTotalPages(0);
+    setError(null);
   };
 
   useEffect(() => {
@@ -131,9 +144,9 @@ const RegionalPage = () => {
             {/* Country Selector */}
             <div className="flex flex-col space-y-4">
               <p className="text-white font-semibold text-xl">Choose Your Region:</p>
-              <CountrySelector 
+              <ImprovedCountrySelector 
                 selectedCountry={selectedCountry} 
-                onSelect={handleCountryChange} 
+                onCountryChange={handleCountryChange}
                 className="w-full max-w-2xl"
               />
             </div>
@@ -196,13 +209,28 @@ const RegionalPage = () => {
                 </div>
               )}
             </InfiniteScroll>
-          ) : (
+          ) : selectedCountry ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="bg-gradient-to-r from-aura-purple/10 to-aura-darkpurple/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-aura-purple/20 max-w-md">
                 <div className="text-white/80 space-y-4">
                   <h3 className="text-2xl font-bold text-white">No Content Available</h3>
                   <p className="text-lg">{error || 'No content available for this region with current filters.'}</p>
-                  <p className="text-sm">Please try selecting another country or adjusting your filters.</p>
+                  <p className="text-sm">Try adjusting your filters or selecting a different region.</p>
+                  <button 
+                    onClick={() => fetchRegionalContent(true)}
+                    className="mt-4 px-4 py-2 bg-aura-purple hover:bg-aura-darkpurple rounded-lg text-white transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="bg-gradient-to-r from-aura-purple/10 to-aura-darkpurple/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-aura-purple/20 max-w-md">
+                <div className="text-white/80 space-y-4">
+                  <h3 className="text-2xl font-bold text-white">Select a Region</h3>
+                  <p className="text-lg">Choose a country above to explore regional content</p>
                 </div>
               </div>
             </div>
