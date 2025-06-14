@@ -22,7 +22,7 @@ const AnimePage = () => {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
-  const activeFilter = searchParams.get('filter') || 'popular';
+  const activeFilter = searchParams.get('filter') || 'top_rated';
 
   const fetchAnime = useCallback(async (reset = false) => {
     setLoading(true);
