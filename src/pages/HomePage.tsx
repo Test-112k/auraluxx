@@ -84,7 +84,7 @@ const HomePage = () => {
   }, [fetchData]);
 
   // Banner Ad component - Fixed visibility issues
-  const BannerAd = ({ size }: { size: string }) => {
+  const BannerAd = ({ size }: { size: '300x250' | '728x90' | '160x600' | '160x300' | '468x60' | '320x50' | 'social-bar' | 'native' }) => {
     if (!isAdEnabled) return null;
     return (
       <div className="w-full my-8 flex justify-center">
@@ -158,9 +158,7 @@ const HomePage = () => {
         />
         
         {/* Ad after trending sections - Fixed visibility */}
-        <div className="my-8">
-          <BannerAd size="300x250" />
-        </div>
+        <BannerAd size="300x250" />
         
         <MediaSlider
           title="Now Playing"
@@ -179,9 +177,7 @@ const HomePage = () => {
         />
         
         {/* Ad after popular movies - Fixed visibility */}
-        <div className="my-8">
-          <BannerAd size="728x90" />
-        </div>
+        <BannerAd size="728x90" />
         
         <MediaSlider
           title="Top Rated Movies"
