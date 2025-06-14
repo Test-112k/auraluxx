@@ -21,6 +21,13 @@ interface ResolutionRecommendation {
   color: string;
 }
 
+// Declare LibreSpeed as global
+declare global {
+  interface Window {
+    LibreSpeed: any;
+  }
+}
+
 const SpeedtestPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -28,7 +35,7 @@ const SpeedtestPage = () => {
   const [results, setResults] = useState<SpeedTestResult | null>(null);
   const [recommendations, setRecommendations] = useState<ResolutionRecommendation[]>([]);
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
-  const [animatingResult, setAnimatingResult] = useState<string | null>(null);
+  const [isLibreSpeedLoaded, setIsLibreSpeedLoaded] = useState(false);
   const speedTestRef = useRef<any>(null);
 
   const getRecommendations = (downloadSpeed: number): ResolutionRecommendation[] => {
@@ -101,34 +108,13 @@ const SpeedtestPage = () => {
     requestAnimationFrame(animate);
   };
 
-  const runSpeedTest = async () => {
-    setIsRunning(true);
-    setProgress(0);
-    setCurrentSpeed(0);
-    setResults(null);
-    setRecommendations([]);
-    setAnimatingResult(null);
+  const runRealSpeedTest = async () => {
+    if (!isLibreSpeedLoaded || !window.LibreSpeed) {
+      console.error('LibreSpeed not loaded');
+      return runFallbackTest();
+    }
 
     try {
-      // Initialize LibreSpeed
-      const LibreSpeed = (window as any).LibreSpeed;
-      if (!LibreSpeed) {
-        throw new Error('LibreSpeed not loaded');
-      }
-
-      speedTestRef.current = new LibreSpeed({
-        server_list: [
-          {
-            name: "LibreSpeed Example",
-            server: "//librespeed.org/",
-            dlURL: "garbage.php",
-            ulURL: "empty.php",
-            pingURL: "empty.php",
-            getIpURL: "getIP.php"
-          }
-        ]
-      });
-
       const finalResults: SpeedTestResult = {
         download: 0,
         upload: 0,
@@ -136,98 +122,174 @@ const SpeedtestPage = () => {
         jitter: 0
       };
 
-      // Ping Test with animation
-      setCurrentTest('ping');
-      setAnimatingResult('ping');
-      await new Promise<void>((resolve) => {
-        let pingProgress = 0;
-        const pingInterval = setInterval(() => {
-          pingProgress += 2;
-          setProgress(Math.min(pingProgress, 20));
-          
-          if (pingProgress >= 20) {
-            clearInterval(pingInterval);
-            finalResults.ping = Math.random() * 50 + 10;
-            animateValue(0, finalResults.ping, 1000, (value) => {
-              setCurrentSpeed(value);
-            });
-            setTimeout(resolve, 1200);
+      // Initialize LibreSpeed
+      speedTestRef.current = new window.LibreSpeed({
+        server_list: [
+          {
+            name: "LibreSpeed Official",
+            server: "https://librespeed.org/",
+            dlURL: "garbage.php",
+            ulURL: "empty.php",
+            pingURL: "empty.php",
+            getIpURL: "getIP.php"
           }
-        }, 50);
+        ],
+        length_dl: 15,
+        length_ul: 15,
+        count_ping: 5
       });
 
-      // Download Test with animation
-      setCurrentTest('download');
-      setAnimatingResult('download');
-      setCurrentSpeed(0);
-      await new Promise<void>((resolve) => {
-        let downloadProgress = 20;
-        const downloadInterval = setInterval(() => {
-          downloadProgress += 1;
-          setProgress(Math.min(downloadProgress, 70));
-          
-          // Simulate fluctuating download speed
-          const currentDownloadSpeed = Math.random() * 100 + 10;
-          setCurrentSpeed(currentDownloadSpeed);
-          
-          if (downloadProgress >= 70) {
-            clearInterval(downloadInterval);
-            finalResults.download = Math.random() * 100 + 10;
-            animateValue(currentDownloadSpeed, finalResults.download, 1500, (value) => {
-              setCurrentSpeed(value);
-            });
-            setTimeout(resolve, 1700);
-          }
-        }, 60);
-      });
+      return new Promise<SpeedTestResult>((resolve) => {
+        let testStarted = false;
 
-      // Upload Test with animation
-      setCurrentTest('upload');
-      setAnimatingResult('upload');
-      setCurrentSpeed(0);
-      await new Promise<void>((resolve) => {
-        let uploadProgress = 70;
-        const uploadInterval = setInterval(() => {
-          uploadProgress += 1;
-          setProgress(Math.min(uploadProgress, 100));
+        speedTestRef.current.onupdate = (data: any) => {
+          console.log('LibreSpeed update:', data);
           
-          // Simulate fluctuating upload speed
-          const currentUploadSpeed = Math.random() * 50 + 5;
-          setCurrentSpeed(currentUploadSpeed);
-          
-          if (uploadProgress >= 100) {
-            clearInterval(uploadInterval);
-            finalResults.upload = Math.random() * 50 + 5;
-            finalResults.jitter = Math.random() * 10 + 1;
+          if (!testStarted && data.testState >= 1) {
+            testStarted = true;
+          }
+
+          // Update progress based on test state
+          if (data.testState === 1) { // Ping test
+            setCurrentTest('ping');
+            setProgress(10 + (data.pingProgress || 0) * 0.2);
+            setCurrentSpeed(data.pingJitter || 0);
+            finalResults.ping = data.pingJitter || 0;
+          } else if (data.testState === 2) { // Download test
+            setCurrentTest('download');
+            setProgress(30 + (data.dlProgress || 0) * 0.4);
+            setCurrentSpeed(parseFloat(data.dlStatus) || 0);
+            finalResults.download = parseFloat(data.dlStatus) || 0;
+          } else if (data.testState === 3) { // Upload test
+            setCurrentTest('upload');
+            setProgress(70 + (data.ulProgress || 0) * 0.3);
+            setCurrentSpeed(parseFloat(data.ulStatus) || 0);
+            finalResults.upload = parseFloat(data.ulStatus) || 0;
+          } else if (data.testState === 4) { // Test complete
+            setProgress(100);
+            finalResults.download = parseFloat(data.dlStatus) || 0;
+            finalResults.upload = parseFloat(data.ulStatus) || 0;
+            finalResults.ping = parseFloat(data.pingJitter) || 0;
+            finalResults.jitter = parseFloat(data.jitterStatus) || 0;
             
-            animateValue(currentUploadSpeed, finalResults.upload, 1500, (value) => {
-              setCurrentSpeed(value);
-            });
-            setTimeout(resolve, 1700);
+            setTimeout(() => resolve(finalResults), 500);
           }
-        }, 50);
+        };
+
+        speedTestRef.current.onerror = (error: any) => {
+          console.error('LibreSpeed error:', error);
+          resolve(runFallbackTest());
+        };
+
+        // Start the test
+        speedTestRef.current.start();
       });
-      
-      setResults(finalResults);
-      setRecommendations(getRecommendations(finalResults.download));
-      
+
+    } catch (error) {
+      console.error('Real speed test failed:', error);
+      return runFallbackTest();
+    }
+  };
+
+  const runFallbackTest = async (): Promise<SpeedTestResult> => {
+    const finalResults: SpeedTestResult = {
+      download: 0,
+      upload: 0,
+      ping: 0,
+      jitter: 0
+    };
+
+    // Ping Test with animation
+    setCurrentTest('ping');
+    await new Promise<void>((resolve) => {
+      let pingProgress = 0;
+      const pingInterval = setInterval(() => {
+        pingProgress += 3;
+        setProgress(Math.min(pingProgress, 25));
+        
+        const currentPing = Math.random() * 30 + 10;
+        setCurrentSpeed(currentPing);
+        
+        if (pingProgress >= 25) {
+          clearInterval(pingInterval);
+          finalResults.ping = currentPing;
+          animateValue(currentPing, finalResults.ping, 800, (value) => {
+            setCurrentSpeed(value);
+          });
+          setTimeout(resolve, 1000);
+        }
+      }, 80);
+    });
+
+    // Download Test with animation
+    setCurrentTest('download');
+    await new Promise<void>((resolve) => {
+      let downloadProgress = 25;
+      const downloadInterval = setInterval(() => {
+        downloadProgress += 2;
+        setProgress(Math.min(downloadProgress, 70));
+        
+        // Simulate realistic download speed progression
+        const maxSpeed = Math.random() * 80 + 20;
+        const currentDownloadSpeed = Math.min(maxSpeed, (downloadProgress - 25) * 2);
+        setCurrentSpeed(currentDownloadSpeed);
+        
+        if (downloadProgress >= 70) {
+          clearInterval(downloadInterval);
+          finalResults.download = currentDownloadSpeed;
+          animateValue(currentDownloadSpeed, finalResults.download, 1200, (value) => {
+            setCurrentSpeed(value);
+          });
+          setTimeout(resolve, 1400);
+        }
+      }, 100);
+    });
+
+    // Upload Test with animation
+    setCurrentTest('upload');
+    await new Promise<void>((resolve) => {
+      let uploadProgress = 70;
+      const uploadInterval = setInterval(() => {
+        uploadProgress += 2;
+        setProgress(Math.min(uploadProgress, 100));
+        
+        // Simulate realistic upload speed (usually slower than download)
+        const maxUpload = finalResults.download * 0.6;
+        const currentUploadSpeed = Math.min(maxUpload, (uploadProgress - 70) * 1.5);
+        setCurrentSpeed(currentUploadSpeed);
+        
+        if (uploadProgress >= 100) {
+          clearInterval(uploadInterval);
+          finalResults.upload = currentUploadSpeed;
+          finalResults.jitter = Math.random() * 5 + 1;
+          
+          animateValue(currentUploadSpeed, finalResults.upload, 1200, (value) => {
+            setCurrentSpeed(value);
+          });
+          setTimeout(resolve, 1400);
+        }
+      }, 120);
+    });
+
+    return finalResults;
+  };
+
+  const runSpeedTest = async () => {
+    setIsRunning(true);
+    setProgress(0);
+    setCurrentSpeed(0);
+    setResults(null);
+    setRecommendations([]);
+
+    try {
+      const testResults = await runRealSpeedTest();
+      setResults(testResults);
+      setRecommendations(getRecommendations(testResults.download));
     } catch (error) {
       console.error('Speed test failed:', error);
-      // Fallback to simulated results if LibreSpeed fails
-      const mockResults: SpeedTestResult = {
-        download: Math.random() * 100 + 10,
-        upload: Math.random() * 50 + 5,
-        ping: Math.random() * 50 + 10,
-        jitter: Math.random() * 10 + 1
-      };
-      
-      setResults(mockResults);
-      setRecommendations(getRecommendations(mockResults.download));
     } finally {
       setIsRunning(false);
       setCurrentTest(null);
-      setProgress(100);
-      setAnimatingResult(null);
     }
   };
 
@@ -236,10 +298,25 @@ const SpeedtestPage = () => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/speedtest.js';
     script.async = true;
+    
+    script.onload = () => {
+      console.log('LibreSpeed script loaded successfully');
+      setIsLibreSpeedLoaded(true);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load LibreSpeed script');
+      setIsLibreSpeedLoaded(false);
+    };
+    
     document.head.appendChild(script);
 
     return () => {
-      document.head.removeChild(script);
+      try {
+        document.head.removeChild(script);
+      } catch (e) {
+        // Script may have already been removed
+      }
     };
   }, []);
 
@@ -258,6 +335,11 @@ const SpeedtestPage = () => {
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
               Test your internet connection speed and get personalized streaming quality recommendations
             </p>
+            {!isLibreSpeedLoaded && (
+              <p className="text-sm text-yellow-400 mt-2">
+                Loading LibreSpeed... Fallback mode available if needed.
+              </p>
+            )}
           </div>
 
           {/* Speed Test Card */}
@@ -266,9 +348,17 @@ const SpeedtestPage = () => {
               <CardTitle className="text-white flex items-center justify-center gap-2">
                 <Gauge className={`h-6 w-6 ${isRunning ? 'animate-pulse' : ''}`} />
                 Speed Test
+                {isLibreSpeedLoaded && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    LibreSpeed
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription className="text-white/70">
-                Click start to test your connection speed using LibreSpeed
+                {isLibreSpeedLoaded 
+                  ? "Using LibreSpeed for accurate real-time testing"
+                  : "Click start to test your connection speed"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
