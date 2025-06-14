@@ -201,12 +201,6 @@ export const getAnimeContent = (filter = 'popular', options: Record<string, any>
       sortBy = 'vote_average.desc';
       params['vote_count.gte'] = 100;
       break;
-    case 'airing_today':
-      sortBy = 'first_air_date.desc';
-      const today = new Date().toISOString().split('T')[0];
-      params['first_air_date.gte'] = today;
-      params['first_air_date.lte'] = today;
-      break;
     case 'popular':
     default:
       sortBy = 'popularity.desc';

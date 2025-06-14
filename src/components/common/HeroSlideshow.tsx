@@ -177,7 +177,7 @@ const HeroSlideshow = () => {
   return (
     <div 
       ref={slideshowRef}
-      className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden" 
+      className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden" 
       onMouseEnter={() => setAutoplay(false)}
       onMouseLeave={() => setAutoplay(true)}
       onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
@@ -203,7 +203,7 @@ const HeroSlideshow = () => {
           }`}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-aura-dark via-transparent to-transparent z-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
           
           {/* Placeholder while image loads */}
           {!imageLoadingStates[slideItem.id] && (
@@ -227,23 +227,23 @@ const HeroSlideshow = () => {
         </div>
       ))}
 
-      {/* Content - Enhanced text visibility for desktop */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 lg:px-16">
+      {/* Content - Improved mobile view with better text sizing and layout */}
+      <div className="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-6 lg:px-16">
         <div className="auraluxx-container max-w-4xl">
-          <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-white mb-4 md:mb-6 animate-fade-in leading-tight drop-shadow-2xl">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-3 md:mb-6 animate-fade-in leading-tight drop-shadow-2xl">
             {title}
           </h1>
-          <p className="text-white/90 text-base md:text-xl lg:text-2xl mb-6 md:mb-8 line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
-            {truncateText(slide.overview, 250)}
+          <p className="text-white/90 text-sm sm:text-base md:text-xl lg:text-2xl mb-4 md:mb-8 line-clamp-2 sm:line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
+            {truncateText(slide.overview, window.innerWidth < 768 ? 150 : 250)}
           </p>
-          <div className="flex items-center space-x-4 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 animate-fade-in">
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
-              <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
-                <Play size={20} className="mr-2" /> Watch Now
+              <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg w-full sm:w-auto">
+                <Play size={16} className="mr-2" /> Watch Now
               </Button>
             </Link>
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
-              <Button variant="outline" className="text-white border-white/50 hover:bg-white/10 px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
+              <Button variant="outline" className="text-white border-white/50 hover:bg-white/10 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg w-full sm:w-auto">
                 More Info
               </Button>
             </Link>
@@ -251,13 +251,13 @@ const HeroSlideshow = () => {
         </div>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+      {/* Slide Indicators - Better mobile positioning */}
+      <div className="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
         {slides.map((_, index) => (
           <button
             key={index}
             className={`h-1.5 rounded-full transition-all ${
-              index === currentSlide ? 'w-8 bg-aura-purple' : 'w-2 bg-white/40'
+              index === currentSlide ? 'w-6 md:w-8 bg-aura-purple' : 'w-2 bg-white/40'
             }`}
             onClick={() => setCurrentSlide(index)}
             aria-label={`Go to slide ${index + 1}`}

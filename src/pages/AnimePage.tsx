@@ -12,7 +12,6 @@ const filterOptions = [
   { label: 'Popular', value: 'popular' },
   { label: 'Recent', value: 'recent' },
   { label: 'Top Rated', value: 'top_rated' },
-  { label: 'Airing Today', value: 'airing_today' },
 ];
 
 const AnimePage = () => {

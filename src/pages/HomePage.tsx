@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import HeroSlideshow from '@/components/common/HeroSlideshow';
@@ -84,12 +83,12 @@ const HomePage = () => {
     fetchData();
   }, [fetchData]);
 
-  // Banner Ad component
-  const BannerAd = ({ size }) => {
+  // Banner Ad component - Fixed visibility issues
+  const BannerAd = ({ size }: { size: string }) => {
     if (!isAdEnabled) return null;
     return (
       <div className="w-full my-8 flex justify-center">
-        <div className="bg-white/5 p-2 rounded-lg">
+        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
           <Ad size={size} />
         </div>
       </div>
@@ -158,8 +157,10 @@ const HomePage = () => {
           mediaType="tv"
         />
         
-        {/* Ad after 2 sliders */}
-        <BannerAd size="300x250" />
+        {/* Ad after trending sections - Fixed visibility */}
+        <div className="my-8">
+          <BannerAd size="300x250" />
+        </div>
         
         <MediaSlider
           title="Now Playing"
@@ -177,8 +178,10 @@ const HomePage = () => {
           mediaType="movie"
         />
         
-        {/* Ad after 4 sliders */}
-        <BannerAd size="728x90" />
+        {/* Ad after popular movies - Fixed visibility */}
+        <div className="my-8">
+          <BannerAd size="728x90" />
+        </div>
         
         <MediaSlider
           title="Top Rated Movies"
