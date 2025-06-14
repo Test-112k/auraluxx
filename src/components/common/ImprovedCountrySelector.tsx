@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown, Globe, Flag } from 'lucide-react';
+import { Check, ChevronDown, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,17 +13,15 @@ interface Country {
   native_name?: string;
 }
 
-interface CountrySelectorProps {
-  selectedCountry: string;
-  onCountryChange: (country: string) => void;
-  className?: string;
-}
-
 // Helper to get flag URL from country code
 const getFlagUrl = (countryCode: string) => 
   `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 
-const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }: CountrySelectorProps) => {
+const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }: {
+  selectedCountry: string;
+  onCountryChange: (country: string) => void;
+  className?: string;
+}) => {
   const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +36,6 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
             .filter((country: Country) => countryToLanguagesMap[country.iso_3166_1])
             .sort((a: Country, b: Country) => a.english_name.localeCompare(b.english_name));
         }
-
-        // Always add Pakistan (PK) if it's absent
         if (!supportedCountries.find(c => c.iso_3166_1 === 'PK')) {
           supportedCountries.unshift({
             iso_3166_1: 'PK',
@@ -53,7 +50,6 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
         setLoading(false);
       }
     };
-
     loadCountries();
   }, []);
 
@@ -67,13 +63,13 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "justify-between bg-white/10 border-white/10 text-white hover:bg-white/20 min-w-[200px]",
+            "justify-between bg-white/15 border-white/15 text-white shadow-md rounded-lg min-w-[220px] h-12 hover:bg-white/25 transition-all duration-150 font-medium focus:ring-2 focus:ring-aura-purple",
             className
           )}
         >
           <div className="flex items-center gap-2">
             {selectedCountryData ? (
-              <img src={getFlagUrl(selectedCountryData.iso_3166_1)} alt="" className="w-5 h-5 rounded-sm object-cover mr-2" />
+              <img src={getFlagUrl(selectedCountryData.iso_3166_1)} alt="" className="w-5 h-5 rounded-sm object-cover mr-2 shadow" />
             ) : (
               <Flag size={18} className="mr-2 opacity-60" />
             )}
@@ -83,16 +79,16 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
               <span className="text-white/70">Select country...</span>
             )}
           </div>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0 bg-aura-darkpurple border-white/10" align="start">
+      <PopoverContent className="w-[310px] p-0 bg-aura-darkpurple/95 rounded-xl border-white/15 border shadow-2xl z-50 animate-scale-in" align="start">
         <Command className="bg-transparent">
-          <CommandInput 
-            placeholder="Search countries..." 
-            className="border-none bg-transparent text-white placeholder:text-white/50"
+          <CommandInput
+            placeholder="Search countries..."
+            className="border-none bg-transparent text-white placeholder:text-white/40 h-10 px-3"
           />
-          <CommandList className="max-h-[300px] overflow-y-auto">
+          <CommandList className="max-h-[350px] overflow-y-auto">
             <CommandEmpty className="py-6 text-center text-white/70">
               {loading ? "Loading countries..." : "No countries found."}
             </CommandEmpty>
@@ -106,14 +102,14 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
                       onCountryChange(country.iso_3166_1);
                       setOpen(false);
                     }}
-                    className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer"
+                    className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer rounded transition-all"
                   >
                     <div className="flex items-center gap-2">
                       <img
                         src={getFlagUrl(country.iso_3166_1)}
                         alt=""
-                        className="w-5 h-5 rounded-sm object-cover"
-                        onError={(e) => {
+                        className="w-5 h-5 rounded-sm object-cover border border-white/10 shadow-sm"
+                        onError={e => {
                           (e.target as HTMLImageElement).src = 'https://flagcdn.com/w20/un.png';
                         }}
                       />
@@ -129,7 +125,7 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
                       <Check
                         className={cn(
                           "h-4 w-4",
-                          selectedCountry === country.iso_3166_1 ? "opacity-100" : "opacity-0"
+                          selectedCountry === country.iso_3166_1 ? "opacity-100 text-aura-accent" : "opacity-0"
                         )}
                       />
                     </div>

@@ -198,42 +198,46 @@ const WatchPage = () => {
         
         {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Fixed TV Show Season/Episode Selector */}
+          {/* Improve: TV Show Season/Episode Selector */}
           {isTvShow && numberOfSeasons > 0 && (
-            <div className="bg-white/5 rounded-xl p-4 md:p-6 mb-6 border border-white/10 relative">
+            <div className="bg-white/5 rounded-2xl p-4 md:p-6 mb-6 border border-white/10 relative shadow-lg">
               <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Season Selector */}
                 <div className="space-y-2 relative">
-                  <label className="text-sm font-medium text-white/70 block">Season</label>
+                  <label className="text-sm font-medium text-white/70 block mb-1">Season</label>
                   <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         role="combobox"
                         aria-expanded={seasonOpen}
-                        className="w-full justify-between bg-white/10 border-white/10 text-white hover:bg-white/20 h-12"
+                        className="w-full justify-between bg-white/10 border border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                       >
-                        <span className="font-medium">Season {selectedSeason}</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <span className="font-medium">
+                          {`Season ${selectedSeason}`}
+                        </span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-full max-w-[300px] p-0 bg-aura-dark/98 backdrop-blur-lg border-white/20 shadow-2xl"
+                    <PopoverContent
+                      className="w-full max-w-[300px] p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
                       collisionPadding={16}
-                      style={{ zIndex: 50 }}
+                      style={{ zIndex: 60 }}
                     >
                       <Command className="bg-transparent">
-                        <CommandInput 
-                          placeholder="Search seasons..." 
-                          className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
+                        <CommandInput
+                          placeholder="Search seasons..."
+                          className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
                         <CommandList className="max-h-48">
-                          <CommandEmpty className="py-6 text-center text-white/70">No seasons found.</CommandEmpty>
+                          <CommandEmpty className="py-6 text-center text-white/70">
+                            No seasons found.
+                          </CommandEmpty>
                           <CommandGroup className="p-2">
                             {details.seasons
                               ?.filter((season: any) => season.season_number > 0)
@@ -246,14 +250,12 @@ const WatchPage = () => {
                                     setSelectedEpisode(1);
                                     setSeasonOpen(false);
                                   }}
-                                  className="text-white hover:bg-white/10 cursor-pointer rounded-lg p-2 flex items-center justify-between"
+                                  className="text-white hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2 flex items-center justify-between transition-all"
                                 >
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">Season {season.season_number}</span>
-                                    <span className="text-xs text-white/60">
-                                      {season.episode_count} episodes
-                                    </span>
-                                  </div>
+                                  <span className="font-medium">{`Season ${season.season_number}`}</span>
+                                  <span className="text-xs text-white/60 ml-2">
+                                    {season.episode_count} episodes
+                                  </span>
                                   <Check
                                     className={cn(
                                       "h-4 w-4 text-aura-accent",
@@ -271,36 +273,38 @@ const WatchPage = () => {
                 
                 {/* Episode Selector */}
                 <div className="space-y-2 relative">
-                  <label className="text-sm font-medium text-white/70 block">Episode</label>
+                  <label className="text-sm font-medium text-white/70 block mb-1">Episode</label>
                   <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         role="combobox"
                         aria-expanded={episodeOpen}
-                        className="w-full justify-between bg-white/10 border-white/10 text-white hover:bg-white/20 h-12"
+                        className="w-full justify-between bg-white/10 border border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
                         disabled={numberOfEpisodes === 0}
                       >
-                        <span className="font-medium">Episode {selectedEpisode}</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <span className="font-medium">{`Episode ${selectedEpisode}`}</span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-full max-w-[300px] p-0 bg-aura-dark/98 backdrop-blur-lg border-white/20 shadow-2xl"
+                    <PopoverContent
+                      className="w-full max-w-[300px] p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
                       collisionPadding={16}
-                      style={{ zIndex: 50 }}
+                      style={{ zIndex: 60 }}
                     >
                       <Command className="bg-transparent">
-                        <CommandInput 
-                          placeholder="Search episodes..." 
-                          className="border-none bg-transparent text-white placeholder:text-white/50 h-10"
+                        <CommandInput
+                          placeholder="Search episodes..."
+                          className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
                         <CommandList className="max-h-48">
-                          <CommandEmpty className="py-6 text-center text-white/70">No episodes found.</CommandEmpty>
+                          <CommandEmpty className="py-6 text-center text-white/70">
+                            No episodes found.
+                          </CommandEmpty>
                           <CommandGroup className="p-2">
                             {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
                               <CommandItem
@@ -310,9 +314,9 @@ const WatchPage = () => {
                                   setSelectedEpisode(episode);
                                   setEpisodeOpen(false);
                                 }}
-                                className="text-white hover:bg-white/10 cursor-pointer rounded-lg p-2 flex items-center justify-between"
+                                className="text-white hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2 flex items-center justify-between transition-all"
                               >
-                                <span className="font-medium">Episode {episode}</span>
+                                <span className="font-medium">{`Episode ${episode}`}</span>
                                 <Check
                                   className={cn(
                                     "h-4 w-4 text-aura-accent",
