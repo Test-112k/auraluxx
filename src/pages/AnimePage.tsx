@@ -31,13 +31,12 @@ const AnimePage = () => {
     const currentPage = reset ? 1 : page;
 
     try {
-      const data = await getAnimeContent(
-        activeFilter,
-        currentPage,
-        selectedGenre,
-        selectedYear,
-        selectedLanguage
-      );
+      const data = await getAnimeContent(activeFilter, {
+        page: currentPage,
+        genre: selectedGenre,
+        year: selectedYear,
+        language: selectedLanguage
+      });
 
       if (data?.results) {
         // Filter out results without poster images for cleaner UI
@@ -93,7 +92,7 @@ const AnimePage = () => {
 
   return (
     <MainLayout>
-      <div style={{ scrollBehavior: 'auto' }}>
+      <div>
         <CategoryFilterBar
           onGenreChange={handleGenreChange}
           onYearChange={handleYearChange}
