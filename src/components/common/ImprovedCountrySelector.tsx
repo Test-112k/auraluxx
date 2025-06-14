@@ -31,13 +31,22 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
     const loadCountries = async () => {
       try {
         const data = await getCountries();
+        let supportedCountries = [];
         if (data && Array.isArray(data)) {
-          // Filter countries that have language mappings and sort them
-          const supportedCountries = data
+          supportedCountries = data
             .filter((country: Country) => countryToLanguagesMap[country.iso_3166_1])
             .sort((a: Country, b: Country) => a.english_name.localeCompare(b.english_name));
-          setCountries(supportedCountries);
         }
+
+        // Always add Pakistan (PK) if it's absent
+        if (!supportedCountries.find(c => c.iso_3166_1 === 'PK')) {
+          supportedCountries.unshift({
+            iso_3166_1: 'PK',
+            english_name: 'Pakistan',
+            native_name: 'پاکستان'
+          });
+        }
+        setCountries(supportedCountries);
       } catch (error) {
         console.error('Error loading countries:', error);
       } finally {

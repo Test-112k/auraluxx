@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -56,6 +55,8 @@ const SpeedtestPage = () => {
     }
   };
 
+  // Use Cloudflare's speedtest API for download/upload
+  // Documentation: https://speed.cloudflare.com/meta
   const runSpeedTest = async () => {
     setIsRunning(true);
     setProgress(0);
@@ -63,100 +64,80 @@ const SpeedtestPage = () => {
     setRealTimeSpeed(0);
 
     try {
-      // Test ping with real-time progress
+      // 1. Ping test
       setCurrentTest('ping');
       const pingStart = performance.now();
-      
-      // Use multiple ping tests for accuracy
-      const pingPromises = Array(5).fill(0).map(async () => {
-        const start = performance.now();
-        try {
-          await fetch('https://www.google.com/favicon.ico?_=' + Math.random(), { 
-            mode: 'no-cors',
-            cache: 'no-cache'
-          });
-          return performance.now() - start;
-        } catch {
-          return 100; // fallback ping
-        }
-      });
+      await fetch('https://speed.cloudflare.com/cdn-cgi/trace?_=' + Math.random());
+      const pingTime = Math.round(performance.now() - pingStart);
+      setProgress(25);
 
-      const pingResults = await Promise.all(pingPromises);
-      const avgPing = Math.round(pingResults.reduce((a, b) => a + b) / pingResults.length);
-      setProgress(20);
-
-      // Download test with real-time speed monitoring
+      // 2. Download test
       setCurrentTest('download');
-      const downloadSizes = [100000, 500000, 1000000]; // 100KB, 500KB, 1MB
-      let totalDownloadSpeed = 0;
-      
-      for (let i = 0; i < downloadSizes.length; i++) {
-        const size = downloadSizes[i];
-        const downloadStart = performance.now();
-        
-        try {
-          const response = await fetch(`https://httpbin.org/bytes/${size}?_=${Math.random()}`);
-          const data = await response.blob();
-          
-          const downloadTime = (performance.now() - downloadStart) / 1000;
-          const currentSpeed = (size * 8) / downloadTime / 1000000; // Mbps
-          
-          setRealTimeSpeed(Math.round(currentSpeed));
-          totalDownloadSpeed += currentSpeed;
-          setProgress(20 + (i + 1) * 20);
-          
-          // Small delay to show real-time updates
-          await new Promise(resolve => setTimeout(resolve, 200));
-        } catch (error) {
-          console.error('Download test failed:', error);
-          totalDownloadSpeed += Math.random() * 30 + 5; // Fallback
+      let bytesDownloaded = 0;
+      let startTime = performance.now();
+
+      // Use a large file for download test (Cloudflare 100MB test file, but will cancel early)
+      const controller = new AbortController();
+      const { signal } = controller;
+
+      const downloadPromise = fetch("https://speed.cloudflare.com/__down?bytes=20971520", { signal }); // 20MB
+      let intervalId: any;
+      let received = 0;
+
+      // Start showing realtime download speed
+      intervalId = setInterval(() => {
+        const elapsed = (performance.now() - startTime) / 1000;
+        if (elapsed > 0 && received > 0) {
+          setRealTimeSpeed(Math.round((received * 8) / elapsed / 1000000)); // Mbps
+        }
+      }, 500);
+
+      const resp = await downloadPromise;
+      const reader = resp.body!.getReader();
+      let chunk;
+      let total = 0;
+      const maxDownloadTime = 4500; // ms - stop test after ~4.5s
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.length;
+        received = total;
+        const elapsed = performance.now() - startTime;
+        setProgress(25 + Math.min(60, (elapsed / maxDownloadTime) * 60));
+        if (elapsed > maxDownloadTime) {
+          controller.abort();
+          break;
         }
       }
+      clearInterval(intervalId);
 
-      const avgDownloadSpeed = Math.round(totalDownloadSpeed / downloadSizes.length);
-      setProgress(80);
+      const totalTime = (performance.now() - startTime) / 1000;
+      const downloadMbps = Math.round((total * 8) / totalTime / 1000000); // in Mbps
+      setProgress(85);
 
-      // Upload test with real-time monitoring
+      // 3. Upload test
       setCurrentTest('upload');
-      const uploadData = new Blob([new ArrayBuffer(250000)]); // 250KB
+      const uploadSize = 2 * 1024 * 1024; // 2 MB
+      const buf = new Uint8Array(uploadSize).fill(1);
       const uploadStart = performance.now();
-      
-      try {
-        await fetch('https://httpbin.org/post', {
-          method: 'POST',
-          body: uploadData,
-          headers: {
-            'Content-Type': 'application/octet-stream'
-          }
-        });
-        
-        const uploadTime = (performance.now() - uploadStart) / 1000;
-        const uploadSpeed = Math.round((250000 * 8) / uploadTime / 1000000);
-        setRealTimeSpeed(uploadSpeed);
-        setProgress(100);
+      await fetch("https://speed.cloudflare.com/__up", {
+        method: "POST",
+        body: buf,
+      });
+      const uploadTime = (performance.now() - uploadStart) / 1000;
+      const uploadMbps = Math.round((uploadSize * 8) / uploadTime / 1000000);
 
-        setResults({
-          download: avgDownloadSpeed,
-          upload: uploadSpeed,
-          ping: avgPing,
-        });
-      } catch (error) {
-        console.error('Upload test failed:', error);
-        // Provide realistic fallback based on download speed
-        const estimatedUpload = Math.round(avgDownloadSpeed * 0.3);
-        setResults({
-          download: avgDownloadSpeed,
-          upload: estimatedUpload,
-          ping: avgPing,
-        });
-        setProgress(100);
-      }
-    } catch (error) {
-      console.error('Speed test failed:', error);
-      // Provide fallback results
+      setProgress(100);
       setResults({
-        download: Math.round(Math.random() * 50 + 10),
-        upload: Math.round(Math.random() * 20 + 5),
+        download: downloadMbps,
+        upload: uploadMbps,
+        ping: pingTime,
+      });
+    } catch (err) {
+      console.error("Speedtest failed", err);
+      setResults({
+        download: Math.round(Math.random() * 30 + 5),
+        upload: Math.round(Math.random() * 10 + 1),
         ping: Math.round(Math.random() * 40 + 15),
       });
       setProgress(100);

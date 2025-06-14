@@ -128,13 +128,19 @@ const RegionalPage = () => {
 
   // Auto-detect country on first visit
   useEffect(() => {
-    // Only auto-detect if not already selected
     if (!selectedCountry) {
-      fetchUserCountry().then((countryCode) => {
-        if (countryCode && countryToLanguagesMap[countryCode]) {
-          setSelectedCountry(countryCode);
-        }
-      });
+      // Use ipinfo.io or similar to detect user's country
+      fetch('https://ipinfo.io/json?token=2d947eab4e3ae4')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.country && countryToLanguagesMap[data.country]) {
+            setSelectedCountry(data.country);
+          } else if (data && data.country && data.country === 'PK') {
+            // Fallback for Pakistan in case it's not in countryToLanguagesMap
+            setSelectedCountry('PK');
+          }
+        })
+        .catch(() => {});
     }
   }, [selectedCountry]);
 
