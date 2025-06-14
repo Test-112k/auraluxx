@@ -3,7 +3,66 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Wifi, Download, Upload, Gauge, AlertCircle, CheckCircle } from 'lucide-react';
+import { Wifi, Download, Upload, Gauge, AlertCircle, CheckCircle, ServerCrash } from 'lucide-react';
+import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis, Legend } from 'recharts';
+
+const SpeedometerGauge = ({ value, maxValue, label, unit, color }: { value: number; maxValue: number; label: string; unit: string; color: string }) => {
+  const data = [{ name: label, value: Math.min(value, maxValue), fill: color }]; // Cap value at maxValue for visual
+  const safeValue = isNaN(value) ? 0 : value;
+  const safeMaxValue = isNaN(maxValue) || maxValue === 0 ? 100 : maxValue; // Avoid division by zero or NaN
+
+  return (
+    <div className="text-center p-3 bg-white/5 rounded-lg w-full h-[220px] flex flex-col justify-center items-center">
+      <ResponsiveContainer width="100%" height={140}>
+        <RadialBarChart
+          cx="50%"
+          cy="70%" // Adjusted to pull gauge upwards
+          innerRadius="60%"
+          outerRadius="100%"
+          barSize={12}
+          data={data}
+          startAngle={180}
+          endAngle={0}
+        >
+          <PolarAngleAxis
+            type="number"
+            domain={[0, safeMaxValue]}
+            angleAxisId={0}
+            tick={false}
+          />
+          <RadialBar
+            background={{ fill: '#333' }} // Darker background for the track
+            dataKey="value"
+            angleAxisId={0}
+            cornerRadius={6}
+          />
+          {/* Text inside gauge */}
+          <text
+            x="50%"
+            y="65%" // Adjusted y for value
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="text-xl font-bold"
+            style={{ fill: color }} 
+          >
+            {safeValue.toFixed(0)}
+          </text>
+          <text
+            x="50%"
+            y="85%" // Adjusted y for unit
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="text-xs"
+            style={{ fill: 'rgba(255,255,255,0.7)' }}
+          >
+            {unit}
+          </text>
+        </RadialBarChart>
+      </ResponsiveContainer>
+      <div className="text-white/80 text-sm mt-1">{label}</div>
+    </div>
+  );
+};
 
 const SpeedtestPage = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -15,6 +74,7 @@ const SpeedtestPage = () => {
   } | null>(null);
   const [currentTest, setCurrentTest] = useState<'ping' | 'download' | 'upload' | null>(null);
   const [realTimeSpeed, setRealTimeSpeed] = useState<number>(0);
+  const [testError, setTestError] = useState<string | null>(null); // New state for errors
 
   const getSpeedRecommendation = (downloadSpeed: number) => {
     if (downloadSpeed >= 100) {
@@ -62,6 +122,7 @@ const SpeedtestPage = () => {
     setProgress(0);
     setResults(null);
     setRealTimeSpeed(0);
+    setTestError(null); // Reset error before new test
 
     try {
       // 1. Ping test
@@ -135,12 +196,9 @@ const SpeedtestPage = () => {
       });
     } catch (err) {
       console.error("Speedtest failed", err);
-      setResults({
-        download: Math.round(Math.random() * 30 + 5),
-        upload: Math.round(Math.random() * 10 + 1),
-        ping: Math.round(Math.random() * 40 + 15),
-      });
-      setProgress(100);
+      setTestError("The speed test encountered an error. Please check your connection and try again.");
+      setResults(null); // Clear any partial/fake results
+      setProgress(100); // Still complete progress to stop loading indicators
     }
 
     setCurrentTest(null);
@@ -230,42 +288,42 @@ const SpeedtestPage = () => {
                 </div>
               )}
 
-              {/* Results */}
-              {results && (
+              {/* Error Message Display */}
+              {testError && !isRunning && (
+                <div className="p-4 bg-red-500/10 border-l-4 border-red-500 text-red-400 rounded-lg flex items-center gap-3">
+                  <ServerCrash className="h-6 w-6" />
+                  <div>
+                    <h3 className="font-semibold">Test Failed</h3>
+                    <p className="text-sm">{testError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Results with Speedometer Gauges */}
+              {results && !isRunning && !testError && (
                 <div className="space-y-6">
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center p-6 bg-white/5 rounded-lg">
-                      <Download className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                      <div className="text-2xl font-bold text-white mb-1">
-                        <span className={getSpeedColor(results.download, 'download')}>
-                          {results.download}
-                        </span>
-                        <span className="text-white/50 text-lg ml-1">Mbps</span>
-                      </div>
-                      <div className="text-white/70 text-sm">Download</div>
-                    </div>
-
-                    <div className="text-center p-6 bg-white/5 rounded-lg">
-                      <Upload className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                      <div className="text-2xl font-bold text-white mb-1">
-                        <span className={getSpeedColor(results.upload, 'upload')}>
-                          {results.upload}
-                        </span>
-                        <span className="text-white/50 text-lg ml-1">Mbps</span>
-                      </div>
-                      <div className="text-white/70 text-sm">Upload</div>
-                    </div>
-
-                    <div className="text-center p-6 bg-white/5 rounded-lg">
-                      <Wifi className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                      <div className="text-2xl font-bold text-white mb-1">
-                        <span className={getPingColor(results.ping)}>
-                          {results.ping}
-                        </span>
-                        <span className="text-white/50 text-lg ml-1">ms</span>
-                      </div>
-                      <div className="text-white/70 text-sm">Ping</div>
-                    </div>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <SpeedometerGauge
+                      value={results.download}
+                      maxValue={150} // Adjust maxValue based on typical speeds, e.g., 150 or 500 Mbps
+                      label="Download"
+                      unit="Mbps"
+                      color="#3b82f6" // Blue
+                    />
+                    <SpeedometerGauge
+                      value={results.upload}
+                      maxValue={100} // Adjust maxValue, e.g., 100 or 200 Mbps
+                      label="Upload"
+                      unit="Mbps"
+                      color="#22c55e" // Green
+                    />
+                    <SpeedometerGauge
+                      value={results.ping}
+                      maxValue={100} // Max ping for gauge, e.g., 100ms. Lower is better.
+                      label="Ping"
+                      unit="ms"
+                      color="#a855f7" // Purple
+                    />
                   </div>
 
                   {/* Speed Recommendation */}

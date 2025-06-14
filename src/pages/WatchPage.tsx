@@ -11,9 +11,15 @@ import MediaDetails from '@/components/common/MediaDetails';
 import YouTubeTrailer from '@/components/common/YouTubeTrailer';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Check, ChevronDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { getDetails, getSimilar } from '@/services/tmdbApi';
 import { toast } from '@/components/ui/use-toast';
@@ -26,8 +32,6 @@ const WatchPage = () => {
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
   const [selectedApi, setSelectedApi] = useState<'embed' | 'torrent' | 'agg'>('embed');
-  const [seasonOpen, setSeasonOpen] = useState(false);
-  const [episodeOpen, setEpisodeOpen] = useState(false);
   const { isAdEnabled } = useAds();
   
   // Fetch media details
@@ -59,6 +63,12 @@ const WatchPage = () => {
       const firstValidSeason = details.seasons.find((s: any) => s.season_number > 0);
       if (firstValidSeason) {
         setSelectedSeason(firstValidSeason.season_number);
+        setSelectedEpisode(1);
+      } else {
+        // Handle cases where no valid seasons exist (e.g., only season 0 "Specials")
+        // Default to season 1, episode 1 if no positive season numbers found
+        // This might lead to "No episodes found" if season 1 has 0 episodes, which is acceptable
+        setSelectedSeason(1); 
         setSelectedEpisode(1);
       }
     }
@@ -206,142 +216,97 @@ const WatchPage = () => {
                 {/* Season Selector */}
                 <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block mb-1">Season</label>
-                  <Popover open={seasonOpen} onOpenChange={setSeasonOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={seasonOpen}
-                        className="w-full justify-between bg-white/10 border border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
-                      >
-                        <span className="font-medium">
-                          {`Season ${selectedSeason}`}
-                        </span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
+                  <Select
+                    value={selectedSeason > 0 ? selectedSeason.toString() : ""}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setSelectedSeason(Number(value));
+                        setSelectedEpisode(1); // Reset episode when season changes
+                      }
+                    }}
+                  >
+                    <SelectTrigger 
                       className={cn(
-                        "p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[160] animate-scale-in",
-                        // Mobile (<sm): fixed to bottom, centered, responsive width & max-height
+                        "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
+                      )}
+                      aria-label="Select Season"
+                    >
+                      <SelectValue placeholder="Select Season" />
+                    </SelectTrigger>
+                    <SelectContent 
+                      className={cn(
+                        "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
+                         // Mobile: fixed to bottom, centered, responsive width & max-height
                         "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
-                        // Tablet/Desktop (sm+): static, standard popover behavior, reset mobile overrides
+                        // Tablet/Desktop: static, standard popover behavior
                         "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
                       )}
-                      align="start"
-                      side="bottom"
-                      sideOffset={4}
-                      avoidCollisions={true}
-                      collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
-                      style={{ overflowY: 'auto' }} // Ensures PopoverContent itself can scroll if Command overflows its max-h
                     >
-                      <Command className="bg-transparent">
-                        <CommandInput
-                          placeholder="Search seasons..."
-                          className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
-                        />
-                        <CommandList className="max-h-52"> {/* This already handles internal scrolling for items */}
-                          <CommandEmpty className="py-6 text-center text-white/70">
-                            No seasons found.
-                          </CommandEmpty>
-                          <CommandGroup className="p-2">
-                            {details.seasons
-                              ?.filter((season: any) => season.season_number > 0)
-                              .map((season: any) => (
-                                <CommandItem
-                                  key={season.season_number}
-                                  value={`season-${season.season_number}`}
-                                  onSelect={() => {
-                                    setSelectedSeason(season.season_number);
-                                    setSelectedEpisode(1);
-                                    setSeasonOpen(false);
-                                  }}
-                                  className="text-white hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2 flex items-center justify-between transition-all"
-                                >
-                                  <span className="font-medium">{`Season ${season.season_number}`}</span>
-                                  <span className="text-xs text-white/60 ml-2">
-                                    {season.episode_count} episodes
-                                  </span>
-                                  <Check
-                                    className={cn(
-                                      "h-4 w-4 text-aura-accent",
-                                      selectedSeason === season.season_number ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                      <SelectGroup>
+                        <SelectLabel className="text-white/70">Seasons</SelectLabel>
+                        {details.seasons
+                          ?.filter((season: any) => season.season_number > 0)
+                          .map((season: any) => (
+                            <SelectItem
+                              key={season.season_number}
+                              value={season.season_number.toString()}
+                              className="text-white hover:!bg-white/15 focus:!bg-white/20 cursor-pointer rounded-lg"
+                            >
+                              Season {season.season_number} ({season.episode_count} episodes)
+                            </SelectItem>
+                          ))}
+                         {details.seasons?.filter((season: any) => season.season_number > 0).length === 0 && (
+                            <div className="px-3 py-2 text-white/70 text-sm">No seasons available.</div>
+                         )}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 {/* Episode Selector */}
                 <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block mb-1">Episode</label>
-                  <Popover open={episodeOpen} onOpenChange={setEpisodeOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={episodeOpen}
-                        className="w-full justify-between bg-white/10 border border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
-                        disabled={numberOfEpisodes === 0}
-                      >
-                        <span className="font-medium">{`Episode ${selectedEpisode}`}</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                       className={cn(
-                        "p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[160] animate-scale-in",
-                        // Mobile (<sm): fixed to bottom, centered, responsive width & max-height
+                  <Select
+                    value={selectedEpisode > 0 ? selectedEpisode.toString() : ""}
+                    onValueChange={(value) => {
+                      if (value) setSelectedEpisode(Number(value));
+                    }}
+                    disabled={numberOfEpisodes === 0}
+                  >
+                    <SelectTrigger 
+                      className={cn(
+                        "w-full justify-between bg-white/10 border-aura-accent/20 text-white hover:bg-white/20 h-12 rounded-xl font-semibold shadow transition-all focus:ring-2 focus:ring-aura-accent"
+                      )}
+                      aria-label="Select Episode"
+                    >
+                      <SelectValue placeholder="Select Episode" />
+                    </SelectTrigger>
+                    <SelectContent 
+                      className={cn(
+                        "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
+                         // Mobile: fixed to bottom, centered, responsive width & max-height
                         "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
-                        // Tablet/Desktop (sm+): static, standard popover behavior, reset mobile overrides
+                        // Tablet/Desktop: static, standard popover behavior
                         "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
                       )}
-                      align="start"
-                      side="bottom"
-                      sideOffset={4}
-                      avoidCollisions={true}
-                      collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
-                      style={{ overflowY: 'auto' }} // Ensures PopoverContent itself can scroll if Command overflows its max-h
                     >
-                      <Command className="bg-transparent">
-                        <CommandInput
-                          placeholder="Search episodes..."
-                          className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
-                        />
-                        <CommandList className="max-h-52"> {/* This already handles internal scrolling for items */}
-                          <CommandEmpty className="py-6 text-center text-white/70">
-                            No episodes found.
-                          </CommandEmpty>
-                          <CommandGroup className="p-2">
-                            {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
-                              <CommandItem
-                                key={episode}
-                                value={`episode-${episode}`}
-                                onSelect={() => {
-                                  setSelectedEpisode(episode);
-                                  setEpisodeOpen(false);
-                                }}
-                                className="text-white hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2 flex items-center justify-between transition-all"
-                              >
-                                <span className="font-medium">{`Episode ${episode}`}</span>
-                                <Check
-                                  className={cn(
-                                    "h-4 w-4 text-aura-accent",
-                                    selectedEpisode === episode ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                      <SelectGroup>
+                        <SelectLabel className="text-white/70">Episodes</SelectLabel>
+                        {Array.from({ length: numberOfEpisodes }, (_, i) => i + 1).map((episode) => (
+                          <SelectItem
+                            key={episode}
+                            value={episode.toString()}
+                            className="text-white hover:!bg-white/15 focus:!bg-white/20 cursor-pointer rounded-lg"
+                          >
+                            Episode {episode}
+                          </SelectItem>
+                        ))}
+                        {numberOfEpisodes === 0 && (
+                           <div className="px-3 py-2 text-white/70 text-sm">No episodes in this season.</div>
+                        )}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
