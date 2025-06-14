@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown, Globe } from 'lucide-react';
+import { Check, ChevronDown, Globe, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,6 +17,10 @@ interface CountrySelectorProps {
   onCountryChange: (country: string) => void;
   className?: string;
 }
+
+// Helper to get flag URL from country code
+const getFlagUrl = (countryCode: string) => 
+  `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 
 const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }: CountrySelectorProps) => {
   const [open, setOpen] = useState(false);
@@ -60,7 +63,11 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
           )}
         >
           <div className="flex items-center gap-2">
-            <Globe size={16} />
+            {selectedCountryData ? (
+              <img src={getFlagUrl(selectedCountryData.iso_3166_1)} alt="" className="w-5 h-5 rounded-sm object-cover mr-2" />
+            ) : (
+              <Flag size={18} className="mr-2 opacity-60" />
+            )}
             {selectedCountryData ? (
               <span className="truncate">{selectedCountryData.english_name}</span>
             ) : (
@@ -92,11 +99,21 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
                     }}
                     className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer"
                   >
-                    <div className="flex flex-col">
-                      <span className="font-medium">{country.english_name}</span>
-                      {country.native_name && country.native_name !== country.english_name && (
-                        <span className="text-sm text-white/60">{country.native_name}</span>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={getFlagUrl(country.iso_3166_1)}
+                        alt=""
+                        className="w-5 h-5 rounded-sm object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://flagcdn.com/w20/un.png';
+                        }}
+                      />
+                      <div className="flex flex-col ml-2">
+                        <span className="font-medium">{country.english_name}</span>
+                        {country.native_name && country.native_name !== country.english_name && (
+                          <span className="text-sm text-white/60">{country.native_name}</span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-white/40 font-mono">{country.iso_3166_1}</span>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
@@ -7,6 +6,18 @@ import ImprovedCountrySelector from '@/components/common/ImprovedCountrySelector
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getRegionalContent, countryToLanguagesMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+
+const fetchUserCountry = async (): Promise<string | null> => {
+  try {
+    // ipinfo.io returns { country: "US", ... }
+    const res = await fetch('https://ipinfo.io/json?token=2d947eab4e3ae4'); // You may replace with your token or a different API
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data.country ? data.country : null;
+  } catch {
+    return null;
+  }
+};
 
 const RegionalPage = () => {
   const [regionalContent, setRegionalContent] = useState<any[]>([]);
@@ -114,6 +125,18 @@ const RegionalPage = () => {
     setTotalPages(0);
     setError(null);
   };
+
+  // Auto-detect country on first visit
+  useEffect(() => {
+    // Only auto-detect if not already selected
+    if (!selectedCountry) {
+      fetchUserCountry().then((countryCode) => {
+        if (countryCode && countryToLanguagesMap[countryCode]) {
+          setSelectedCountry(countryCode);
+        }
+      });
+    }
+  }, [selectedCountry]);
 
   useEffect(() => {
     if (selectedCountry) {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -255,7 +254,7 @@ const HeroSlideshow = () => {
         </div>
       ))}
 
-      {/* Content - Improved mobile view with better text sizing and layout */}
+      {/* Content - Improved: Always horizontal button row */}
       <div className="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-6 lg:px-16 pointer-events-none">
         <div className="auraluxx-container max-w-4xl">
           <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-3 md:mb-6 animate-fade-in leading-tight drop-shadow-2xl">
@@ -264,7 +263,7 @@ const HeroSlideshow = () => {
           <p className="text-white/90 text-sm sm:text-base md:text-xl lg:text-2xl mb-4 md:mb-8 line-clamp-2 sm:line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
             {truncateText(slide.overview, window.innerWidth < 768 ? 150 : 250)}
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 animate-fade-in pointer-events-auto">
+          <div className="flex flex-row items-center space-x-3 animate-fade-in pointer-events-auto">
             <Link to={`/watch/${slide.media_type}/${slide.id}`}>
               <Button className="bg-aura-purple hover:bg-aura-darkpurple text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg w-full sm:w-auto">
                 <Play size={16} className="mr-2" /> Watch Now
