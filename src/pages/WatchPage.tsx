@@ -65,9 +65,6 @@ const WatchPage = () => {
         setSelectedSeason(firstValidSeason.season_number);
         setSelectedEpisode(1);
       } else {
-        // Handle cases where no valid seasons exist (e.g., only season 0 "Specials")
-        // Default to season 1, episode 1 if no positive season numbers found
-        // This might lead to "No episodes found" if season 1 has 0 episodes, which is acceptable
         setSelectedSeason(1); 
         setSelectedEpisode(1);
       }
@@ -87,14 +84,12 @@ const WatchPage = () => {
   const getTrailerVideoKey = () => {
     if (!details?.videos?.results) return null;
     
-    // Find official trailer first
     const officialTrailer = details.videos.results.find((video: any) => 
       video.site === 'YouTube' && 
       video.type === 'Trailer' &&
       video.official === true
     );
     
-    // Find any trailer as fallback
     const anyTrailer = details.videos.results.find((video: any) => 
       video.site === 'YouTube' && 
       (video.type === 'Trailer' || video.type === 'Teaser')
@@ -185,7 +180,6 @@ const WatchPage = () => {
           <CategoryButtons />
         </div>
         
-        {/* Add mobile movie thumbnail */}
         {posterUrl && (
           <div className="block md:hidden mb-6">
             <div className="flex justify-center">
@@ -199,21 +193,17 @@ const WatchPage = () => {
           </div>
         )}
         
-        {/* Top banner ad - separated from video player */}
         {isAdEnabled && (
           <div className="flex justify-center mb-8 overflow-hidden bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
             <Ad size="320x50" />
           </div>
         )}
         
-        {/* Main content */}
         <div className="max-w-[1400px] mx-auto">
-          {/* Improve: TV Show Season/Episode Selector */}
           {isTvShow && numberOfSeasons > 0 && (
             <div className="bg-white/5 rounded-2xl p-4 md:p-6 mb-6 border border-white/10 relative shadow-lg">
               <h3 className="text-lg font-semibold text-white mb-4">Episode Selection</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Season Selector */}
                 <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block mb-1">Season</label>
                   <Select
@@ -221,7 +211,7 @@ const WatchPage = () => {
                     onValueChange={(value) => {
                       if (value) {
                         setSelectedSeason(Number(value));
-                        setSelectedEpisode(1); // Reset episode when season changes
+                        setSelectedEpisode(1);
                       }
                     }}
                   >
@@ -236,11 +226,9 @@ const WatchPage = () => {
                     <SelectContent 
                       className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                         // Mobile: fixed to bottom, centered, responsive width & max-height
-                        "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
-                        // Tablet/Desktop: static, standard popover behavior
-                        "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
+                        "max-h-[60vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs"
                       )}
+                      // position="popper" is default and generally preferred for standard dropdown behavior
                     >
                       <SelectGroup>
                         <SelectLabel className="text-white/70">Seasons</SelectLabel>
@@ -263,7 +251,6 @@ const WatchPage = () => {
                   </Select>
                 </div>
                 
-                {/* Episode Selector */}
                 <div className="space-y-2 relative">
                   <label className="text-sm font-medium text-white/70 block mb-1">Episode</label>
                   <Select
@@ -282,13 +269,11 @@ const WatchPage = () => {
                       <SelectValue placeholder="Select Episode" />
                     </SelectTrigger>
                     <SelectContent 
-                      className={cn(
+                       className={cn(
                         "p-1 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[60]",
-                         // Mobile: fixed to bottom, centered, responsive width & max-height
-                        "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
-                        // Tablet/Desktop: static, standard popover behavior
-                        "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
+                        "max-h-[60vh] w-[min(calc(100vw-4rem),320px)] sm:max-h-[260px] sm:w-full sm:min-w-[220px] sm:max-w-xs"
                       )}
+                      // position="popper" is default
                     >
                       <SelectGroup>
                         <SelectLabel className="text-white/70">Episodes</SelectLabel>
@@ -312,13 +297,11 @@ const WatchPage = () => {
             </div>
           )}
           
-          {/* API Selector */}
           <ApiSelector 
             selectedApi={selectedApi}
             onApiChange={setSelectedApi}
           />
           
-          {/* Video Player */}
           <VideoPlayer 
             id={id || ''} 
             type={type as 'movie' | 'tv'} 
@@ -328,14 +311,12 @@ const WatchPage = () => {
             apiType={selectedApi}
           />
           
-          {/* Ad below video player - clearly separated */}
           {isAdEnabled && (
             <div className="flex justify-center my-10 bg-white/5 p-3 rounded-lg">
               <Ad size="300x250" />
             </div>
           )}
           
-          {/* YouTube Trailer - now shows for all content types */}
           {trailerVideoKey && (
             <YouTubeTrailer 
               videoKey={trailerVideoKey}
@@ -343,7 +324,6 @@ const WatchPage = () => {
             />
           )}
           
-          {/* Content Info */}
           <MediaDetails 
             title={title}
             releaseDate={releaseDate}
@@ -356,14 +336,12 @@ const WatchPage = () => {
           />
         </div>
         
-        {/* Native ad - separated with margin */}
         {isAdEnabled && (
           <div className="my-12 max-w-[1400px] mx-auto bg-white/5 p-3 rounded-lg">
             <Ad size="native" />
           </div>
         )}
         
-        {/* Recommended Content */}
         {recommendedContent.length > 0 ? (
           <MediaSlider
             title="Recommended for You"
@@ -381,7 +359,6 @@ const WatchPage = () => {
           </div>
         ) : null}
         
-        {/* Bottom banner ad */}
         {isAdEnabled && (
           <div className="flex justify-center mt-12 mb-8 bg-white/5 p-2 rounded-lg max-w-[1400px] mx-auto">
             <Ad size="320x50" />
