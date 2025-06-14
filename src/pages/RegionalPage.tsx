@@ -253,7 +253,6 @@ const RegionalPage = () => {
                   <p className="text-lg">
                     No content found for the selected region and filters.
                   </p>
-                  {/* ... keep existing code for tip and retry button ... */}
                   <div className="bg-aura-darkpurple/40 text-aura-accent font-medium rounded-md px-4 py-2 mt-2 text-base">
                     Not all regional content is indexed.<br />
                     <span className="text-white/80">
@@ -279,6 +278,11 @@ const RegionalPage = () => {
                   <p className="text-lg">
                     {error}
                   </p>
+                  <div className="bg-aura-darkpurple/40 text-aura-accent font-medium rounded-md px-4 py-2 mt-2 text-base">
+                    <span className="text-white/80">
+                      <b>Try searching for the movie</b> directly in the search bar above if you can't find it here.
+                    </span>
+                  </div>
                   <button
                     onClick={() => fetchRegionalContent(true)}
                     className="mt-6 px-5 py-2 bg-gradient-to-r from-aura-purple to-aura-darkpurple rounded-lg text-white font-semibold hover:scale-105 transition-transform"

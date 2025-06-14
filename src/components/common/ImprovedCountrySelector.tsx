@@ -33,16 +33,17 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
         let supportedCountries = [];
         if (data && Array.isArray(data)) {
           supportedCountries = data
-            .filter((country: Country) => countryToLanguagesMap[country.iso_3166_1])
-            .sort((a: Country, b: Country) => a.english_name.localeCompare(b.english_name));
+            .filter((country: Country) => countryToLanguagesMap[country.iso_3166_1]);
         }
         if (!supportedCountries.find(c => c.iso_3166_1 === 'PK')) {
-          supportedCountries.unshift({
+          supportedCountries.push({
             iso_3166_1: 'PK',
             english_name: 'Pakistan',
             native_name: 'پاکستان'
           });
         }
+        // Sort countries alphabetically by english_name
+        supportedCountries.sort((a: Country, b: Country) => a.english_name.localeCompare(b.english_name));
         setCountries(supportedCountries);
       } catch (error) {
         console.error('Error loading countries:', error);
@@ -161,4 +162,3 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
 };
 
 export default ImprovedCountrySelector;
-
