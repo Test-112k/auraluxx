@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
@@ -136,9 +135,7 @@ const RegionalPage = () => {
               <p className="text-white font-semibold text-lg flex items-center justify-between">
                 <span>Choose Your Region:</span>
                 <span className="font-normal text-xs text-white/60 ml-2">
-                  {selectedCountry && countryToLanguagesMap[selectedCountry]
-                    ? countryToLanguagesMap[selectedCountry].emoji
-                    : ""}
+                  {selectedCountry}
                 </span>
               </p>
               <ImprovedCountrySelector
@@ -214,7 +211,7 @@ const RegionalPage = () => {
                   <div className="bg-aura-darkpurple/40 text-aura-accent font-medium rounded-md px-4 py-2 mt-2 text-base">
                     Not all regional content is indexed.<br />
                     <span className="text-white/80">
-                      <b>Tip:</b> Try searching directly in the search bar above to find your favorite <span className="capitalize">{countryToLanguagesMap[selectedCountry]?.name || "region"}</span> movies!
+                      <b>Tip:</b> Try searching directly in the search bar above to find your favorite movies from this region!
                     </span>
                   </div>
                   <button
