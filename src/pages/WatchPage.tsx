@@ -221,20 +221,25 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-full max-w-[300px] p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
+                      className="w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
-                      collisionPadding={16}
-                      style={{ zIndex: 60 }}
+                      collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
+                      style={{
+                        maxHeight: 260,
+                        overflowY: 'auto',
+                        zIndex: 80,
+                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)'
+                      }}
                     >
                       <Command className="bg-transparent">
                         <CommandInput
                           placeholder="Search seasons..."
                           className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
-                        <CommandList className="max-h-48">
+                        <CommandList className="max-h-52">
                           <CommandEmpty className="py-6 text-center text-white/70">
                             No seasons found.
                           </CommandEmpty>
@@ -288,20 +293,25 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-full max-w-[300px] p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
+                      className="w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in"
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
-                      collisionPadding={16}
-                      style={{ zIndex: 60 }}
+                      collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
+                      style={{
+                        maxHeight: 260,
+                        overflowY: 'auto',
+                        zIndex: 80,
+                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)'
+                      }}
                     >
                       <Command className="bg-transparent">
                         <CommandInput
                           placeholder="Search episodes..."
                           className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
-                        <CommandList className="max-h-48">
+                        <CommandList className="max-h-52">
                           <CommandEmpty className="py-6 text-center text-white/70">
                             No episodes found.
                           </CommandEmpty>

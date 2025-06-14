@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown, Flag } from 'lucide-react';
+import { Check, ChevronDown, Flag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,7 +14,7 @@ interface Country {
 }
 
 // Helper to get flag URL from country code
-const getFlagUrl = (countryCode: string) => 
+const getFlagUrl = (countryCode: string) =>
   `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 
 const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }: {
@@ -82,13 +82,34 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[310px] p-0 bg-aura-darkpurple/95 rounded-xl border-white/15 border shadow-2xl z-50 animate-scale-in" align="start">
+      <PopoverContent
+        className={cn(
+          "mt-2 w-[330px] max-w-full p-0 rounded-xl border border-white/15 shadow-2xl z-[80]",
+          "bg-gradient-to-br from-[#1a1625] to-[#231c32] backdrop-blur-lg" // Strong, clean background
+        )}
+        align="start"
+        side="bottom"
+        avoidCollisions={true}
+        // Avoid ever crossing header
+        sideOffset={8}
+        collisionPadding={{ top: 88, bottom: 16, left: 8, right: 8 }}
+        style={{
+          boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)', 
+          borderRadius: 18,
+          zIndex: 80,
+        }}
+      >
+        <div className="sticky top-0 z-10 bg-[#1a1625]/95 backdrop-blur-lg px-4 pt-3 pb-2 rounded-t-xl">
+          <div className="flex items-center gap-2 border border-white/10 bg-white/10 rounded-md px-2">
+            <Search className="h-4 w-4 opacity-60" />
+            <CommandInput
+              placeholder="Search countries..."
+              className="border-none bg-transparent text-white placeholder:text-white/40 h-10 px-1 focus:outline-none outline-none ring-0"
+            />
+          </div>
+        </div>
         <Command className="bg-transparent">
-          <CommandInput
-            placeholder="Search countries..."
-            className="border-none bg-transparent text-white placeholder:text-white/40 h-10 px-3"
-          />
-          <CommandList className="max-h-[350px] overflow-y-auto">
+          <CommandList className="max-h-[350px] overflow-y-auto scroll-pt-16">
             <CommandEmpty className="py-6 text-center text-white/70">
               {loading ? "Loading countries..." : "No countries found."}
             </CommandEmpty>
@@ -102,7 +123,7 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
                       onCountryChange(country.iso_3166_1);
                       setOpen(false);
                     }}
-                    className="flex items-center justify-between text-white hover:bg-white/10 cursor-pointer rounded transition-all"
+                    className="flex items-center justify-between text-white hover:bg-white/15 cursor-pointer rounded-lg px-3 py-2 transition-all focus:bg-white/20"
                   >
                     <div className="flex items-center gap-2">
                       <img
@@ -121,7 +142,7 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-white/40 font-mono">{country.iso_3166_1}</span>
+                      <span className="text-xs text-white/50 font-mono">{country.iso_3166_1}</span>
                       <Check
                         className={cn(
                           "h-4 w-4",
