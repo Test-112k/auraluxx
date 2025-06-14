@@ -30,39 +30,31 @@ const RegionalPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(false); // This state will now cover IP detection too
+  const [loading, setLoading] = useState(true); // Start loading immediately for IP detection.
   const [error, setError] = useState<string | null>(null);
   const [countryAutoDetected, setCountryAutoDetected] = useState(false);
 
+  // This effect runs only once on mount to detect the user's country via IP.
   useEffect(() => {
     const detectAndSetCountry = async () => {
-      if (!selectedCountry && !countryAutoDetected) {
-        setLoading(true); // Start loading before IP detection
-        setError(null); // Clear previous errors
-        const ipCountry = await fetchUserCountry();
+      setError(null);
+      const ipCountry = await fetchUserCountry();
+
+      if (ipCountry && (countryToLanguagesMap[ipCountry] || ipCountry === 'PK')) {
+        setSelectedCountry(ipCountry);
+      } else {
         if (ipCountry) {
-          if (countryToLanguagesMap[ipCountry]) {
-            setSelectedCountry(ipCountry);
-          } else if (ipCountry === 'PK') { // Handle Pakistan as a special case if needed
-            setSelectedCountry('PK');
-          } else {
-            // IP detected but not in map and not PK, proceed without pre-selection or set a default.
-            // For now, we just mark as detected. User will have to select manually.
-            console.log(`IP country ${ipCountry} detected but not in language map or special cases.`);
-          }
+          console.log(`IP country ${ipCountry} detected but is not supported.`);
         } else {
           console.log('Could not auto-detect country from IP.');
         }
-        setCountryAutoDetected(true);
-        // Loading will be set to false by fetchRegionalContent or if no country is set
-        // If no country is set after detection, we should stop loading.
-        if (!ipCountry && !selectedCountry) { 
-            setLoading(false);
-        }
       }
+      setCountryAutoDetected(true);
     };
+
     detectAndSetCountry();
-  }, [selectedCountry, countryAutoDetected]); // Removed setLoading from here as it's handled by fetchRegionalContent or above condition
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array ensures this runs only once on mount.
 
   const fetchRegionalContent = useCallback(async (reset = false) => {
     if (!selectedCountry) {
@@ -155,7 +147,7 @@ const RegionalPage = () => {
         setPage(1);
         setTotalPages(0);
     }
-  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, countryAutoDetected]); // Added countryAutoDetected
+  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, countryAutoDetected]); // This effect remains largely the same
 
   return (
     <MainLayout>
@@ -211,7 +203,7 @@ const RegionalPage = () => {
         <div className="relative">
           {loading && regionalContent.length === 0 ? ( // Show main loader if loading and no content yet
             <div className="flex justify-center items-center py-20">
-              <LoadingSpinner size="lg" text={!countryAutoDetected || !selectedCountry ? "Detecting region & loading..." : "Loading regional content..."} />
+              <LoadingSpinner size="lg" text={!countryAutoDetected ? "Detecting your region..." : "Loading regional content..."} />
             </div>
           ) : regionalContent.length > 0 ? (
             <InfiniteScroll
