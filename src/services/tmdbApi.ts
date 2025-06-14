@@ -183,13 +183,55 @@ export const getRegionalContent = (language: string, page = 1, filters: Record<s
 /**
  * Get anime content (from Japan with animation genre)
  */
-export const getAnimeContent = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getAnimeContent = (filter = 'popular', options: Record<string, any> = {}) => {
+  let sortBy = 'popularity.desc';
+  const params: Record<string, any> = {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
-    sort_by: 'popularity.desc',
-    page
-  });
+    page: options.page || 1,
+  };
+
+  // Handle different filter types
+  switch (filter) {
+    case 'recent':
+      sortBy = 'first_air_date.desc';
+      params['first_air_date.lte'] = new Date().toISOString().split('T')[0];
+      break;
+    case 'top_rated':
+      sortBy = 'vote_average.desc';
+      params['vote_count.gte'] = 100;
+      break;
+    case 'airing_today':
+      sortBy = 'first_air_date.desc';
+      const today = new Date().toISOString().split('T')[0];
+      params['first_air_date.gte'] = today;
+      params['first_air_date.lte'] = today;
+      break;
+    case 'popular':
+    default:
+      sortBy = 'popularity.desc';
+      break;
+  }
+
+  params.sort_by = sortBy;
+
+  // Add additional filters if provided
+  if (options.genre) {
+    // Combine animation genre with selected genre
+    params.with_genres = `16,${options.genre}`;
+  }
+  
+  if (options.year) {
+    params['first_air_date.gte'] = `${options.year}-01-01`;
+    params['first_air_date.lte'] = `${options.year}-12-31`;
+  }
+  
+  if (options.language && options.language !== 'ja') {
+    // If a different language is selected, use it instead of Japanese
+    params.with_original_language = options.language;
+  }
+
+  return apiRequest('/discover/tv', params);
 };
 
 /**
