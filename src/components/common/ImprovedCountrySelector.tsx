@@ -85,30 +85,29 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
       <PopoverContent
         className={cn(
           "mt-2 w-[330px] max-w-full p-0 rounded-xl border border-white/15 shadow-2xl z-[80]",
-          "bg-gradient-to-br from-[#1a1625] to-[#231c32] backdrop-blur-lg" // Strong, clean background
+          "bg-gradient-to-br from-[#1a1625] to-[#231c32] backdrop-blur-lg"
         )}
         align="start"
         side="bottom"
         avoidCollisions={true}
-        // Avoid ever crossing header
         sideOffset={8}
         collisionPadding={{ top: 88, bottom: 16, left: 8, right: 8 }}
         style={{
-          boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)', 
+          boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)',
           borderRadius: 18,
           zIndex: 80,
         }}
       >
-        <div className="sticky top-0 z-10 bg-[#1a1625]/95 backdrop-blur-lg px-4 pt-3 pb-2 rounded-t-xl">
-          <div className="flex items-center gap-2 border border-white/10 bg-white/10 rounded-md px-2">
-            <Search className="h-4 w-4 opacity-60" />
-            <CommandInput
-              placeholder="Search countries..."
-              className="border-none bg-transparent text-white placeholder:text-white/40 h-10 px-1 focus:outline-none outline-none ring-0"
-            />
-          </div>
-        </div>
         <Command className="bg-transparent">
+          <div className="sticky top-0 z-10 bg-[#1a1625]/95 backdrop-blur-lg px-4 pt-3 pb-2 rounded-t-xl">
+            <div className="flex items-center gap-2 border border-white/10 bg-white/10 rounded-md px-2">
+              <Search className="h-4 w-4 opacity-60" />
+              <CommandInput
+                placeholder="Search countries..."
+                className="border-none bg-transparent text-white placeholder:text-white/40 h-10 px-1 focus:outline-none outline-none ring-0"
+              />
+            </div>
+          </div>
           <CommandList className="max-h-[350px] overflow-y-auto scroll-pt-16">
             <CommandEmpty className="py-6 text-center text-white/70">
               {loading ? "Loading countries..." : "No countries found."}
@@ -162,3 +161,4 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
 };
 
 export default ImprovedCountrySelector;
+
