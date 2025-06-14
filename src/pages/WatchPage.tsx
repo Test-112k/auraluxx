@@ -222,32 +222,25 @@ const WatchPage = () => {
                     </PopoverTrigger>
                     <PopoverContent
                       className={cn(
-                        "w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in",
-                        "fixed left-1/2 -translate-x-1/2 sm:static sm:left-auto sm:translate-x-0",
-                        "top-[60vh] sm:top-auto"
+                        "p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[160] animate-scale-in",
+                        // Mobile (<sm): fixed to bottom, centered, responsive width & max-height
+                        "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
+                        // Tablet/Desktop (sm+): static, standard popover behavior, reset mobile overrides
+                        "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
                       )}
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
                       collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
-                      style={{
-                        maxHeight: 260,
-                        overflowY: 'auto',
-                        zIndex: 160,
-                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)',
-                        width: "96vw",
-                        maxWidth: 400,
-                        left: '2vw',
-                        right: '2vw'
-                      }}
+                      style={{ overflowY: 'auto' }} // Ensures PopoverContent itself can scroll if Command overflows its max-h
                     >
                       <Command className="bg-transparent">
                         <CommandInput
                           placeholder="Search seasons..."
                           className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
-                        <CommandList className="max-h-52">
+                        <CommandList className="max-h-52"> {/* This already handles internal scrolling for items */}
                           <CommandEmpty className="py-6 text-center text-white/70">
                             No seasons found.
                           </CommandEmpty>
@@ -301,33 +294,26 @@ const WatchPage = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className={cn(
-                        "w-full min-w-[160px] max-w-xs sm:max-w-sm p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-50 animate-scale-in",
-                        "fixed left-1/2 -translate-x-1/2 sm:static sm:left-auto sm:translate-x-0",
-                        "top-[60vh] sm:top-auto"
+                       className={cn(
+                        "p-0 bg-aura-darkpurple/98 backdrop-blur-xl rounded-xl border border-aura-accent/30 shadow-2xl z-[160] animate-scale-in",
+                        // Mobile (<sm): fixed to bottom, centered, responsive width & max-height
+                        "fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),400px)] max-h-[45vh]",
+                        // Tablet/Desktop (sm+): static, standard popover behavior, reset mobile overrides
+                        "sm:static sm:left-auto sm:translate-x-0 sm:bottom-auto sm:w-full sm:min-w-[220px] sm:max-w-xs sm:max-h-[260px]"
                       )}
                       align="start"
                       side="bottom"
                       sideOffset={4}
                       avoidCollisions={true}
                       collisionPadding={{top: 24, bottom: 16, left: 0, right: 0}}
-                      style={{
-                        maxHeight: 260,
-                        overflowY: 'auto',
-                        zIndex: 160,
-                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)',
-                        width: "96vw",
-                        maxWidth: 400,
-                        left: '2vw',
-                        right: '2vw'
-                      }}
+                      style={{ overflowY: 'auto' }} // Ensures PopoverContent itself can scroll if Command overflows its max-h
                     >
                       <Command className="bg-transparent">
                         <CommandInput
                           placeholder="Search episodes..."
                           className="border-none bg-transparent text-white placeholder:text-white/60 h-10 px-3"
                         />
-                        <CommandList className="max-h-52">
+                        <CommandList className="max-h-52"> {/* This already handles internal scrolling for items */}
                           <CommandEmpty className="py-6 text-center text-white/70">
                             No episodes found.
                           </CommandEmpty>
