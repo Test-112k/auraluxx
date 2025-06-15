@@ -49,10 +49,12 @@ const KDramaPage = () => {
     fetchContent(1, true);
   }, [fetchContent]);
 
-  const loadMore = () => {
+  const loadMore = async (): Promise<boolean> => {
     if (!loading && hasNextPage) {
-      fetchContent(currentPage + 1, false);
+      await fetchContent(currentPage + 1, false);
+      return hasNextPage;
     }
+    return false;
   };
 
   const handleFilterChange = (newFilter: string) => {
@@ -89,12 +91,6 @@ const KDramaPage = () => {
     setSearchParams({});
   };
 
-  const filterOptions = [
-    { value: 'popular', label: 'Popular' },
-    { value: 'top_rated', label: 'Top Rated' },
-    { value: 'recent', label: 'Recently Added' },
-  ];
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-aura-dark pt-20">
@@ -118,14 +114,10 @@ const KDramaPage = () => {
 
           {/* Filter Bar */}
           <CategoryFilterBar
-            activeFilter={filter}
-            onFilterChange={handleFilterChange}
-            filterOptions={filterOptions}
-            activeGenre={genre}
+            selectedGenre={genre}
             onGenreChange={handleGenreChange}
-            activeYear={year}
+            selectedYear={year}
             onYearChange={handleYearChange}
-            onClearFilters={clearFilters}
             mediaType="tv"
           />
 
@@ -134,16 +126,20 @@ const KDramaPage = () => {
             <LoadingSkeleton />
           ) : (
             <InfiniteScroll
-              hasNextPage={hasNextPage}
-              isLoading={loading}
+              hasMore={hasNextPage}
+              loading={loading}
               loadMore={loadMore}
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
                 {content.map((item: any, index: number) => (
                   <div key={`${item.id}-${index}`}>
                     <MediaCard 
-                      item={item} 
-                      mediaType="tv"
+                      id={item.id}
+                      title={item.name || item.title}
+                      type="tv"
+                      posterPath={item.poster_path}
+                      releaseDate={item.first_air_date || item.release_date}
+                      voteAverage={item.vote_average}
                     />
                     {/* Ad every 12 items */}
                     {isAdEnabled && index > 0 && (index + 1) % 12 === 0 && (
