@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -26,7 +25,6 @@ const Navbar = () => {
     <>
       <nav 
         className="fixed top-0 left-0 right-0 z-[10000] w-full bg-aura-dark/98 shadow-lg backdrop-blur-md border-b border-white/10"
-        style={{ position: 'fixed' }}
       >
         <div className="auraluxx-container">
           <div className="flex items-center justify-between py-4">
