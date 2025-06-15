@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
-import MediaSlider from '@/components/common/MediaSlider';
+import KDramaHeroSlideshow from '@/components/common/KDramaHeroSlideshow';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
+import AIChatbot from '@/components/common/AIChatbot';
 import { Button } from '@/components/ui/button';
 import { getKDramaContent } from '@/services/tmdbApi';
 import Ad from '@/components/ads/Ad';
@@ -15,9 +16,7 @@ import { useAds } from '@/contexts/AdContext';
 const KDramaPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [content, setContent] = useState([]);
-  const [slideshowContent, setSlideshowContent] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [slideshowLoading, setSlideshowLoading] = useState(true);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const { isAdEnabled } = useAds();
@@ -25,35 +24,6 @@ const KDramaPage = () => {
   const filter = searchParams.get('filter') || 'popular';
   const genre = searchParams.get('genre') || '';
   const year = searchParams.get('year') || '';
-
-  // Fetch slideshow content (new arrivals)
-  const fetchSlideshowContent = useCallback(async () => {
-    try {
-      setSlideshowLoading(true);
-      const data = await getKDramaContent('recent', { page: 1 });
-      console.log('K-Drama slideshow data:', data);
-      if (data?.results) {
-        // Ensure we have proper data structure for MediaSlider
-        const formattedSlides = data.results.slice(0, 10).map((item: any) => ({
-          id: item.id,
-          title: item.name || item.title,
-          name: item.name || item.title,
-          poster_path: item.poster_path,
-          backdrop_path: item.backdrop_path,
-          first_air_date: item.first_air_date,
-          release_date: item.first_air_date,
-          vote_average: item.vote_average,
-          media_type: 'tv'
-        }));
-        console.log('Formatted slideshow content:', formattedSlides);
-        setSlideshowContent(formattedSlides);
-      }
-    } catch (error) {
-      console.error('Error fetching K-Drama slideshow content:', error);
-    } finally {
-      setSlideshowLoading(false);
-    }
-  }, []);
 
   const fetchContent = useCallback(async (page = 1, reset = false) => {
     try {
@@ -75,10 +45,6 @@ const KDramaPage = () => {
       setLoading(false);
     }
   }, [filter, genre, year]);
-
-  useEffect(() => {
-    fetchSlideshowContent();
-  }, [fetchSlideshowContent]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -130,6 +96,9 @@ const KDramaPage = () => {
   return (
     <MainLayout>
       <div className="min-h-screen bg-aura-dark pt-20">
+        {/* Hero Slideshow */}
+        <KDramaHeroSlideshow />
+
         <div className="auraluxx-container py-8">
           {/* Header */}
           <div className="mb-8">
@@ -147,16 +116,6 @@ const KDramaPage = () => {
               <Ad size="728x90" />
             </div>
           )}
-
-          {/* Slideshow - New Arrivals */}
-          <div className="mb-8">
-            <MediaSlider
-              title="New K-Drama Arrivals"
-              items={slideshowContent}
-              loading={slideshowLoading}
-              mediaType="tv"
-            />
-          </div>
 
           {/* Category Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -269,6 +228,9 @@ const KDramaPage = () => {
             </div>
           )}
         </div>
+
+        {/* AI Chatbot */}
+        <AIChatbot />
       </div>
     </MainLayout>
   );
