@@ -58,7 +58,22 @@ const SearchBar = () => {
 
 const DesktopNavigation = () => {
   return (
-    <div className="hidden md:flex items-center space-x-4">
+    <div className="hidden md:flex items-center space-x-6">
+      <Link to="/movies" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium">
+        Movies
+      </Link>
+      <Link to="/tv-series" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium">
+        TV Series
+      </Link>
+      <Link to="/anime" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium">
+        Anime
+      </Link>
+      <Link to="/k-drama" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium">
+        K-Drama
+      </Link>
+      <Link to="/regional" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium">
+        Regional
+      </Link>
       <ThemeToggle />
     </div>
   );
@@ -76,34 +91,66 @@ const MobileMenu = () => {
       </SheetTrigger>
       <SheetContent side="right" className="bg-aura-dark text-white w-64">
         <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-white">Menu</SheetTitle>
+          <SheetDescription className="text-white/70">
             Navigate through Auraluxx
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
-          <Link to="/" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Home
           </Link>
-          <Link to="/movies" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/movies" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Movies
           </Link>
-          <Link to="/tv-series" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/tv-series" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             TV Series
           </Link>
-          <Link to="/anime" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/anime" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Anime
           </Link>
-          <Link to="/k-drama" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/k-drama" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             K-Drama
           </Link>
-          <Link to="/regional" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/regional" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Regional
           </Link>
-          <Link to="/speedtest" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/speedtest" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Speedtest
           </Link>
-          <Link to="/contact" className="hover:text-aura-purple transition-colors duration-200">
+          <Link 
+            to="/contact" 
+            className="hover:text-aura-purple transition-colors duration-200 py-2 px-3 rounded-md hover:bg-white/5"
+            onClick={() => setIsOpen(false)}
+          >
             Contact
           </Link>
         </div>
@@ -125,7 +172,7 @@ const Navbar = () => {
   const isMobile = useIsMobile();
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-aura-dark dark:bg-black z-40">
+    <nav className="fixed top-0 left-0 w-full bg-aura-dark dark:bg-black z-40 border-b border-white/5">
       <div className="auraluxx-container py-4">
         <div className="flex items-center justify-between">
           <Logo />
