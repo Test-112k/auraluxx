@@ -3,14 +3,22 @@ import { useState, useEffect } from 'react';
 import { callGeminiAPI } from '@/services/chatbotService';
 import type { Message } from '@/types/chatbot';
 
-const humorousMessages = [
-  "I've seen more plot twists than a pretzel factory! 🥨 What kind of movie are you in the mood for?",
-  "Don't know what to watch? I'm your movie GPS, navigating you to your next binge! 🗺️",
-  "I'm fluent in over six million forms of communication... and movie genres! Ask me for a recommendation! 🤖",
-  "Let's find a movie so good, you'll want to give it a standing ovation from your couch! 👏",
-  "Searching for a hidden gem? I'm your treasure map to the best content on Auraluxx! 💎",
-  "Why did the TV get glasses? To improve its screen time! 🤓 Let's find you something to watch!",
-  "I'm here to help you find something to watch. My services are... *free* of charge. Get it? 😉",
+const engagingMessages = [
+  "🎬 **Suggest 10 horror movies** that will keep me awake tonight! I dare you...",
+  "🍿 **What are the best comedy movies** to watch when I need a good laugh?",
+  "💕 **Recommend romantic movies** perfect for a cozy date night!",
+  "🚀 **Show me action-packed movies** with epic fight scenes and explosions!",
+  "🇰🇷 **What K-dramas** are trending right now? I'm ready to binge!",
+  "🍜 **Suggest anime series** that will make me question reality!",
+  "🎭 **Help me find movies** from my country - I want to watch local content!",
+  "🔍 **How do I search** for movies with subtitles in my language?",
+  "😂 Why did the movie go to therapy? Because it had too many plot twists! **Ask me anything!**",
+  "🎪 I've got more movie recommendations than Netflix has categories! **What's your mood?**",
+  "🎯 **Find me something to watch** - I'm feeling adventurous today!",
+  "🌟 **What are the top-rated movies** everyone's talking about?",
+  "🎨 **Recommend indie films** that will expand my artistic horizons!",
+  "🤖 I'm basically a movie encyclopedia with a sense of humor! **Try me!**",
+  "🎊 **Show me feel-good movies** that will brighten my day!",
 ];
 
 const initialMessage: Message = {
@@ -25,14 +33,14 @@ export const useAIChat = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showRandomMessages, setShowRandomMessages] = useState(true);
-  const [currentMessage, setCurrentMessage] = useState(humorousMessages[0]);
+  const [currentMessage, setCurrentMessage] = useState(engagingMessages[0]);
 
   useEffect(() => {
     if (!showRandomMessages) return;
     
     const interval = setInterval(() => {
-      setCurrentMessage(humorousMessages[Math.floor(Math.random() * humorousMessages.length)]);
-    }, 4000);
+      setCurrentMessage(engagingMessages[Math.floor(Math.random() * engagingMessages.length)]);
+    }, 5000); // Changed to 5 seconds for more variety
     return () => clearInterval(interval);
   }, [showRandomMessages]);
 

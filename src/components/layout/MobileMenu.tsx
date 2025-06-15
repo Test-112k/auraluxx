@@ -122,22 +122,24 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 flex items-center"
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 flex items-center group"
           >
-            <svg 
-              className="mr-3 h-6 w-6" 
-              fill="currentColor"
-              viewBox="0 0 24 24" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M20.665,3.717l-17.73,6.837c-1.21,0.486-1.203,1.161-0.222,1.462l4.552,1.42l10.532-6.645 c0.498-0.303,0.953-0.14,0.579,0.192l-8.533,7.701l0,0l0,0H9.84l0.002,0.001l-0.314,4.692c0.46,0,0.663-0.211,0.921-0.46 l2.211-2.15l4.599,3.397c0.848,0.467,1.457,0.227,1.668-0.785l3.019-14.228C22.256,3.912,21.474,3.351,20.665,3.717z"/>
-            </svg>
-            Telegram
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-2 mr-3 group-hover:from-blue-600 group-hover:to-blue-700 transition-all">
+              <svg 
+                className="h-5 w-5 text-white" 
+                fill="currentColor"
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M20.665,3.717l-17.73,6.837c-1.21,0.486-1.203,1.161-0.222,1.462l4.552,1.42l10.532-6.645 c0.498-0.303,0.953-0.14,0.579,0.192l-8.533,7.701l0,0l0,0H9.84l0.002,0.001l-0.314,4.692c0.46,0,0.663-0.211,0.921-0.46 l2.211-2.15l4.599,3.397c0.848,0.467,1.457,0.227,1.668-0.785l3.019-14.228C22.256,3.912,21.474,3.351,20.665,3.717z"/>
+              </svg>
+            </div>
+            <span>Join Telegram</span>
           </a>
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer - removed Lovable branding */}
       <div className="text-center p-4 text-sm text-white/60 border-t border-aura-purple/30 bg-aura-dark">
         <p>Auraluxx © {new Date().getFullYear()}</p>
       </div>
