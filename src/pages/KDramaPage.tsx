@@ -112,6 +112,50 @@ const KDramaPage = () => {
             </div>
           )}
 
+          {/* Category Filter Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <Button 
+              onClick={() => handleFilterChange('popular')}
+              variant={filter === 'popular' ? 'default' : 'outline'}
+              className={filter === 'popular' 
+                ? 'bg-aura-purple hover:bg-aura-purple/80 text-white' 
+                : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              }
+            >
+              Popular
+            </Button>
+            <Button 
+              onClick={() => handleFilterChange('trending')}
+              variant={filter === 'trending' ? 'default' : 'outline'}
+              className={filter === 'trending' 
+                ? 'bg-aura-purple hover:bg-aura-purple/80 text-white' 
+                : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              }
+            >
+              Trending
+            </Button>
+            <Button 
+              onClick={() => handleFilterChange('recent')}
+              variant={filter === 'recent' ? 'default' : 'outline'}
+              className={filter === 'recent' 
+                ? 'bg-aura-purple hover:bg-aura-purple/80 text-white' 
+                : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              }
+            >
+              New Arrivals
+            </Button>
+            <Button 
+              onClick={() => handleFilterChange('top_rated')}
+              variant={filter === 'top_rated' ? 'default' : 'outline'}
+              className={filter === 'top_rated' 
+                ? 'bg-aura-purple hover:bg-aura-purple/80 text-white' 
+                : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              }
+            >
+              Top Rated
+            </Button>
+          </div>
+
           {/* Filter Bar */}
           <CategoryFilterBar
             selectedGenre={genre}

@@ -285,6 +285,14 @@ export const getKDramaContent = (filter = 'popular', options: Record<string, any
 
   // Handle different filter types
   switch (filter) {
+    case 'trending':
+      // For trending, we'll use a combination of popularity and recent activity
+      sortBy = 'popularity.desc';
+      // Only include shows from the last 2 years for trending
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+      params['first_air_date.gte'] = twoYearsAgo.toISOString().split('T')[0];
+      break;
     case 'recent':
       sortBy = 'first_air_date.desc';
       params['first_air_date.lte'] = new Date().toISOString().split('T')[0];
