@@ -5,7 +5,7 @@ import type { Message } from '@/types/chatbot';
 
 const engagingMessages = [
   "🎬 **Suggest 10 horror movies** that will keep me awake tonight! I dare you...",
-  "🍿 **What are the best comedy movies** to watch when I need a good laugh?",
+  "🍿 **What are the best comedy movies from 2023** to watch when I need a good laugh?",
   "💕 **Recommend romantic movies** perfect for a cozy date night!",
   "🚀 **Show me action-packed movies** with epic fight scenes and explosions!",
   "🇰🇷 **What K-dramas** are trending right now? I'm ready to binge!",
@@ -15,10 +15,15 @@ const engagingMessages = [
   "😂 Why did the movie go to therapy? Because it had too many plot twists! **Ask me anything!**",
   "🎪 I've got more movie recommendations than Netflix has categories! **What's your mood?**",
   "🎯 **Find me something to watch** - I'm feeling adventurous today!",
-  "🌟 **What are the top-rated movies** everyone's talking about?",
-  "🎨 **Recommend indie films** that will expand my artistic horizons!",
-  "🤖 I'm basically a movie encyclopedia with a sense of humor! **Try me!**",
+  "🌟 **What are the top-rated movies of all time** everyone's talking about?",
+  "🎨 **Recommend indie films from the 90s** that will expand my artistic horizons!",
+  "🤖 I'm basically a movie encyclopedia with a sense of humor! **Try me with a year and genre!**",
   "🎊 **Show me feel-good movies** that will brighten my day!",
+  "🕰️ **What were the best movies of 2010?** Let's take a trip down memory lane!",
+  "👽 **Find me the best sci-fi movies** with mind-bending plots.",
+  "🏆 **Show me some award-winning dramas** that are critically acclaimed.",
+  "🕵️ **Suggest a mystery movie** with a twist I won't see coming.",
+  "📜 **What are some good historical dramas from the last 5 years?**"
 ];
 
 const initialMessage: Message = {
