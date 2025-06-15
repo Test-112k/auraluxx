@@ -80,7 +80,8 @@ const AIChatbot = () => {
   const callGeminiAPI = async (message: string): Promise<string> => {
     try {
       const apiKey = decryptKey(encryptedApiKey);
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,27 +89,53 @@ const AIChatbot = () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. You have access to current movie and TV data through TMDB. When users ask for recommendations, provide specific titles with brief descriptions and ratings. Focus on popular, trending, and highly-rated content from movies, TV series, anime, and K-dramas. Be conversational, helpful, and enthusiastic. Always format your response with emojis and clear structure. User query: ${message}`
+              text: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. Provide specific, current movie and TV show recommendations based on user queries. Be conversational, helpful, and enthusiastic. Always format your response with emojis and clear structure. Keep responses concise but informative. User query: ${message}`
             }]
           }],
           generationConfig: {
             temperature: 0.7,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: 1000,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 800,
           },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            }
+          ]
         })
       });
 
       if (!response.ok) {
-        throw new Error('Gemini API error');
+        const errorData = await response.json();
+        console.error('Gemini API error response:', errorData);
+        throw new Error(`Gemini API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.candidates[0]?.content?.parts[0]?.text || "I couldn't generate a response right now.";
+      console.log('Gemini API response:', data);
+      
+      if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        throw new Error('Invalid response structure from Gemini API');
+      }
     } catch (error) {
       console.error('Gemini API error:', error);
-      // Fallback to TMDB-based response
+      // Return TMDB-based response as fallback
       return await generateTMDBResponse(message);
     }
   };
@@ -144,9 +171,13 @@ const AIChatbot = () => {
       } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
         searchResults = await getPopular('tv');
         responseIntro = "📺 Here are some binge-worthy TV series:\n\n";
-      } else {
+      } else if (lowerMessage.includes('trending')) {
         searchResults = await getTrending('all', 'week');
-        responseIntro = "🔥 Here's what's trending right now on AuraLuxx:\n\n";
+        responseIntro = "🔥 Here's what's trending right now:\n\n";
+      } else {
+        // For general queries, search with the user's message
+        searchResults = await searchMulti(userMessage);
+        responseIntro = "🎯 Here are some recommendations based on your search:\n\n";
       }
       
       if (searchResults?.results && searchResults.results.length > 0) {
@@ -163,25 +194,12 @@ const AIChatbot = () => {
         });
         
         return response + "🎯 Want more recommendations or details about any of these? Just ask!";
+      } else {
+        return "🤖 I couldn't find specific results for that query. Try asking about popular movies, trending shows, or specific genres like horror, comedy, or action!";
       }
     } catch (error) {
       console.error('TMDB API error:', error);
-    }
-    
-    return "🤖 I'm having trouble fetching the latest recommendations right now. Please try asking about specific genres or types of content.";
-  };
-
-  const generateResponse = async (userMessage: string): Promise<string> => {
-    // Try Gemini AI first, fallback to TMDB if needed
-    try {
-      const aiResponse = await callGeminiAPI(userMessage);
-      
-      // Enhance AI response with current TMDB data
-      const tmdbResponse = await generateTMDBResponse(userMessage);
-      return `${aiResponse}\n\n**🎪 Current Popular on AuraLuxx:**\n${tmdbResponse}`;
-    } catch (error) {
-      // Fallback to TMDB-only response
-      return await generateTMDBResponse(userMessage);
+      return "🤖 I'm having trouble fetching recommendations right now. Please try again in a moment!";
     }
   };
 
@@ -196,12 +214,12 @@ const AIChatbot = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    const messageText = inputText;
     setInputText('');
     setIsTyping(true);
     
-    // Generate response
-    setTimeout(async () => {
-      const response = await generateResponse(inputText);
+    try {
+      const response = await callGeminiAPI(messageText);
       
       const botMessage: Message = {
         id: messages.length + 2,
@@ -211,8 +229,18 @@ const AIChatbot = () => {
       };
       
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error generating response:', error);
+      const errorMessage: Message = {
+        id: messages.length + 2,
+        text: "Sorry, I'm having trouble right now. Please try again!",
+        isBot: true,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
