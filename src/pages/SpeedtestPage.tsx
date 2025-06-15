@@ -41,8 +41,8 @@ const SpeedtestPage = () => {
       
       try {
         const data = JSON.parse(event.data);
-        // Check if the data looks like a speed test result
-        if (data && typeof data.dl !== 'undefined') {
+        // Check if the data is a final speed test result (testState === 5)
+        if (data && data.testState === 5 && typeof data.dl !== 'undefined') {
           setResults(data);
         }
       } catch (error) {
@@ -127,7 +127,7 @@ const SpeedtestPage = () => {
           )}
           
           <iframe
-            src="https://librespeed.org/"
+            src="https://librespeed.org/?frame=1"
             className="w-full h-full border-0"
             title="LibreSpeed Speed Test"
             allow="geolocation"
