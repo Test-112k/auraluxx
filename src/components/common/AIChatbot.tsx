@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, X, Bot, User } from 'lucide-react';
 import { searchMulti, getTrending, getPopular, getTopRated } from '@/services/tmdbApi';
+import { encryptKey, decryptKey } from '@/utils/encryption';
 
 interface Message {
   id: number;
@@ -13,10 +14,11 @@ interface Message {
 
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showRandomMessages, setShowRandomMessages] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hi! I'm your movie assistant powered by Claude AI. I can help you find movies, TV shows, anime, and K-dramas based on the latest data. What are you looking for today?",
+      text: "Hi! I'm your movie assistant powered by Gemini AI. I can help you find movies, TV shows, anime, and K-dramas based on the latest data. What are you looking for today?",
       isBot: true,
       timestamp: new Date()
     }
@@ -24,6 +26,9 @@ const AIChatbot = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Encrypted Gemini API key
+  const encryptedApiKey = encryptKey('AIzaSyAo42hUfi5ZwJSidDaC92OqbAqZQL4Egh4');
 
   const humorousMessages = [
     "🍿 Stuck in decision paralysis? Ask AI to rescue you!",
@@ -56,11 +61,13 @@ const AIChatbot = () => {
   const [currentMessage, setCurrentMessage] = useState(humorousMessages[0]);
 
   useEffect(() => {
+    if (!showRandomMessages) return;
+    
     const interval = setInterval(() => {
       setCurrentMessage(humorousMessages[Math.floor(Math.random() * humorousMessages.length)]);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [showRandomMessages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,36 +77,37 @@ const AIChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const callClaudeAPI = async (message: string): Promise<string> => {
+  const callGeminiAPI = async (message: string): Promise<string> => {
     try {
-      // Using Claude-4 Sonnet model for enhanced recommendations
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const apiKey = decryptKey(encryptedApiKey);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'sk-ant-api03-your-key-here', // This would be handled securely in production
-          'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 1000,
-          messages: [
-            {
-              role: 'user',
-              content: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. You have access to current movie and TV data through TMDB. When users ask for recommendations, provide specific titles with brief descriptions and ratings. Focus on popular, trending, and highly-rated content from movies, TV series, anime, and K-dramas. Be conversational, helpful, and enthusiastic. User query: ${message}`
-            }
-          ]
+          contents: [{
+            parts: [{
+              text: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. You have access to current movie and TV data through TMDB. When users ask for recommendations, provide specific titles with brief descriptions and ratings. Focus on popular, trending, and highly-rated content from movies, TV series, anime, and K-dramas. Be conversational, helpful, and enthusiastic. Always format your response with emojis and clear structure. User query: ${message}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 1,
+            topP: 1,
+            maxOutputTokens: 1000,
+          },
         })
       });
 
       if (!response.ok) {
-        throw new Error('Claude API error');
+        throw new Error('Gemini API error');
       }
 
       const data = await response.json();
-      return data.content[0].text || "I couldn't generate a response right now.";
+      return data.candidates[0]?.content?.parts[0]?.text || "I couldn't generate a response right now.";
     } catch (error) {
-      console.error('Claude API error:', error);
+      console.error('Gemini API error:', error);
       // Fallback to TMDB-based response
       return await generateTMDBResponse(message);
     }
@@ -164,9 +172,9 @@ const AIChatbot = () => {
   };
 
   const generateResponse = async (userMessage: string): Promise<string> => {
-    // Try Claude AI first, fallback to TMDB if needed
+    // Try Gemini AI first, fallback to TMDB if needed
     try {
-      const aiResponse = await callClaudeAPI(userMessage);
+      const aiResponse = await callGeminiAPI(userMessage);
       
       // Enhance AI response with current TMDB data
       const tmdbResponse = await generateTMDBResponse(userMessage);
@@ -223,10 +231,19 @@ const AIChatbot = () => {
       {/* Chat Button - Fixed on left side with humorous message */}
       <div className="fixed bottom-6 left-6 z-50">
         <div className="flex flex-col items-start space-y-2">
-          {/* Humorous suggestion message */}
-          <div className="bg-gradient-to-r from-aura-purple to-purple-600 text-white px-4 py-3 rounded-lg text-sm opacity-95 max-w-64 text-center transition-all duration-500 shadow-lg border border-purple-400/20">
-            <div className="font-medium">{currentMessage}</div>
-          </div>
+          {/* Humorous suggestion message with close button */}
+          {showRandomMessages && (
+            <div className="bg-gradient-to-r from-aura-purple to-purple-600 text-white px-4 py-3 rounded-lg text-sm opacity-95 max-w-64 text-center transition-all duration-500 shadow-lg border border-purple-400/20 relative">
+              <button
+                onClick={() => setShowRandomMessages(false)}
+                className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                title="Stop random messages"
+              >
+                <X size={12} />
+              </button>
+              <div className="font-medium">{currentMessage}</div>
+            </div>
+          )}
           <Button
             onClick={() => setIsOpen(!isOpen)}
             className="bg-gradient-to-r from-aura-purple to-purple-600 hover:from-aura-darkpurple hover:to-purple-700 text-white rounded-full w-16 h-16 shadow-xl transform hover:scale-105 transition-all duration-200 border-2 border-purple-400/30"
@@ -244,9 +261,9 @@ const AIChatbot = () => {
           <div className="bg-gradient-to-r from-aura-purple to-purple-600 text-white p-4 rounded-t-lg">
             <h3 className="font-semibold flex items-center">
               <Bot className="mr-2" size={20} />
-              🎬 Claude AI Assistant
+              🤖 Gemini AI Assistant
             </h3>
-            <p className="text-sm opacity-90">Powered by Claude AI & TMDB data</p>
+            <p className="text-sm opacity-90">Powered by Gemini AI & TMDB data</p>
           </div>
 
           {/* Messages */}
