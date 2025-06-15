@@ -4,26 +4,39 @@ import { callGeminiAPI } from '@/services/chatbotService';
 import type { Message } from '@/types/chatbot';
 
 const engagingMessages = [
+  // Movie & TV Show Suggestions
   "🎬 **Suggest 10 horror movies** that will keep me awake tonight! I dare you...",
   "🍿 **What are the best comedy movies from 2023** to watch when I need a good laugh?",
   "💕 **Recommend romantic movies** perfect for a cozy date night!",
   "🚀 **Show me action-packed movies** with epic fight scenes and explosions!",
   "🇰🇷 **What K-dramas** are trending right now? I'm ready to binge!",
   "🍜 **Suggest anime series** that will make me question reality!",
-  "🎭 **Help me find movies** from my country - I want to watch local content!",
-  "🔍 **How do I search** for movies with subtitles in my language?",
-  "😂 Why did the movie go to therapy? Because it had too many plot twists! **Ask me anything!**",
-  "🎪 I've got more movie recommendations than Netflix has categories! **What's your mood?**",
-  "🎯 **Find me something to watch** - I'm feeling adventurous today!",
+  "✨ **Tell me your favorite actor**, and I'll find their best movies for you!",
+  "🤔 **Feeling indecisive?** Give me a genre and a decade, and I'll find a hidden gem!",
+  "🎉 **Planning a movie night?** Let me know who you're watching with, and I'll suggest the perfect film!",
   "🌟 **What are the top-rated movies of all time** everyone's talking about?",
   "🎨 **Recommend indie films from the 90s** that will expand my artistic horizons!",
-  "🤖 I'm basically a movie encyclopedia with a sense of humor! **Try me with a year and genre!**",
   "🎊 **Show me feel-good movies** that will brighten my day!",
   "🕰️ **What were the best movies of 2010?** Let's take a trip down memory lane!",
   "👽 **Find me the best sci-fi movies** with mind-bending plots.",
   "🏆 **Show me some award-winning dramas** that are critically acclaimed.",
   "🕵️ **Suggest a mystery movie** with a twist I won't see coming.",
-  "📜 **What are some good historical dramas from the last 5 years?**"
+  "📜 **What are some good historical dramas from the last 5 years?**",
+
+  // Auraluxx Platform Help
+  "🎭 **Help me find movies** from my country - I want to watch local content!",
+  "🔍 **How do I search** for movies with subtitles in my language?",
+  "💡 **Did you know?** You can find movies from your home country in the **Regional** section. **Ask me how!**",
+  "⚙️ **Having trouble with a video?** Try switching the server in the player. **Ask me for other troubleshooting tips!**",
+  "💬 **Need to report an issue or get fast help?** Join our Telegram channel! **Ask me for the link!**",
+  "🎯 **Find me something to watch** - I'm feeling adventurous today!",
+
+  // Jokes & Fun Prompts
+  "😂 Why did the movie go to therapy? Because it had too many plot twists! **Ask me anything!**",
+  "😂 Why don't scientists trust atoms? Because they make up everything! ...Just like a good movie plot. **Ask me for a recommendation!**",
+  "😂 What do you call a fake noodle? An Impasta! Speaking of which, want to find a movie that's the real deal? **Just ask!**",
+  "🎪 I've got more movie recommendations than Netflix has categories! **What's your mood?**",
+  "🤖 I'm basically a movie encyclopedia with a sense of humor! **Try me with a year and genre!**",
 ];
 
 const initialMessage: Message = {
