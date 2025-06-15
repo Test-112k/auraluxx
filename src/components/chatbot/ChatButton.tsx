@@ -26,7 +26,7 @@ export const ChatButton = ({
   <div className="fixed bottom-6 left-4 md:left-6 z-50">
     <div className="flex flex-col items-start space-y-3">
       {showSuggestions && (
-        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 text-white px-4 py-3 md:px-5 md:py-4 rounded-2xl text-xs md:text-sm opacity-95 max-w-72 md:max-w-80 shadow-2xl border border-white/20 relative backdrop-blur-sm animate-pulse">
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 text-white px-4 py-3 md:px-5 md:py-4 rounded-2xl text-xs md:text-sm opacity-95 max-w-72 md:max-w-80 shadow-2xl border border-white/20 relative backdrop-blur-sm">
           <button
             onClick={hideSuggestions}
             className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-xs shadow-lg transition-all duration-200 hover:scale-110"
