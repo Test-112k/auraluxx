@@ -274,6 +274,82 @@ export const getRecentAnime = (page = 1) => {
 };
 
 /**
+ * Get K-Drama content (Korean TV shows/dramas)
+ */
+export const getKDramaContent = (filter = 'popular', options: Record<string, any> = {}) => {
+  let sortBy = 'popularity.desc';
+  const params: Record<string, any> = {
+    with_original_language: 'ko',
+    page: options.page || 1,
+  };
+
+  // Handle different filter types
+  switch (filter) {
+    case 'recent':
+      sortBy = 'first_air_date.desc';
+      params['first_air_date.lte'] = new Date().toISOString().split('T')[0];
+      break;
+    case 'top_rated':
+      sortBy = 'vote_average.desc';
+      params['vote_count.gte'] = 50;
+      break;
+    case 'popular':
+    default:
+      sortBy = 'popularity.desc';
+      break;
+  }
+
+  params.sort_by = sortBy;
+
+  // Add additional filters if provided
+  if (options.genre) {
+    params.with_genres = options.genre;
+  }
+  
+  if (options.year) {
+    params['first_air_date.gte'] = `${options.year}-01-01`;
+    params['first_air_date.lte'] = `${options.year}-12-31`;
+  }
+
+  return apiRequest('/discover/tv', params);
+};
+
+/**
+ * Get trending K-Drama
+ */
+export const getTrendingKDrama = (page = 1) => {
+  return apiRequest('/discover/tv', {
+    with_original_language: 'ko',
+    sort_by: 'popularity.desc',
+    page
+  });
+};
+
+/**
+ * Get top rated K-Drama
+ */
+export const getTopRatedKDrama = (page = 1) => {
+  return apiRequest('/discover/tv', {
+    with_original_language: 'ko',
+    sort_by: 'vote_average.desc',
+    'vote_count.gte': 50,
+    page
+  });
+};
+
+/**
+ * Get recent K-Drama
+ */
+export const getRecentKDrama = (page = 1) => {
+  return apiRequest('/discover/tv', {
+    with_original_language: 'ko',
+    sort_by: 'first_air_date.desc',
+    'first_air_date.lte': new Date().toISOString().split('T')[0],
+    page
+  });
+};
+
+/**
  * Get image URL
  */
 export const getImageUrl = (path: string, size = 'original') => {

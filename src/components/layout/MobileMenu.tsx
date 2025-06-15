@@ -97,6 +97,13 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
             Anime
           </Link>
           <Link 
+            to="/k-drama" 
+            onClick={onClose}
+            className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"
+          >
+            K-Drama
+          </Link>
+          <Link 
             to="/regional" 
             onClick={onClose}
             className="block text-lg font-medium text-white hover:text-aura-purple transition-colors py-3 border-b border-aura-purple/20"

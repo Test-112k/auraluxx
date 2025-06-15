@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import MoviePage from "./pages/MoviePage";
 import TvSeriesPage from "./pages/TvSeriesPage";
 import AnimePage from "./pages/AnimePage";
 import RegionalPage from "./pages/RegionalPage";
+import KDramaPage from "./pages/KDramaPage";
 import SearchPage from "./pages/SearchPage";
 import WatchPage from "./pages/WatchPage";
 import SpeedtestPage from "./pages/SpeedtestPage";
@@ -41,6 +43,7 @@ const App = () => (
             <Route path="/tv-series" element={<TvSeriesPage />} />
             <Route path="/anime" element={<AnimePage />} />
             <Route path="/regional" element={<RegionalPage />} />
+            <Route path="/k-drama" element={<KDramaPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/watch/:type/:id" element={<WatchPage />} />
             <Route path="/watch/:type/:id/" element={<WatchPage />} />

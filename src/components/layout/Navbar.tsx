@@ -40,6 +40,7 @@ const Navbar = () => {
                 <Link to="/movies" className={navLinkClasses}>Movies</Link>
                 <Link to="/tv-series" className={navLinkClasses}>TV Series</Link>
                 <Link to="/anime" className={navLinkClasses}>Anime</Link>
+                <Link to="/k-drama" className={navLinkClasses}>K-Drama</Link>
                 <Link to="/regional" className={navLinkClasses}>Regional</Link>
               </div>
             </div>

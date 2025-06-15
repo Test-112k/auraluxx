@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Film, Tv, Video, Globe } from 'lucide-react';
+import { Film, Tv, Video, Globe, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const CategoryButtons = () => {
@@ -22,6 +22,12 @@ const CategoryButtons = () => {
         <Link to="/anime" className="flex items-center gap-2">
           <Video size={18} />
           Anime
+        </Link>
+      </Button>
+      <Button asChild variant="outline" className="bg-white/5 hover:bg-white/10 hover:scale-105 transition-all duration-300 border-white/10 text-white">
+        <Link to="/k-drama" className="flex items-center gap-2">
+          <Heart size={18} />
+          K-Drama
         </Link>
       </Button>
       <Button asChild variant="outline" className="bg-white/5 hover:bg-white/10 hover:scale-105 transition-all duration-300 border-white/10 text-white">
