@@ -238,39 +238,66 @@ export const getAnimeContent = (filter = 'popular', options: Record<string, any>
 /**
  * Get trending anime
  */
-export const getTrendingAnime = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getTrendingAnime = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'popularity.desc',
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+  
+  return apiRequest('/discover/tv', params);
 };
 
 /**
  * Get top rated anime
  */
-export const getTopRatedAnime = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getTopRatedAnime = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'vote_average.desc',
     'vote_count.gte': 100,
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+
+  return apiRequest('/discover/tv', params);
 };
 
 /**
  * Get recent anime (on air)
  */
-export const getRecentAnime = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getRecentAnime = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_genres: 16, // Animation genre id
     with_original_language: 'ja',
     sort_by: 'first_air_date.desc',
     'first_air_date.lte': new Date().toISOString().split('T')[0],
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+
+  return apiRequest('/discover/tv', params);
 };
 
 /**
@@ -325,36 +352,63 @@ export const getKDramaContent = (filter = 'popular', options: Record<string, any
 /**
  * Get trending K-Drama
  */
-export const getTrendingKDrama = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getTrendingKDrama = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_original_language: 'ko',
     sort_by: 'popularity.desc',
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+  
+  return apiRequest('/discover/tv', params);
 };
 
 /**
  * Get top rated K-Drama
  */
-export const getTopRatedKDrama = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getTopRatedKDrama = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_original_language: 'ko',
     sort_by: 'vote_average.desc',
     'vote_count.gte': 50,
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+
+  return apiRequest('/discover/tv', params);
 };
 
 /**
  * Get recent K-Drama
  */
-export const getRecentKDrama = (page = 1) => {
-  return apiRequest('/discover/tv', {
+export const getRecentKDrama = (options: Record<string, any> = {}, page = 1) => {
+  const params: Record<string, any> = {
     with_original_language: 'ko',
     sort_by: 'first_air_date.desc',
     'first_air_date.lte': new Date().toISOString().split('T')[0],
-    page
-  });
+    page,
+    ...options,
+  };
+
+  if (params.year) {
+    params['first_air_date.gte'] = `${params.year}-01-01`;
+    params['first_air_date.lte'] = `${params.year}-12-31`;
+    delete params.year;
+  }
+
+  return apiRequest('/discover/tv', params);
 };
 
 /**

@@ -116,11 +116,11 @@ const getTMDBContext = async (userMessage: string): Promise<string | null> => {
         if (genreId) options.genre = genreId;
 
         if (lowerMessage.includes('trending')) {
-            searchResults = await getTrendingAnime();
+            searchResults = await getTrendingAnime(options);
         } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
-            searchResults = await getTopRatedAnime();
+            searchResults = await getTopRatedAnime(options);
         } else if (lowerMessage.includes('recent')) {
-            searchResults = await getRecentAnime();
+            searchResults = await getRecentAnime(options);
         } else {
             searchResults = await getAnimeContent('popular', options);
         }
@@ -132,11 +132,11 @@ const getTMDBContext = async (userMessage: string): Promise<string | null> => {
         if (genreId) options.genre = genreId;
 
         if (lowerMessage.includes('trending')) {
-            searchResults = await getTrendingKDrama();
+            searchResults = await getTrendingKDrama(options);
         } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
-            searchResults = await getTopRatedKDrama();
+            searchResults = await getTopRatedKDrama(options);
         } else if (lowerMessage.includes('recent')) {
-            searchResults = await getRecentKDrama();
+            searchResults = await getRecentKDrama(options);
         } else {
             searchResults = await getKDramaContent('popular', options);
         }
@@ -215,18 +215,22 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
           if (year) options.year = year;
           if (genreId) options.genre = genreId;
 
+          const yearText = year ? ` from ${year}` : '';
+          const genreText = foundGenre ? ` ${foundGenre}` : '';
+          const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
+
           if (lowerMessage.includes('trending')) {
-              searchResults = await getTrendingAnime();
-              responseIntro = "🔥 Here are the **trending anime** on Auraluxx:\n\n";
+              searchResults = await getTrendingAnime(options);
+              responseIntro = `🔥 Here are the **trending anime**${yearText} on Auraluxx:\n\n`;
           } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
-              searchResults = await getTopRatedAnime();
-              responseIntro = "🏆 Here are the **top-rated anime** on Auraluxx:\n\n";
+              searchResults = await getTopRatedAnime(options);
+              responseIntro = `🏆 Here are the **top-rated anime**${yearText} on Auraluxx:\n\n`;
           } else if (lowerMessage.includes('recent')) {
-              searchResults = await getRecentAnime();
-              responseIntro = "🆕 Here are some **recent anime** on Auraluxx:\n\n";
+              searchResults = await getRecentAnime(options);
+              responseIntro = `🆕 Here are some **recent anime**${yearText} on Auraluxx:\n\n`;
           } else {
               searchResults = await getAnimeContent('popular', options);
-              responseIntro = "🍜 Here are some **incredible anime** recommendations for you:\n\n";
+              responseIntro = `🍜 Here are some **incredible${genreText} anime**${yearText} recommendations for you:\n\n`;
           }
       }
       // Specific handling for K-Drama
@@ -235,18 +239,22 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
           if (year) options.year = year;
           if (genreId) options.genre = genreId;
 
+          const yearText = year ? ` from ${year}` : '';
+          const genreText = foundGenre ? ` ${foundGenre}` : '';
+          const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
+
           if (lowerMessage.includes('trending')) {
-              searchResults = await getTrendingKDrama();
-              responseIntro = "🔥 Here are the **trending K-Dramas** on Auraluxx:\n\n";
+              searchResults = await getTrendingKDrama(options);
+              responseIntro = `🔥 Here are the **trending K-Dramas**${yearText} on Auraluxx:\n\n`;
           } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
-              searchResults = await getTopRatedKDrama();
-              responseIntro = "🏆 Here are the **top-rated K-Dramas** on Auraluxx:\n\n";
+              searchResults = await getTopRatedKDrama(options);
+              responseIntro = `🏆 Here are the **top-rated K-Dramas**${yearText} on Auraluxx:\n\n`;
           } else if (lowerMessage.includes('recent')) {
-              searchResults = await getRecentKDrama();
-              responseIntro = "🆕 Here are some **recent K-Dramas** on Auraluxx:\n\n";
+              searchResults = await getRecentKDrama(options);
+              responseIntro = `🆕 Here are some **recent K-Dramas**${yearText} on Auraluxx:\n\n`;
           } else {
               searchResults = await getKDramaContent('popular', options);
-              responseIntro = "🇰🇷 Check out these **amazing K-Drama** titles on Auraluxx:\n\n";
+              responseIntro = `🇰🇷 Check out these **amazing${genreText} K-Drama** titles${yearText} on Auraluxx:\n\n`;
           }
       }
       // General movie/TV show requests
@@ -266,7 +274,7 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
               }
               searchResults = await discover(mediaType, params);
 
-              const yearText = year ? ` from ${year}` : '';
+              const yearText = year ? ` *(${year.split('-')[0]})*` : '';
               const genreText = foundGenre ? ` ${foundGenre}` : '';
               const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
               const icon = foundGenre ? (genreIcons[foundGenre] || '🎬') : '🎬';
