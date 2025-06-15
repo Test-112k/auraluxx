@@ -34,12 +34,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             </main>
             {!isMobile && <SidebarAd />}
           </div>
-          <ScrollToTop />
           <Footer />
-          {/* AI Chatbot with higher z-index to ensure visibility */}
-          <div className="z-[99998]">
-            <AIChatbot />
-          </div>
+          
+          {/* Fixed positioned elements with proper z-index */}
+          <ScrollToTop />
+          <AIChatbot />
         </div>
       </AdProvider>
     </SearchProvider>

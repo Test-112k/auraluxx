@@ -101,29 +101,31 @@ const KDramaPage = () => {
           ? 'bg-black text-white' 
           : 'bg-aura-dark text-white'
       }`}>
-        {/* Hero Slideshow */}
-        <KDramaHeroSlideshow />
+        {/* Hero Slideshow - Optimized spacing */}
+        <div className="mt-0">
+          <KDramaHeroSlideshow />
+        </div>
 
-        <div className="auraluxx-container py-8">
+        <div className="auraluxx-container py-6 md:py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">
               Korean Drama (K-Drama)
             </h1>
-            <p className="text-white/80 text-lg">
+            <p className="text-white/80 text-base md:text-lg">
               Discover the best Korean dramas and series
             </p>
           </div>
 
           {/* Top Ad */}
           {isAdEnabled && (
-            <div className="mb-8 flex justify-center">
+            <div className="mb-6 md:mb-8 flex justify-center">
               <Ad size="728x90" />
             </div>
           )}
 
           {/* Category Filter Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-6 md:mb-8">
             <Button 
               onClick={() => handleFilterChange('popular')}
               variant={filter === 'popular' ? 'default' : 'outline'}
@@ -184,7 +186,7 @@ const KDramaPage = () => {
               loading={loading}
               loadMore={loadMore}
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 mb-6 md:mb-8">
                 {content.map((item: any, index: number) => (
                   <div key={`${item.id}-${index}`}>
                     <MediaCard 
@@ -215,7 +217,7 @@ const KDramaPage = () => {
 
           {/* Bottom Ad */}
           {isAdEnabled && (
-            <div className="mt-8 flex justify-center">
+            <div className="mt-6 md:mt-8 flex justify-center">
               <Ad size="728x90" />
             </div>
           )}
