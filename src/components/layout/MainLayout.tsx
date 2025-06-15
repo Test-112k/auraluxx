@@ -7,7 +7,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import SidebarAd from '@/components/ads/SidebarAd';
-import AIChatbot from '@/components/common/AIChatbot';
+import AIChatbot from '@/components/chatbot';
 
 interface MainLayoutProps {
   children: ReactNode;
