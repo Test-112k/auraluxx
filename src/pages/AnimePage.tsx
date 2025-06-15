@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
+import AnimeHeroSlideshow from '@/components/common/AnimeHeroSlideshow';
 import { getAnimeContent } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
@@ -91,6 +93,8 @@ const AnimePage = () => {
   return (
     <MainLayout>
       <div>
+        <AnimeHeroSlideshow />
+        
         <CategoryFilterBar
           onGenreChange={handleGenreChange}
           onYearChange={handleYearChange}
