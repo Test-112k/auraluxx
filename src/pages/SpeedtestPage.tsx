@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Wifi, Download, Upload, Gauge, AlertCircle, CheckCircle, ServerCrash } from 'lucide-react';
 import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 const AnimatedSpeedometerGauge = ({ 
   value, 
@@ -137,6 +138,7 @@ const SpeedtestPage = () => {
   const [currentTest, setCurrentTest] = useState<'ping' | 'download' | 'upload' | null>(null);
   const [realTimeSpeed, setRealTimeSpeed] = useState<number>(0);
   const [testError, setTestError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getSpeedRecommendation = (downloadSpeed: number) => {
     if (downloadSpeed >= 100) {
@@ -177,174 +179,226 @@ const SpeedtestPage = () => {
     }
   };
 
-  // Enhanced ping test with multiple measurements
+  // Real ping test using multiple reliable endpoints
   const measurePing = async (): Promise<number> => {
     const pings: number[] = [];
-    const testUrls = [
-      'https://cloudflare.com/cdn-cgi/trace',
+    const testEndpoints = [
       'https://www.google.com/favicon.ico',
-      'https://httpbin.org/status/200'
+      'https://httpbin.org/get',
+      'https://jsonplaceholder.typicode.com/posts/1',
+      'https://api.github.com',
+      'https://www.cloudflare.com/favicon.ico'
     ];
 
     for (let i = 0; i < 5; i++) {
       try {
+        const endpoint = testEndpoints[i % testEndpoints.length];
         const startTime = performance.now();
-        const url = testUrls[i % testUrls.length];
         
-        await fetch(url + '?_=' + Math.random(), {
+        await fetch(endpoint + '?cache=' + Math.random(), {
           method: 'HEAD',
           mode: 'no-cors',
           cache: 'no-cache'
         });
         
         const endTime = performance.now();
-        pings.push(endTime - startTime);
+        const pingTime = endTime - startTime;
+        pings.push(pingTime);
+        
+        console.log(`Ping ${i + 1}: ${pingTime.toFixed(2)}ms`);
       } catch (error) {
-        // Fallback ping measurement
-        const startTime = performance.now();
-        try {
-          await fetch('https://1.1.1.1', { method: 'HEAD', mode: 'no-cors' });
-        } catch {
-          // Even if it fails, we can measure the time it took
-        }
-        const endTime = performance.now();
-        pings.push(endTime - startTime);
+        console.log(`Ping ${i + 1} failed:`, error);
+        // Add a penalty for failed pings
+        pings.push(1000);
       }
     }
 
-    // Return median ping to avoid outliers
+    // Remove outliers and calculate average
     pings.sort((a, b) => a - b);
-    return Math.round(pings[Math.floor(pings.length / 2)]);
+    const validPings = pings.slice(1, -1); // Remove highest and lowest
+    const averagePing = validPings.reduce((a, b) => a + b, 0) / validPings.length;
+    
+    return Math.round(averagePing);
   };
 
-  // Enhanced download test with larger files and real-time updates
+  // Real download speed test using actual file downloads
   const measureDownloadSpeed = async (onProgress: (speed: number) => void): Promise<number> => {
-    const testSizes = [
-      { url: 'https://speed.cloudflare.com/__down?bytes=10485760', size: 10485760 }, // 10MB
-      { url: 'https://speed.cloudflare.com/__down?bytes=52428800', size: 52428800 }, // 50MB
+    const testFiles = [
+      // GitHub releases for reliable large files
+      'https://github.com/microsoft/vscode/releases/download/1.74.0/VSCode-win32-x64-1.74.0.zip',
+      // Cloudflare speed test endpoint
+      'https://speed.cloudflare.com/__down?bytes=25000000', // 25MB
+      // Alternative test files
+      'https://ash-speed.hetzner.com/100MB.bin',
+      'https://proof.ovh.net/files/100Mb.dat'
     ];
 
     let bestSpeed = 0;
+    let successfulTests = 0;
 
-    for (const test of testSizes) {
+    for (const testUrl of testFiles) {
       try {
+        console.log(`Testing download from: ${testUrl}`);
         const controller = new AbortController();
-        const startTime = performance.now();
-        let received = 0;
+        const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
         
-        const response = await fetch(test.url, {
+        const startTime = performance.now();
+        let totalBytes = 0;
+        
+        const response = await fetch(testUrl, {
           signal: controller.signal,
-          cache: 'no-cache'
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
 
-        if (!response.body) continue;
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          console.log(`Download test failed: ${response.status}`);
+          continue;
+        }
+
+        if (!response.body) {
+          console.log('No response body available');
+          continue;
+        }
 
         const reader = response.body.getReader();
-        const maxTestTime = 6000; // 6 seconds max per test
-
-        // Real-time speed calculation
-        const speedUpdateInterval = setInterval(() => {
-          const elapsed = (performance.now() - startTime) / 1000;
-          if (elapsed > 0 && received > 0) {
-            const currentSpeed = (received * 8) / elapsed / 1000000; // Mbps
-            onProgress(currentSpeed);
-            bestSpeed = Math.max(bestSpeed, currentSpeed);
-          }
-        }, 200);
+        let lastProgressTime = startTime;
 
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            received += value.length;
-            const elapsed = performance.now() - startTime;
+            totalBytes += value.length;
+            const currentTime = performance.now();
+            
+            // Update progress every 200ms
+            if (currentTime - lastProgressTime > 200) {
+              const elapsed = (currentTime - startTime) / 1000;
+              if (elapsed > 0) {
+                const currentSpeed = (totalBytes * 8) / elapsed / 1000000; // Mbps
+                onProgress(currentSpeed);
+                bestSpeed = Math.max(bestSpeed, currentSpeed);
+              }
+              lastProgressTime = currentTime;
+            }
 
-            if (elapsed > maxTestTime) {
-              controller.abort();
+            // Stop test after 10 seconds or 50MB
+            if (currentTime - startTime > 10000 || totalBytes > 50 * 1024 * 1024) {
               break;
             }
           }
         } finally {
-          clearInterval(speedUpdateInterval);
           reader.releaseLock();
         }
 
         const totalTime = (performance.now() - startTime) / 1000;
-        if (totalTime > 0) {
-          const speed = (received * 8) / totalTime / 1000000;
+        if (totalTime > 0 && totalBytes > 0) {
+          const speed = (totalBytes * 8) / totalTime / 1000000;
           bestSpeed = Math.max(bestSpeed, speed);
+          successfulTests++;
+          console.log(`Download speed from ${testUrl}: ${speed.toFixed(2)} Mbps`);
         }
 
+        // If we got a good speed, we can break early
+        if (bestSpeed > 10) break;
+
       } catch (error) {
-        console.log('Download test error:', error);
-        // Continue with next test size
+        console.log(`Download test error for ${testUrl}:`, error);
+        continue;
       }
+    }
+
+    if (successfulTests === 0) {
+      throw new Error('All download tests failed');
     }
 
     return Math.round(bestSpeed);
   };
 
-  // Enhanced upload test with larger payloads
+  // Real upload speed test using actual file uploads
   const measureUploadSpeed = async (onProgress: (speed: number) => void): Promise<number> => {
+    const testEndpoints = [
+      'https://httpbin.org/post',
+      'https://postman-echo.com/post',
+      'https://jsonplaceholder.typicode.com/posts'
+    ];
+
     const testSizes = [
-      2 * 1024 * 1024,  // 2MB
-      5 * 1024 * 1024,  // 5MB
+      1 * 1024 * 1024,   // 1MB
+      2 * 1024 * 1024,   // 2MB
+      5 * 1024 * 1024    // 5MB
     ];
 
     let bestSpeed = 0;
+    let successfulTests = 0;
 
     for (const size of testSizes) {
-      try {
-        const data = new Uint8Array(size).fill(1);
-        const startTime = performance.now();
-
-        // Simulate progress updates during upload
-        const progressInterval = setInterval(() => {
-          const elapsed = (performance.now() - startTime) / 1000;
-          if (elapsed > 0) {
-            const estimatedSpeed = (size * 8) / elapsed / 1000000;
-            onProgress(estimatedSpeed);
-          }
-        }, 200);
-
-        await fetch('https://httpbin.org/post', {
-          method: 'POST',
-          body: data,
-          headers: {
-            'Content-Type': 'application/octet-stream'
-          }
-        });
-
-        clearInterval(progressInterval);
-
-        const totalTime = (performance.now() - startTime) / 1000;
-        if (totalTime > 0) {
-          const speed = (size * 8) / totalTime / 1000000;
-          bestSpeed = Math.max(bestSpeed, speed);
-        }
-
-      } catch (error) {
-        console.log('Upload test error:', error);
-        // Try alternative upload endpoint
+      for (const endpoint of testEndpoints) {
         try {
-          const data = new Uint8Array(size / 2).fill(1); // Smaller fallback
+          console.log(`Testing upload to: ${endpoint} with ${(size / 1024 / 1024).toFixed(1)}MB`);
+          
+          // Create test data
+          const testData = new Uint8Array(size);
+          for (let i = 0; i < size; i++) {
+            testData[i] = Math.floor(Math.random() * 256);
+          }
+
           const startTime = performance.now();
           
-          await fetch('https://speed.cloudflare.com/__up', {
+          // Simulate progress updates
+          const progressInterval = setInterval(() => {
+            const elapsed = (performance.now() - startTime) / 1000;
+            if (elapsed > 0) {
+              const estimatedSpeed = (size * 8) / elapsed / 1000000;
+              onProgress(estimatedSpeed);
+            }
+          }, 300);
+
+          const response = await fetch(endpoint, {
             method: 'POST',
-            body: data
+            body: testData,
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-cache'
+            }
           });
+
+          clearInterval(progressInterval);
+
+          if (!response.ok) {
+            console.log(`Upload test failed: ${response.status}`);
+            continue;
+          }
 
           const totalTime = (performance.now() - startTime) / 1000;
           if (totalTime > 0) {
-            const speed = (data.length * 8) / totalTime / 1000000;
+            const speed = (size * 8) / totalTime / 1000000;
             bestSpeed = Math.max(bestSpeed, speed);
+            successfulTests++;
+            console.log(`Upload speed to ${endpoint}: ${speed.toFixed(2)} Mbps`);
           }
-        } catch (fallbackError) {
-          console.log('Upload fallback error:', fallbackError);
+
+          // If we got a good speed, we can break
+          if (bestSpeed > 5) break;
+
+        } catch (error) {
+          console.log(`Upload test error for ${endpoint}:`, error);
+          continue;
         }
       }
+      
+      // If we got a reasonable speed, no need to test larger files
+      if (bestSpeed > 5) break;
+    }
+
+    if (successfulTests === 0) {
+      throw new Error('All upload tests failed');
     }
 
     return Math.round(bestSpeed);
@@ -358,23 +412,37 @@ const SpeedtestPage = () => {
     setTestError(null);
 
     try {
+      toast({
+        title: "Speed Test Started",
+        description: "Running comprehensive internet speed test...",
+      });
+
       // 1. Ping test
+      console.log('Starting ping test...');
       setCurrentTest('ping');
+      setProgress(10);
       const pingResult = await measurePing();
-      setProgress(25);
+      console.log(`Ping result: ${pingResult}ms`);
+      setProgress(30);
 
       // 2. Download test with real-time updates
+      console.log('Starting download test...');
       setCurrentTest('download');
       const downloadResult = await measureDownloadSpeed((speed) => {
         setRealTimeSpeed(speed);
+        console.log(`Real-time download speed: ${speed.toFixed(2)} Mbps`);
       });
-      setProgress(75);
+      console.log(`Download result: ${downloadResult} Mbps`);
+      setProgress(70);
 
-      // 3. Upload test with real-time updates
+      // 3. Upload test with real-time updates  
+      console.log('Starting upload test...');
       setCurrentTest('upload');
       const uploadResult = await measureUploadSpeed((speed) => {
         setRealTimeSpeed(speed);
+        console.log(`Real-time upload speed: ${speed.toFixed(2)} Mbps`);
       });
+      console.log(`Upload result: ${uploadResult} Mbps`);
 
       setProgress(100);
       setResults({
@@ -383,11 +451,23 @@ const SpeedtestPage = () => {
         ping: pingResult,
       });
 
+      toast({
+        title: "Speed Test Complete",
+        description: `Download: ${downloadResult} Mbps, Upload: ${uploadResult} Mbps, Ping: ${pingResult}ms`,
+      });
+
     } catch (err) {
       console.error("Speedtest failed", err);
-      setTestError("The speed test encountered an error. Please check your connection and try again.");
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setTestError(`Speed test failed: ${errorMessage}. Please check your internet connection and try again.`);
       setResults(null);
       setProgress(100);
+      
+      toast({
+        title: "Speed Test Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
 
     setCurrentTest(null);
@@ -402,7 +482,7 @@ const SpeedtestPage = () => {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-4">Internet Speed Test</h1>
             <p className="text-white/70 text-lg">
-              Test your internet connection speed with professional-grade measurements
+              Test your internet connection speed with real-world measurements
             </p>
           </div>
 
@@ -410,10 +490,10 @@ const SpeedtestPage = () => {
             <CardHeader className="text-center">
               <CardTitle className="text-white flex items-center justify-center gap-2">
                 <Wifi className="h-6 w-6" />
-                Speed Test Results
+                Real Speed Test Results
               </CardTitle>
               <CardDescription className="text-white/70">
-                Click the button below to start testing your connection
+                Accurate measurements using real file transfers and network requests
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -432,7 +512,7 @@ const SpeedtestPage = () => {
                   ) : (
                     <>
                       <Gauge className="h-5 w-5 mr-2" />
-                      Start Speed Test
+                      Start Real Speed Test
                     </>
                   )}
                 </Button>
@@ -532,10 +612,10 @@ const SpeedtestPage = () => {
               <div className="mt-8 p-4 bg-white/5 rounded-lg">
                 <h3 className="text-white font-semibold mb-2">About the Test</h3>
                 <ul className="text-white/70 text-sm space-y-1">
-                  <li>• Download speed: Measured using large file downloads with real-time monitoring</li>
-                  <li>• Upload speed: Measured using data uploads to test servers</li>
-                  <li>• Ping: Average response time from multiple test endpoints</li>
-                  <li>• Tests use professional-grade measurement techniques for accuracy</li>
+                  <li>• Download speed: Measured using real file downloads from multiple servers</li>
+                  <li>• Upload speed: Measured using actual data uploads to test endpoints</li>
+                  <li>• Ping: Average response time from multiple reliable endpoints</li>
+                  <li>• All tests use real network requests for accurate measurements</li>
                 </ul>
               </div>
             </CardContent>
