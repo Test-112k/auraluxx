@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -41,7 +42,7 @@ const Logo = () => (
 );
 
 const SearchBar = () => {
-  const { setSearchTerm } = useSearch();
+  const { setQuery } = useSearch();
   const location = useLocation();
   const isSearchPage = location.pathname === '/search';
   const [searchText, setSearchText] = useState('');
@@ -49,7 +50,7 @@ const SearchBar = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchText(value);
-    setSearchTerm(value);
+    setQuery(value);
   };
 
   return (
