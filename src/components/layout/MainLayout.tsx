@@ -22,7 +22,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <Navbar />
           {/* Fixed header requires top padding for content - increased for better spacing */}
           <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
-            <main className="flex-grow w-full min-h-0 flex flex-col">
+            <main className="flex-grow w-full flex flex-col">
               {children}
             </main>
             {!isMobile && <SidebarAd />}
