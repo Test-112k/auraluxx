@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
-import { getDetails, getSimilar } from '@/services/tmdbApi';
+import { getDetails, getSimilar, getCollection } from '@/services/tmdbApi';
 import { toast } from '@/components/ui/use-toast';
 import Ad from '@/components/ads/Ad';
 import { useAds } from '@/contexts/AdContext';
@@ -59,6 +60,18 @@ const WatchPage = () => {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!details,
+  });
+  
+  // Fetch collection details if it's a movie and belongs to a collection
+  const collectionId = details?.belongs_to_collection?.id;
+  const { data: collectionDetails, isLoading: collectionLoading } = useQuery({
+    queryKey: ['collection', collectionId],
+    queryFn: async () => {
+      if (!collectionId) return null;
+      return await getCollection(collectionId);
+    },
+    enabled: !!collectionId && type === 'movie',
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
   
   // Set initial season and episode when details load or type/id changes
@@ -177,7 +190,17 @@ const WatchPage = () => {
   const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]);
   const genres = details.genres || [];
   const credits = details.credits || { cast: [], crew: [] };
-  const recommendedContent = recommendationsData?.results || [];
+  
+  // Combine collection movies with recommendations
+  const recommendationsRaw = recommendationsData?.results || [];
+  const collectionMovies = collectionDetails?.parts
+    ?.filter((movie: any) => movie.id !== Number(id)) // Exclude the current movie
+    .map((movie: any) => ({ ...movie, media_type: 'movie' })) // Ensure media_type for MediaCard
+    || [];
+  
+  const combinedItems = [...collectionMovies, ...recommendationsRaw];
+  const recommendedContent = Array.from(new Map(combinedItems.map(item => [item.id, item])).values());
+  
   const isTvShow = type === 'tv';
   const posterPath = details.poster_path;
   const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
@@ -380,7 +403,7 @@ const WatchPage = () => {
             items={recommendedContent}
             mediaType={type as 'movie' | 'tv'}
           />
-        ) : recommendationsLoading ? (
+        ) : (recommendationsLoading || (collectionId && collectionLoading)) ? (
           <div className="pt-8">
             <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Recommended for You</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

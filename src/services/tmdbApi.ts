@@ -101,6 +101,13 @@ export const getSimilar = (mediaType: string, id: number, page = 1) => {
 };
 
 /**
+ * Get collection details
+ */
+export const getCollection = (collectionId: number) => {
+  return apiRequest(`/collection/${collectionId}`);
+};
+
+/**
  * Get popular items by type
  */
 export const getPopular = (mediaType: string, page = 1) => {
