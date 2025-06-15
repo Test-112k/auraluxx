@@ -1,10 +1,12 @@
 
-/* Removed conflicting styles that were causing layout issues */
+/* Enhanced 60fps optimizations for Auraluxx */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -15,36 +17,43 @@
 
 @keyframes logo-spin {
   from {
-    transform: rotate(0deg);
+    -webkit-transform: rotate(0deg) translateZ(0);
+    transform: rotate(0deg) translateZ(0);
   }
   to {
-    transform: rotate(360deg);
+    -webkit-transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg) translateZ(0);
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
+    will-change: transform;
   }
 }
 
 .card {
   padding: 2em;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .read-the-docs {
   color: #888;
 }
 
-/* Enhanced video player optimizations for mobile */
+/* Enhanced video player optimizations for 60fps mobile */
 .video-container {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
-  /* Hardware acceleration */
-  transform: translateZ(0);
+  /* Hardware acceleration for 60fps */
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: auto;
+  contain: layout;
 }
 
 /* Enhanced mobile video height for better viewing */
@@ -61,14 +70,16 @@
   }
 }
 
-/* Global loading animation with hardware acceleration */
+/* Global loading animation with hardware acceleration for 60fps */
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 0.7;
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
   50% {
     opacity: 0.3;
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
 }
@@ -76,13 +87,17 @@
 .loading-animation {
   animation: pulse-glow 1.5s ease-in-out infinite;
   will-change: opacity;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
-/* Enhanced mobile menu animation with hardware acceleration */
+/* Enhanced mobile menu animation with hardware acceleration for 60fps */
 .animate-in {
   animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .fade-in {
@@ -92,15 +107,17 @@
 @keyframes fadeIn {
   from { 
     opacity: 0; 
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
   to { 
     opacity: 1; 
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
 }
 
-/* Better spacing for ads with mobile optimization */
+/* Better spacing for ads with mobile optimization and 60fps */
 .ad-container {
   margin: 0.5rem 0;
   line-height: 0;
@@ -109,8 +126,11 @@
   align-items: center;
   width: 100%;
   min-height: 50px;
-  /* Hardware acceleration */
+  /* Hardware acceleration for 60fps */
+  -webkit-transform: translateZ(0);
   transform: translateZ(0);
+  will-change: auto;
+  contain: layout;
 }
 
 @media (min-width: 768px) {
@@ -120,7 +140,7 @@
   }
 }
 
-/* Handle external ad scripts better */
+/* Handle external ad scripts better with 60fps optimization */
 [id*="taboola"], 
 [id*="mgid"], 
 [class*="sc-"],
@@ -129,8 +149,10 @@
   min-height: 50px !important;
   margin: 0 auto !important;
   overflow: visible !important;
-  /* Hardware acceleration */
+  /* Hardware acceleration for 60fps */
+  -webkit-transform: translateZ(0) !important;
   transform: translateZ(0) !important;
+  will-change: auto !important;
 }
 
 @media (min-width: 768px) {
@@ -142,15 +164,16 @@
   }
 }
 
-/* Ensure social bar ads display properly */
+/* Ensure social bar ads display properly with 60fps */
 script[src*="bluetackclasp.com"] + * {
   display: block !important;
   width: 100% !important;
   overflow: visible !important;
+  -webkit-transform: translateZ(0) !important;
   transform: translateZ(0) !important;
 }
 
-/* Enhanced mobile menu body lock */
+/* Enhanced mobile menu body lock with 60fps optimization */
 body.menu-open {
   position: fixed !important;
   width: 100% !important;
@@ -166,15 +189,17 @@ html.menu-open {
   height: 100% !important;
 }
 
-/* Mobile touch optimization */
+/* Mobile touch optimization with 60fps */
 @media (max-width: 768px) {
   /* Larger touch targets */
   button, a[role="button"], .clickable {
     min-height: 44px;
     min-width: 44px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
-  /* Smooth scrolling optimization */
+  /* Smooth scrolling optimization for 60fps */
   * {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -196,7 +221,7 @@ html.menu-open {
   }
 }
 
-/* Optimize for low-end devices */
+/* Optimize for low-end devices with 60fps focus */
 @media (max-width: 480px) {
   .video-container {
     border-radius: 8px; /* Reduce border radius for better performance */
@@ -205,4 +230,48 @@ html.menu-open {
   .animate-in {
     animation-duration: 150ms; /* Faster animations on mobile */
   }
+}
+
+/* 60fps specific optimizations */
+.auraluxx-smooth {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auraluxx-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.auraluxx-hover:hover {
+  -webkit-transform: translateY(-2px) translateZ(0);
+  transform: translateY(-2px) translateZ(0);
+}
+
+/* Hardware acceleration for all interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+/* Optimized animations for 60fps */
+@keyframes auraluxx-fade {
+  from {
+    opacity: 0;
+    -webkit-transform: translateY(10px) translateZ(0);
+    transform: translateY(10px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateY(0) translateZ(0);
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+.auraluxx-fade-in {
+  animation: auraluxx-fade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

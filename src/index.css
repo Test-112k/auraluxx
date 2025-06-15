@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,12 +48,19 @@
     /* Hardware acceleration for better performance */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    perspective: 1000;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
   }
 
   html {
     @apply scroll-smooth;
     width: 100%;
     height: 100%;
+    /* GPU acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   body {
@@ -70,9 +78,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* Smooth background color transitions */
+    /* Smooth background color transitions with GPU acceleration */
     transition: background-color 0.3s ease;
     background-color: #1a0a2e; /* Default aura-dark */
+    /* Hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: auto;
   }
 
   /* Dark mode body background */
@@ -124,6 +136,9 @@
     background-color: transparent;
     /* Prevent zoom on iOS */
     font-size: 16px;
+    /* Hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
   /* Enhanced focus styles for better accessibility across platforms */
@@ -136,8 +151,10 @@
   /* Performance optimizations for images */
   img {
     @apply max-w-full h-auto;
-    /* Better loading */
+    /* Better loading with GPU acceleration */
     image-rendering: optimizeQuality;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 }
 
@@ -154,9 +171,12 @@
   .card-hover {
     @apply transition-all duration-300;
     will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
   .card-hover:hover {
+    -webkit-transform: scale(1.03) translateZ(0);
     transform: scale(1.03) translateZ(0);
     box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.1);
   }
@@ -164,6 +184,7 @@
   .glass-card {
     @apply rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 shadow-lg;
     /* Hardware acceleration */
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
     /* Smooth theme transitions */
     transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -189,18 +210,22 @@
     line-height: 1.4;
   }
   
-  /* Enhanced button animations */
+  /* Enhanced button animations with GPU acceleration */
   .btn-hover {
     @apply transition-all duration-200;
     will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
   .btn-hover:hover {
+    -webkit-transform: translateY(-2px) translateZ(0);
     transform: translateY(-2px) translateZ(0);
     box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.1);
   }
   
   .btn-hover:active {
+    -webkit-transform: translateY(0) translateZ(0);
     transform: translateY(0) translateZ(0);
   }
 }
@@ -211,6 +236,9 @@
   padding: 0;
   max-width: none;
   overflow-x: hidden;
+  /* Hardware acceleration */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Platform-specific optimizations */
@@ -258,6 +286,8 @@
   @apply flex justify-center items-center bg-white/5 rounded-lg transition-all;
   contain: layout;
   will-change: auto;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Optimized media queries for better responsive design */
@@ -272,5 +302,37 @@
   /* Desktop optimizations */
   .auraluxx-container {
     @apply px-8;
+  }
+}
+
+/* 60fps optimization classes */
+.gpu-accelerated {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.smooth-transition {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    -webkit-transform: translateY(10px) translateZ(0);
+    transform: translateY(10px) translateZ(0);
+  }
+  to { 
+    opacity: 1; 
+    -webkit-transform: translateY(0) translateZ(0);
+    transform: translateY(0) translateZ(0);
   }
 }
