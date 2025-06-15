@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, X, Bot, User } from 'lucide-react';
@@ -18,7 +17,7 @@ const AIChatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hi! I'm your movie assistant powered by Gemini AI. I can help you find movies, TV shows, anime, and K-dramas based on the latest data. What are you looking for today?",
+      text: "Hey there! 👋 I'm Auraluxx AI, your personal entertainment assistant! I can help you discover amazing movies, TV shows, anime, and K-dramas based on the latest trends and data. What kind of entertainment are you in the mood for today?",
       isBot: true,
       timestamp: new Date()
     }
@@ -31,31 +30,31 @@ const AIChatbot = () => {
   const encryptedApiKey = encryptKey('AIzaSyAo42hUfi5ZwJSidDaC92OqbAqZQL4Egh4');
 
   const humorousMessages = [
-    "🍿 Stuck in decision paralysis? Ask AI to rescue you!",
-    "🤔 Confused what to watch? Let AI be your movie guru!",
-    "🎬 Can't pick a movie? AI has entered the chat!",
-    "😵 Overwhelmed by choices? AI to the rescue!",
-    "🎭 Movie night crisis? Ask AI for salvation!",
-    "🔮 Need a crystal ball for movies? Try our AI!",
-    "🚀 Lost in the streaming universe? AI is your guide!",
-    "🧠 Brain freeze on what to watch? AI has ideas!",
-    "🎪 Welcome to the movie circus! AI picks the show!",
-    "🏆 Champion of indecision? Let AI choose your winner!",
-    "🌟 Shooting star wishes for movies? AI grants them!",
-    "🎯 Bullseye movie recommendations from AI!",
-    "🎊 Party planning but need entertainment? Ask AI!",
-    "🕵️ Detective work for good movies? AI solved it!",
-    "🎨 Paint me a perfect movie night with AI!",
-    "👻 Suggest 10 horror movies to watch",
-    "😂 Recommend 5 comedy shows for tonight",
-    "💕 Find me romantic K-dramas to binge",
-    "🔥 What's trending in anime right now?",
-    "⚔️ Show me epic action movies",
-    "🌸 Best Japanese movies to watch",
-    "🎭 Classic movies everyone should see",
-    "🚀 Sci-fi series that blow your mind",
-    "🎪 Family-friendly movies for weekend",
-    "🌙 Late night thriller recommendations"
+    "🍿 Stuck in decision paralysis? Let Auraluxx AI be your hero!",
+    "🤔 Can't decide what to watch? Auraluxx AI has got your back!",
+    "🎬 Movie night dilemma? Ask Auraluxx AI for instant solutions!",
+    "😵 Overwhelmed by endless options? Let AI guide your journey!",
+    "🎭 Entertainment crisis mode? Auraluxx AI to the rescue!",
+    "🔮 Need a crystal ball for perfect picks? Try our AI magic!",
+    "🚀 Lost in the streaming galaxy? AI is your navigation system!",
+    "🧠 Brain freeze on entertainment? AI has unlimited ideas!",
+    "🎪 Welcome to the entertainment universe! AI curates the best!",
+    "🏆 Champion of indecision? Let AI crown your perfect choice!",
+    "🌟 Wishing for stellar recommendations? AI makes dreams reality!",
+    "🎯 Bullseye entertainment picks powered by AI intelligence!",
+    "🎊 Planning the perfect night? Ask AI for premium suggestions!",
+    "🕵️ Detective work for hidden gems? AI already solved the case!",
+    "🎨 Paint your ideal entertainment experience with AI!",
+    "👻 Give me 10 spine-chilling horror movies to watch",
+    "😂 Recommend 5 hilarious comedy shows for tonight",
+    "💕 Find me the most romantic K-dramas to binge",
+    "🔥 What's trending and hot in anime right now?",
+    "⚔️ Show me epic action movies that pack a punch",
+    "🌸 Best Japanese cinema gems I should discover",
+    "🎭 Timeless classics every movie lover must see",
+    "🚀 Mind-blowing sci-fi series that'll amaze me",
+    "🎪 Perfect family-friendly movies for weekend fun",
+    "🌙 Late night thriller recommendations for insomniacs"
   ];
 
   const [currentMessage, setCurrentMessage] = useState(humorousMessages[0]);
@@ -89,7 +88,7 @@ const AIChatbot = () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. Provide specific, current movie and TV show recommendations based on user queries. Be conversational, helpful, and enthusiastic. Always format your response with emojis and clear structure. Keep responses concise but informative. User query: ${message}`
+              text: `You are Auraluxx AI, an intelligent entertainment assistant for the AuraLuxx streaming platform. Your mission is to provide exceptional movie and TV show recommendations based on user preferences. Be enthusiastic, knowledgeable, and personable in your responses. Always format your recommendations with emojis and clear structure for easy reading. Keep responses engaging but concise. User request: ${message}`
             }]
           }],
           generationConfig: {
@@ -149,35 +148,35 @@ const AIChatbot = () => {
       
       if (lowerMessage.includes('anime')) {
         searchResults = await searchMulti('anime');
-        responseIntro = "🍜 Here are some amazing anime recommendations:\n\n";
+        responseIntro = "🍜 Here are some incredible anime recommendations I've curated for you:\n\n";
       } else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean')) {
         searchResults = await searchMulti('korean drama');
-        responseIntro = "🇰🇷 Here are some addictive K-Drama recommendations:\n\n";
+        responseIntro = "🇰🇷 Get ready for these absolutely addictive K-Drama masterpieces:\n\n";
       } else if (lowerMessage.includes('horror')) {
         searchResults = await searchMulti('horror');
-        responseIntro = "👻 Here are some spine-chilling horror recommendations:\n\n";
+        responseIntro = "👻 Brace yourself for these spine-tingling horror experiences:\n\n";
       } else if (lowerMessage.includes('comedy')) {
         searchResults = await searchMulti('comedy');
-        responseIntro = "😂 Here are some laugh-out-loud comedy recommendations:\n\n";
+        responseIntro = "😂 Get ready to laugh until your sides hurt with these comedy gems:\n\n";
       } else if (lowerMessage.includes('romance')) {
         searchResults = await searchMulti('romance');
-        responseIntro = "💕 Here are some heart-warming romantic recommendations:\n\n";
+        responseIntro = "💕 Fall in love all over again with these romantic treasures:\n\n";
       } else if (lowerMessage.includes('action')) {
         searchResults = await searchMulti('action');
-        responseIntro = "💥 Here are some adrenaline-pumping action titles:\n\n";
+        responseIntro = "💥 Buckle up for these adrenaline-fueled action adventures:\n\n";
       } else if (lowerMessage.includes('movie')) {
         searchResults = await getPopular('movie');
-        responseIntro = "🎬 Here are some blockbuster movie recommendations:\n\n";
+        responseIntro = "🎬 Here are some blockbuster movies that are absolutely must-watch:\n\n";
       } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
         searchResults = await getPopular('tv');
-        responseIntro = "📺 Here are some binge-worthy TV series:\n\n";
+        responseIntro = "📺 Dive into these binge-worthy TV series that'll keep you hooked:\n\n";
       } else if (lowerMessage.includes('trending')) {
         searchResults = await getTrending('all', 'week');
-        responseIntro = "🔥 Here's what's trending right now:\n\n";
+        responseIntro = "🔥 Here's what everyone's talking about right now:\n\n";
       } else {
         // For general queries, search with the user's message
         searchResults = await searchMulti(userMessage);
-        responseIntro = "🎯 Here are some recommendations based on your search:\n\n";
+        responseIntro = "🎯 Based on your search, here are some perfect matches I found:\n\n";
       }
       
       if (searchResults?.results && searchResults.results.length > 0) {
@@ -188,18 +187,18 @@ const AIChatbot = () => {
           const title = item.title || item.name;
           const year = item.release_date || item.first_air_date;
           const yearText = year ? ` (${year.split('-')[0]})` : '';
-          const rating = item.vote_average ? ` - ⭐ ${item.vote_average.toFixed(1)}` : '';
-          const overview = item.overview ? `\n   ${item.overview.slice(0, 100)}...` : '';
+          const rating = item.vote_average ? ` - ⭐ ${item.vote_average.toFixed(1)}/10` : '';
+          const overview = item.overview ? `\n   ${item.overview.slice(0, 120)}...` : '';
           response += `${index + 1}. **${title}${yearText}**${rating}${overview}\n\n`;
         });
         
-        return response + "🎯 Want more recommendations or details about any of these? Just ask!";
+        return response + "✨ Want more personalized recommendations or details about any of these? Just let me know!";
       } else {
-        return "🤖 I couldn't find specific results for that query. Try asking about popular movies, trending shows, or specific genres like horror, comedy, or action!";
+        return "🤖 I couldn't find specific results for that search. Try asking about trending content, popular movies, or specific genres like horror, comedy, romance, or action!";
       }
     } catch (error) {
       console.error('TMDB API error:', error);
-      return "🤖 I'm having trouble fetching recommendations right now. Please try again in a moment!";
+      return "🤖 I'm experiencing some technical difficulties right now. Please give me a moment and try again!";
     }
   };
 
@@ -289,9 +288,9 @@ const AIChatbot = () => {
           <div className="bg-gradient-to-r from-aura-purple to-purple-600 text-white p-4 rounded-t-lg">
             <h3 className="font-semibold flex items-center">
               <Bot className="mr-2" size={20} />
-              🤖 Gemini AI Assistant
+              🤖 Auraluxx AI
             </h3>
-            <p className="text-sm opacity-90">Powered by Gemini AI & TMDB data</p>
+            <p className="text-sm opacity-90">Your intelligent entertainment assistant</p>
           </div>
 
           {/* Messages */}
@@ -350,7 +349,7 @@ const AIChatbot = () => {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask for movie magic... ✨"
+                placeholder="Ask for entertainment magic... ✨"
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-aura-purple text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700"
               />
               <Button
