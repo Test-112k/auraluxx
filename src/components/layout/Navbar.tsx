@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -50,7 +49,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="flex-1 max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-4 md:mx-6 lg:mx-8 relative">
+    <div className="flex-1 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-2 sm:mx-4 md:mx-6 lg:mx-8 relative">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
         <Input
@@ -60,7 +59,7 @@ const SearchBar = () => {
           onChange={handleSearchChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="w-full pl-10 pr-4 py-2.5 bg-aura-darkpurple/60 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-aura-purple focus:border-aura-purple rounded-full transition-all duration-200"
+          className="w-full pl-10 pr-4 py-3 sm:py-2.5 bg-aura-darkpurple/60 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-aura-purple focus:border-aura-purple rounded-full transition-all duration-200 text-sm sm:text-base h-11 sm:h-10"
         />
         {query && (
           <Button
@@ -221,14 +220,14 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full bg-aura-dark/95 dark:bg-black/95 backdrop-blur-md z-40 border-b border-white/10">
       <div className="auraluxx-container">
-        <div className="flex items-center justify-between h-16 md:h-18 lg:h-20 gap-2 md:gap-4">
-          <div className="flex-shrink-0">
+        <div className="flex items-center justify-between h-16 md:h-18 lg:h-20 gap-1 sm:gap-2 md:gap-4">
+          <div className="flex-shrink-0 min-w-0">
             <Logo />
           </div>
           
           <SearchBar />
           
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 min-w-0">
             <DesktopNavigation />
             <MobileNavigation />
           </div>
