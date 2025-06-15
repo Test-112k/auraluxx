@@ -17,24 +17,6 @@ import {
 } from "@/components/ui/sheet"
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
-const DesktopNavigation = () => {
-  return (
-    <div className="hidden md:flex items-center space-x-4">
-      <ThemeToggle />
-      <MobileMenu />
-    </div>
-  );
-};
-
-const MobileNavigation = () => {
-  return (
-    <div className="md:hidden flex items-center space-x-2">
-      <ThemeToggle />
-      <MobileMenu />
-    </div>
-  );
-};
-
 const Logo = () => (
   <Link to="/" className="flex items-center font-bold text-xl md:text-2xl tracking-tight">
     Auraluxx
@@ -54,7 +36,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="flex-grow max-w-md md:max-w-lg lg:max-w-xl">
+    <div className="flex-grow max-w-md md:max-w-lg lg:max-w-xl relative">
       <Input
         type="search"
         placeholder="Search movies, TV shows..."
@@ -70,6 +52,14 @@ const SearchBar = () => {
           <Search size={20} />
         </Link>
       )}
+    </div>
+  );
+};
+
+const DesktopNavigation = () => {
+  return (
+    <div className="hidden md:flex items-center space-x-4">
+      <ThemeToggle />
     </div>
   );
 };
@@ -119,6 +109,15 @@ const MobileMenu = () => {
         </div>
       </SheetContent>
     </Sheet>
+  );
+};
+
+const MobileNavigation = () => {
+  return (
+    <div className="md:hidden flex items-center space-x-2">
+      <ThemeToggle />
+      <MobileMenu />
+    </div>
   );
 };
 
