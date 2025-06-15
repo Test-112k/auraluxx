@@ -3,7 +3,6 @@ import { ReactNode } from 'react';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { AdProvider } from '@/contexts/AdContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTheme } from '@/contexts/ThemeContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
@@ -16,16 +15,11 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
   
   return (
     <SearchProvider>
       <AdProvider>
-        <div className={`flex flex-col min-h-screen transition-all duration-300 ${
-          theme === 'dark' 
-            ? 'bg-aura-dark dark:bg-black text-white' 
-            : 'bg-white text-gray-900'
-        }`}>
+        <div className="flex flex-col min-h-screen bg-aura-dark dark:bg-black text-white transition-colors duration-300">
           <Navbar />
           {/* Fixed header requires top padding for content - increased for better spacing */}
           <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
