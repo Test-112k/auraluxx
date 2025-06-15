@@ -139,7 +139,7 @@ const MobileMenu = ({ isOpen, onClose, telegramUrl = "https://t.me/auralux1" }: 
         </div>
       </div>
 
-      {/* Footer - removed Lovable branding */}
+      {/* Footer */}
       <div className="text-center p-4 text-sm text-white/60 border-t border-aura-purple/30 bg-aura-dark">
         <p>Auraluxx © {new Date().getFullYear()}</p>
       </div>
