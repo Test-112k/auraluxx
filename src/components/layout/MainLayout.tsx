@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import SidebarAd from '@/components/ads/SidebarAd';
+import AIChatbot from '@/components/common/AIChatbot';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -29,6 +30,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           </div>
           <ScrollToTop />
           <Footer />
+          {/* AI Chatbot - Always visible */}
+          <AIChatbot />
         </div>
       </AdProvider>
     </SearchProvider>

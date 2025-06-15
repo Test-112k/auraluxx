@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -7,7 +6,6 @@ import KDramaHeroSlideshow from '@/components/common/KDramaHeroSlideshow';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
-import AIChatbot from '@/components/common/AIChatbot';
 import { Button } from '@/components/ui/button';
 import { getKDramaContent } from '@/services/tmdbApi';
 import Ad from '@/components/ads/Ad';
@@ -228,9 +226,6 @@ const KDramaPage = () => {
             </div>
           )}
         </div>
-
-        {/* AI Chatbot */}
-        <AIChatbot />
       </div>
     </MainLayout>
   );
