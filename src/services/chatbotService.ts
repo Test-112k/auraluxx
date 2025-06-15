@@ -53,6 +53,7 @@ const isWebsiteOrEntertainmentRelated = (message: string): boolean => {
     'trending', 'popular', 'best', 'top rated',
     'actor', 'actress', 'director', 'cast',
     'trailer', 'review', 'rating', 'imdb',
+    'south indian', 'tamil', 'telugu', 'kannada', 'malayalam', 'bollywood', 'hindi',
     // Website-specific keywords
     'auraluxx', 'website', 'platform', 'site',
     'search', 'find', 'country', 'regional', 'language',
@@ -109,8 +110,33 @@ const getTMDBContext = async (userMessage: string): Promise<string | null> => {
   try {
     let searchResults;
     
+    const indianCinemaKeywords = {
+      'south indian': 'ta,te,kn,ml',
+      'tamil': 'ta',
+      'telugu': 'te',
+      'kannada': 'kn',
+      'malayalam': 'ml',
+      'bollywood': 'hi',
+      'hindi': 'hi',
+    };
+
+    const detectedIndianCinema = Object.keys(indianCinemaKeywords).find(k => lowerMessage.includes(k));
+    
+    // Specific handling for Indian Cinema
+    if (detectedIndianCinema) {
+        const params: Record<string, any> = { with_original_language: indianCinemaKeywords[detectedIndianCinema as keyof typeof indianCinemaKeywords] };
+        if (year) params.year = year;
+        if (genreId) params.with_genres = genreId;
+        if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
+            params.sort_by = 'vote_average.desc';
+            params['vote_count.gte'] = 50;
+        } else {
+            params.sort_by = 'popularity.desc';
+        }
+        searchResults = await discover('movie', params);
+    }
     // Specific handling for Anime
-    if (lowerMessage.includes('anime')) {
+    else if (lowerMessage.includes('anime')) {
         const options: Record<string, any> = {};
         if (year) options.year = year;
         if (genreId) options.genre = genreId;
@@ -209,8 +235,51 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
           'music': '🎵', 'war': '⚔️', 'western': '🤠',
       };
 
+      const indianCinemaKeywords = {
+        'south indian': 'ta,te,kn,ml',
+        'tamil': 'ta',
+        'telugu': 'te',
+        'kannada': 'kn',
+        'malayalam': 'ml',
+        'bollywood': 'hi',
+        'hindi': 'hi',
+      };
+      
+      const detectedIndianCinema = Object.keys(indianCinemaKeywords).find(k => lowerMessage.includes(k));
+      
+      const indianCinemaNameMap = {
+        'south indian': 'South Indian',
+        'tamil': 'Tamil',
+        'telugu': 'Telugu',
+        'kannada': 'Kannada',
+        'malayalam': 'Malayalam',
+        'bollywood': 'Bollywood',
+        'hindi': 'Hindi',
+      };
+      
+      // Specific handling for Indian Cinema
+      if (detectedIndianCinema) {
+          const params: Record<string, any> = { with_original_language: indianCinemaKeywords[detectedIndianCinema as keyof typeof indianCinemaKeywords] };
+          if (year) params.year = year;
+          if (genreId) params.with_genres = genreId;
+
+          if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
+              params.sort_by = 'vote_average.desc';
+              params['vote_count.gte'] = 50;
+          } else {
+              params.sort_by = 'popularity.desc';
+          }
+          searchResults = await discover('movie', params);
+          
+          const cinemaName = indianCinemaNameMap[detectedIndianCinema as keyof typeof indianCinemaNameMap];
+          const yearText = year ? ` from ${year}` : '';
+          const genreText = foundGenre ? ` ${foundGenre}` : '';
+          const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
+          const icon = foundGenre ? (genreIcons[foundGenre] || '🎬') : '🎬';
+          responseIntro = `${icon} Here are some of the ${bestText}${genreText} **${cinemaName} movies**${yearText} on Auraluxx:\n\n`;
+      }
       // Specific handling for Anime
-      if (lowerMessage.includes('anime')) {
+      else if (lowerMessage.includes('anime')) {
           const options: Record<string, any> = {};
           if (year) options.year = year;
           if (genreId) options.genre = genreId;
