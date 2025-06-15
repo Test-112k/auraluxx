@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -41,6 +40,7 @@ const SpeedtestPage = () => {
       
       try {
         const data = JSON.parse(event.data);
+        console.log('Received message from LibreSpeed iframe:', data); // For debugging
         // Check if the data is a final speed test result (testState === 5)
         if (data && data.testState === 5 && typeof data.dl !== 'undefined') {
           setResults(data);
@@ -48,15 +48,6 @@ const SpeedtestPage = () => {
       } catch (error) {
         // Silently ignore parsing errors, as other messages might be sent from browser extensions etc.
       }
-    };
-
-    const handleIframeLoad = () => {
-      setIsLoading(false);
-    };
-
-    const handleIframeError = () => {
-      setIsLoading(false);
-      setError('Failed to load speed test. Please check your internet connection and try again.');
     };
 
     window.addEventListener('message', handleMessage);
