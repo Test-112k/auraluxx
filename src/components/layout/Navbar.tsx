@@ -113,6 +113,10 @@ const DesktopNavigation = () => {
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleCloseMenu = () => {
+    setIsOpen(false);
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -131,59 +135,71 @@ const MobileMenu = () => {
           <Link 
             to="/" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             Home
           </Link>
           <Link 
             to="/movies" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             Movies
           </Link>
           <Link 
             to="/tv-series" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             TV Series
           </Link>
           <Link 
             to="/anime" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             Anime
           </Link>
           <Link 
             to="/k-drama" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             K-Drama
           </Link>
           <Link 
             to="/regional" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             Regional
           </Link>
           <Link 
             to="/speedtest" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+            onClick={handleCloseMenu}
           >
             Speed Test
           </Link>
-          <Link 
-            to="/contact" 
-            className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={() => setIsOpen(false)}
+          <a 
+            href="https://t.me/auralux1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium group"
+            onClick={handleCloseMenu}
           >
-            Contact
-          </Link>
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-2 mr-3 group-hover:from-blue-600 group-hover:to-blue-700 transition-all">
+              <svg 
+                className="h-4 w-4 text-white" 
+                fill="currentColor"
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M20.665,3.717l-17.73,6.837c-1.21,0.486-1.203,1.161-0.222,1.462l4.552,1.42l10.532-6.645 c0.498-0.303,0.953-0.14,0.579,0.192l-8.533,7.701l0,0l0,0H9.84l0.002,0.001l-0.314,4.692c0.46,0,0.663-0.211,0.921-0.46 l2.211-2.15l4.599,3.397c0.848,0.467,1.457,0.227,1.668-0.785l3.019-14.228C22.256,3.912,21.474,3.351,20.665,3.717z"/>
+              </svg>
+            </div>
+            Join Telegram
+          </a>
         </div>
       </SheetContent>
     </Sheet>
