@@ -1,4 +1,18 @@
-import { searchMulti, getTrending, getPopular, getTopRated, discover } from '@/services/tmdbApi';
+import {
+  searchMulti,
+  getTrending,
+  getPopular,
+  getTopRated,
+  discover,
+  getAnimeContent,
+  getTrendingAnime,
+  getTopRatedAnime,
+  getRecentAnime,
+  getKDramaContent,
+  getTrendingKDrama,
+  getTopRatedKDrama,
+  getRecentKDrama,
+} from '@/services/tmdbApi';
 import { encryptKey, decryptKey } from '@/utils/encryption';
 
 // Encrypted Gemini API key
@@ -94,41 +108,65 @@ const getTMDBContext = async (userMessage: string): Promise<string | null> => {
   
   try {
     let searchResults;
-    let mediaType: 'movie' | 'tv' = 'movie';
-    if (lowerMessage.includes('tv') || lowerMessage.includes('series') || lowerMessage.includes('show') || lowerMessage.includes('k-drama') || lowerMessage.includes('anime')) {
-        mediaType = 'tv';
-    }
+    
+    // Specific handling for Anime
+    if (lowerMessage.includes('anime')) {
+        const options: Record<string, any> = {};
+        if (year) options.year = year;
+        if (genreId) options.genre = genreId;
 
-    if (year || genreId) {
-        const params: Record<string, any> = {};
-        if (year) params.year = year;
-        if (genreId) params.with_genres = genreId;
-        if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
-            params.sort_by = 'vote_average.desc';
-            params['vote_count.gte'] = mediaType === 'movie' ? 200 : 50;
-        }
-        searchResults = await discover(mediaType, params);
-    } else {
-        if (lowerMessage.includes('anime')) {
-          searchResults = await searchMulti('anime');
-        } else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean')) {
-          searchResults = await searchMulti('korean drama');
-        } else if (lowerMessage.includes('horror')) {
-          searchResults = await searchMulti('horror');
-        } else if (lowerMessage.includes('comedy')) {
-          searchResults = await searchMulti('comedy');
-        } else if (lowerMessage.includes('romance')) {
-          searchResults = await searchMulti('romance');
-        } else if (lowerMessage.includes('action')) {
-          searchResults = await searchMulti('action');
-        } else if (lowerMessage.includes('movie')) {
-          searchResults = await getPopular('movie');
-        } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
-          searchResults = await getPopular('tv');
-        } else if (lowerMessage.includes('trending')) {
-          searchResults = await getTrending('all', 'week');
+        if (lowerMessage.includes('trending')) {
+            searchResults = await getTrendingAnime();
+        } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
+            searchResults = await getTopRatedAnime();
+        } else if (lowerMessage.includes('recent')) {
+            searchResults = await getRecentAnime();
         } else {
-          searchResults = await searchMulti(userMessage);
+            searchResults = await getAnimeContent('popular', options);
+        }
+    }
+    // Specific handling for K-Drama
+    else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean drama')) {
+        const options: Record<string, any> = {};
+        if (year) options.year = year;
+        if (genreId) options.genre = genreId;
+
+        if (lowerMessage.includes('trending')) {
+            searchResults = await getTrendingKDrama();
+        } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
+            searchResults = await getTopRatedKDrama();
+        } else if (lowerMessage.includes('recent')) {
+            searchResults = await getRecentKDrama();
+        } else {
+            searchResults = await getKDramaContent('popular', options);
+        }
+    }
+    // General movie/TV show requests
+    else {
+        let mediaType: 'movie' | 'tv' = 'movie';
+        if (lowerMessage.includes('tv') || lowerMessage.includes('series') || lowerMessage.includes('show')) {
+            mediaType = 'tv';
+        }
+
+        if (year || genreId) {
+            const params: Record<string, any> = {};
+            if (year) params.year = year;
+            if (genreId) params.with_genres = genreId;
+            if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
+                params.sort_by = 'vote_average.desc';
+                params['vote_count.gte'] = mediaType === 'movie' ? 200 : 50;
+            }
+            searchResults = await discover(mediaType, params);
+        } else {
+            if (lowerMessage.includes('trending')) {
+                searchResults = await getTrending('all', 'week');
+            } else if (lowerMessage.includes('movie')) {
+                searchResults = await getPopular('movie');
+            } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
+                searchResults = await getPopular('tv');
+            } else {
+                searchResults = await searchMulti(userMessage);
+            }
         }
     }
     
@@ -157,14 +195,11 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
     const year = yearMatch ? yearMatch[0] : null;
 
     const foundGenre = Object.keys(genreMap).find(g => lowerMessage.includes(g));
+    const genreId = foundGenre ? genreMap[foundGenre] : null;
     
     try {
       let searchResults;
       let responseIntro = "";
-      let mediaType: 'movie' | 'tv' = 'movie';
-      if (lowerMessage.includes('tv') || lowerMessage.includes('series') || lowerMessage.includes('show') || lowerMessage.includes('k-drama') || lowerMessage.includes('anime')) {
-          mediaType = 'tv';
-      }
 
       const genreIcons: Record<string, string> = {
           'horror': '👻', 'comedy': '😂', 'romance': '💕', 'action': '💥',
@@ -174,54 +209,85 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
           'music': '🎵', 'war': '⚔️', 'western': '🤠',
       };
 
-      if (year || foundGenre) {
-          const params: Record<string, any> = {};
-          if (year) params.year = year;
-          if (foundGenre) params.with_genres = genreMap[foundGenre];
-          if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
-              params.sort_by = 'vote_average.desc';
-              params['vote_count.gte'] = mediaType === 'movie' ? 200 : 50;
-          }
-          searchResults = await discover(mediaType, params);
+      // Specific handling for Anime
+      if (lowerMessage.includes('anime')) {
+          const options: Record<string, any> = {};
+          if (year) options.year = year;
+          if (genreId) options.genre = genreId;
 
-          const yearText = year ? ` from ${year}` : '';
-          const genreText = foundGenre ? ` ${foundGenre}` : '';
-          const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
-          const icon = foundGenre ? (genreIcons[foundGenre] || '🎬') : '🎬';
-          responseIntro = `${icon} Here are some of the ${bestText}${genreText} ${mediaType}s${yearText} on Auraluxx:\n\n`;
-      } else {
-        if (lowerMessage.includes('anime')) {
-          searchResults = await searchMulti('anime');
-          responseIntro = "🍜 Here are some **incredible anime** recommendations from Auraluxx:\n\n";
-        } else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean')) {
-          searchResults = await searchMulti('korean drama');
-          responseIntro = "🇰🇷 Check out these **amazing K-Drama** titles on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('horror')) {
-          searchResults = await searchMulti('horror');
-          responseIntro = "👻 Here are some **spine-chilling horror** picks on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('comedy')) {
-          searchResults = await searchMulti('comedy');
-          responseIntro = "😂 Enjoy these **comedy gems** available on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('romance')) {
-          searchResults = await searchMulti('romance');
-          responseIntro = "💕 Fall in love with these **romantic movies** on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('action')) {
-          searchResults = await searchMulti('action');
-          responseIntro = "💥 Get your adrenaline pumping with these **action movies** on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('movie')) {
-          searchResults = await getPopular('movie');
-          responseIntro = "🎬 Here are **popular movies** currently trending on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
-          searchResults = await getPopular('tv');
-          responseIntro = "📺 Binge-watch these **popular TV series** on Auraluxx:\n\n";
-        } else if (lowerMessage.includes('trending')) {
-          searchResults = await getTrending('all', 'week');
-          responseIntro = "🔥 Here's what's **trending now** on Auraluxx:\n\n";
-        } else {
-          searchResults = await searchMulti(userMessage);
-          responseIntro = "🎯 Based on your search, here's what I found on **Auraluxx**:\n\n";
-        }
-        
+          if (lowerMessage.includes('trending')) {
+              searchResults = await getTrendingAnime();
+              responseIntro = "🔥 Here are the **trending anime** on Auraluxx:\n\n";
+          } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
+              searchResults = await getTopRatedAnime();
+              responseIntro = "🏆 Here are the **top-rated anime** on Auraluxx:\n\n";
+          } else if (lowerMessage.includes('recent')) {
+              searchResults = await getRecentAnime();
+              responseIntro = "🆕 Here are some **recent anime** on Auraluxx:\n\n";
+          } else {
+              searchResults = await getAnimeContent('popular', options);
+              responseIntro = "🍜 Here are some **incredible anime** recommendations for you:\n\n";
+          }
+      }
+      // Specific handling for K-Drama
+      else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean drama')) {
+          const options: Record<string, any> = {};
+          if (year) options.year = year;
+          if (genreId) options.genre = genreId;
+
+          if (lowerMessage.includes('trending')) {
+              searchResults = await getTrendingKDrama();
+              responseIntro = "🔥 Here are the **trending K-Dramas** on Auraluxx:\n\n";
+          } else if (lowerMessage.includes('top rated') || lowerMessage.includes('best')) {
+              searchResults = await getTopRatedKDrama();
+              responseIntro = "🏆 Here are the **top-rated K-Dramas** on Auraluxx:\n\n";
+          } else if (lowerMessage.includes('recent')) {
+              searchResults = await getRecentKDrama();
+              responseIntro = "🆕 Here are some **recent K-Dramas** on Auraluxx:\n\n";
+          } else {
+              searchResults = await getKDramaContent('popular', options);
+              responseIntro = "🇰🇷 Check out these **amazing K-Drama** titles on Auraluxx:\n\n";
+          }
+      }
+      // General movie/TV show requests
+      else {
+          let mediaType: 'movie' | 'tv' = 'movie';
+          if (lowerMessage.includes('tv') || lowerMessage.includes('series') || lowerMessage.includes('show')) {
+              mediaType = 'tv';
+          }
+
+          if (year || foundGenre) {
+              const params: Record<string, any> = {};
+              if (year) params.year = year;
+              if (foundGenre) params.with_genres = genreMap[foundGenre];
+              if (lowerMessage.includes('best') || lowerMessage.includes('top rated')) {
+                  params.sort_by = 'vote_average.desc';
+                  params['vote_count.gte'] = mediaType === 'movie' ? 200 : 50;
+              }
+              searchResults = await discover(mediaType, params);
+
+              const yearText = year ? ` from ${year}` : '';
+              const genreText = foundGenre ? ` ${foundGenre}` : '';
+              const bestText = (lowerMessage.includes('best') || lowerMessage.includes('top rated')) ? 'best ' : '';
+              const icon = foundGenre ? (genreIcons[foundGenre] || '🎬') : '🎬';
+              responseIntro = `${icon} Here are some of the ${bestText}${genreText} ${mediaType}s${yearText} on Auraluxx:\n\n`;
+          } else {
+              if (lowerMessage.includes('trending')) {
+                searchResults = await getTrending('all', 'week');
+                responseIntro = "🔥 Here's what's **trending now** on Auraluxx:\n\n";
+              } else if (mediaType === 'tv') {
+                searchResults = await getPopular('tv');
+                responseIntro = "📺 Binge-watch these **popular TV series** on Auraluxx:\n\n";
+              } else if (lowerMessage.includes('movie')) {
+                searchResults = await getPopular('movie');
+                responseIntro = "🎬 Here are **popular movies** currently trending on Auraluxx:\n\n";
+              } else {
+                searchResults = await searchMulti(userMessage);
+                responseIntro = "🎯 Based on your search, here's what I found on **Auraluxx**:\n\n";
+              }
+          }
+      }
+      
         if (searchResults?.results && searchResults.results.length > 0) {
           const recommendations = searchResults.results.slice(0, 5);
           let response = responseIntro;
@@ -239,7 +305,6 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
         } else {
           return "🤖 I couldn't find specific results for that search on **Auraluxx**. Try:\n\n🔍 **Search directly** in the search bar\n📂 **Browse categories** (Movies, TV, Anime, K-Drama)\n🌍 **Check Regional** section for local content\n\n**Need help?** Ask me how to find specific content!";
         }
-      }
     } catch (error) {
       console.error('TMDB API error:', error);
       return "🤖 I'm experiencing technical difficulties. **Join our Telegram** for instant support: https://t.me/auralux1\n\nOur team will help you within **1 hour**! 🚀";
