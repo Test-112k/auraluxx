@@ -1,4 +1,3 @@
-
 import { searchMulti, getTrending, getPopular, getTopRated } from '@/services/tmdbApi';
 import { encryptKey, decryptKey } from '@/utils/encryption';
 
@@ -61,6 +60,53 @@ const getWebsiteResponse = (message: string): string => {
   
   // Default website response
   return "🎬 **Welcome to Auraluxx!** I'm here to help you navigate our platform.\n\n**Popular questions:**\n• How to find movies from my country?\n• How to watch dubbed content?\n• Can't find a specific movie?\n• Need platform support?\n\n**Quick links:**\n📱 **Telegram Support:** https://t.me/auralux1\n🔍 **Search:** Use the search bar above\n🌍 **Regional Content:** Check the Regional category\n\nWhat specifically would you like help with?";
+};
+
+const getTMDBContext = async (userMessage: string): Promise<string | null> => {
+  const lowerMessage = userMessage.toLowerCase();
+  
+  try {
+    let searchResults;
+    
+    if (lowerMessage.includes('anime')) {
+      searchResults = await searchMulti('anime');
+    } else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean')) {
+      searchResults = await searchMulti('korean drama');
+    } else if (lowerMessage.includes('horror')) {
+      searchResults = await searchMulti('horror');
+    } else if (lowerMessage.includes('comedy')) {
+      searchResults = await searchMulti('comedy');
+    } else if (lowerMessage.includes('romance')) {
+      searchResults = await searchMulti('romance');
+    } else if (lowerMessage.includes('action')) {
+      searchResults = await searchMulti('action');
+    } else if (lowerMessage.includes('movie')) {
+      searchResults = await getPopular('movie');
+    } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
+      searchResults = await getPopular('tv');
+    } else if (lowerMessage.includes('trending')) {
+      searchResults = await getTrending('all', 'week');
+    } else {
+      searchResults = await searchMulti(userMessage);
+    }
+    
+    if (searchResults?.results && searchResults.results.length > 0) {
+      const contextData = searchResults.results.slice(0, 5).map((item: any) => ({
+        title: item.title || item.name,
+        year: (item.release_date || item.first_air_date)?.split('-')[0] || 'N/A',
+        rating: item.vote_average ? item.vote_average.toFixed(1) : 'N/A',
+        overview: item.overview,
+        type: item.media_type,
+      }));
+      
+      return JSON.stringify(contextData);
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('TMDB API error for context generation:', error);
+    return null;
+  }
 };
 
 const generateTMDBResponse = async (userMessage: string): Promise<string> => {
@@ -136,10 +182,22 @@ export const callGeminiAPI = async (message: string): Promise<string> => {
       const apiKey = decryptKey(encryptedApiKey);
       const isEntertainmentQuery = isWebsiteOrEntertainmentRelated(message);
 
+      let tmdbContext: string | null = null;
+      if (isEntertainmentQuery) {
+        tmdbContext = await getTMDBContext(message);
+      }
+
       // Enhanced prompt with TMDB data integration
       const prompt = isEntertainmentQuery
-        ? `You are Auraluxx AI, the expert assistant for the Auraluxx streaming platform. You help users with entertainment recommendations and platform navigation. Always mention Auraluxx when relevant. Be enthusiastic and format responses with **bold** for emphasis and bullet points. For entertainment queries, I have access to live TMDB movie/TV data. User request: ${message}`
-        : `You are Auraluxx AI, a helpful and friendly assistant from the Auraluxx streaming platform. While your main focus is movies and entertainment, you are capable of answering general knowledge questions with access to current information. Be friendly and helpful. User request: ${message}`;
+        ? `You are Auraluxx AI, an expert assistant for the Auraluxx streaming platform. Your goal is to provide excellent movie and TV show recommendations and help users navigate the platform. Your tone should be enthusiastic, friendly, and helpful. Format your responses with markdown, using **bold** for titles and emphasis, and using lists where appropriate.
+
+User's request: "${message}"
+
+${tmdbContext ? `To help you answer, here is some relevant data fetched from The Movie Database (TMDB). Use this data to construct a helpful and natural-sounding response. Don't just list the data; interpret it and add your own commentary. Make sure to mention that these titles are available on Auraluxx.
+
+TMDB Data:
+${tmdbContext}` : 'I could not find specific data for this query in our movie database, so please answer based on your general knowledge. Still, be helpful and recommend some great content available on Auraluxx if possible.'}`
+        : `You are Auraluxx AI, a helpful and friendly assistant from the Auraluxx streaming platform. While your main focus is movies and entertainment, you are capable of answering general knowledge questions with access to current information. Be friendly and helpful. User request: "${message}"`;
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
