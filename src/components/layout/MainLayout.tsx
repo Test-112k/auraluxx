@@ -27,17 +27,16 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             : 'bg-aura-dark text-white'
         }`}>
           <Navbar />
-          {/* Fixed header requires top padding for content */}
-          <div className="flex flex-1 max-w-full mx-auto w-full">
+          {/* Fixed header requires top padding for content - increased for better spacing */}
+          <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
             <main className="flex-grow w-full flex flex-col">
               {children}
             </main>
             {!isMobile && <SidebarAd />}
           </div>
-          <Footer />
-          
-          {/* Fixed positioned elements with proper z-index */}
           <ScrollToTop />
+          <Footer />
+          {/* AI Chatbot - Always visible */}
           <AIChatbot />
         </div>
       </AdProvider>
