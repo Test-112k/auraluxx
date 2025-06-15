@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
+import MediaSlider from '@/components/common/MediaSlider';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton';
 import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import InfiniteScroll from '@/components/common/InfiniteScroll';
@@ -14,7 +15,9 @@ import { useAds } from '@/contexts/AdContext';
 const KDramaPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [content, setContent] = useState([]);
+  const [slideshowContent, setSlideshowContent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [slideshowLoading, setSlideshowLoading] = useState(true);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const { isAdEnabled } = useAds();
@@ -22,6 +25,21 @@ const KDramaPage = () => {
   const filter = searchParams.get('filter') || 'popular';
   const genre = searchParams.get('genre') || '';
   const year = searchParams.get('year') || '';
+
+  // Fetch slideshow content (new arrivals)
+  const fetchSlideshowContent = useCallback(async () => {
+    try {
+      setSlideshowLoading(true);
+      const data = await getKDramaContent('recent', { page: 1 });
+      if (data?.results) {
+        setSlideshowContent(data.results.slice(0, 10)); // Show top 10 new arrivals
+      }
+    } catch (error) {
+      console.error('Error fetching K-Drama slideshow content:', error);
+    } finally {
+      setSlideshowLoading(false);
+    }
+  }, []);
 
   const fetchContent = useCallback(async (page = 1, reset = false) => {
     try {
@@ -43,6 +61,10 @@ const KDramaPage = () => {
       setLoading(false);
     }
   }, [filter, genre, year]);
+
+  useEffect(() => {
+    fetchSlideshowContent();
+  }, [fetchSlideshowContent]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -111,6 +133,14 @@ const KDramaPage = () => {
               <Ad size="728x90" />
             </div>
           )}
+
+          {/* Slideshow - New Arrivals */}
+          <MediaSlider
+            title="New Arrivals"
+            items={slideshowContent}
+            loading={slideshowLoading}
+            mediaType="tv"
+          />
 
           {/* Category Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
