@@ -36,12 +36,14 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     localStorage.setItem('auraluxx-theme', theme);
     
     // Apply theme to document root
+    const root = document.documentElement;
+    
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
       document.body.style.backgroundColor = '#000000';
     } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '';
+      root.classList.remove('dark');
+      document.body.style.backgroundColor = '#1a0a2e'; // aura-dark for light mode
     }
   }, [theme]);
 
