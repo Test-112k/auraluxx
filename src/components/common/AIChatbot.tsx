@@ -30,16 +30,13 @@ const AIChatbot = () => {
   const encryptedApiKey = encryptKey('AIzaSyAo42hUfi5ZwJSidDaC92OqbAqZQL4Egh4');
 
   const humorousMessages = [
-    "🎭 **Need help navigating Auraluxx?** Ask me anything!",
-    "🎬 **Can't find your movie?** Let me help you search better!",
-    "📺 **Want dubbed content?** I'll guide you to the right place!",
-    "🌍 **Looking for movies from your country?** I know the way!",
-    "🔍 **Search not working?** Try my expert tips!",
-    "📱 **Platform questions?** I'm your Auraluxx guide!",
-    "💬 **Need support?** I'll connect you to our Telegram!",
-    "🎯 **Specific requirements?** Just tell me what you need!",
-    "⭐ **Want the best content?** I have perfect suggestions!",
-    "🚀 **New to Auraluxx?** Let me show you around!"
+    "I've seen more plot twists than a pretzel factory! 🥨 What kind of movie are you in the mood for?",
+    "Don't know what to watch? I'm your movie GPS, navigating you to your next binge! 🗺️",
+    "I'm fluent in over six million forms of communication... and movie genres! Ask me for a recommendation! 🤖",
+    "Let's find a movie so good, you'll want to give it a standing ovation from your couch! 👏",
+    "Searching for a hidden gem? I'm your treasure map to the best content on Auraluxx! 💎",
+    "Why did the TV get glasses? To improve its screen time! 🤓 Let's find you something to watch!",
+    "I'm here to help you find something to watch. My services are... *free* of charge. Get it? 😉",
   ];
 
   const [currentMessage, setCurrentMessage] = useState(humorousMessages[0]);
@@ -121,59 +118,60 @@ const AIChatbot = () => {
 
   const callGeminiAPI = async (message: string): Promise<string> => {
     try {
-      // First check if it's a website-related question
-      if (isWebsiteOrEntertainmentRelated(message)) {
-        // Check for specific website FAQ first
-        const lowerMessage = message.toLowerCase();
-        if (lowerMessage.includes('country') || lowerMessage.includes('dubbed') || 
-            lowerMessage.includes('find') || lowerMessage.includes('search') ||
-            lowerMessage.includes('telegram') || lowerMessage.includes('support') ||
-            lowerMessage.includes('issue') || lowerMessage.includes('how') ||
-            lowerMessage.includes('guide') || lowerMessage.includes('auraluxx')) {
-          return getWebsiteResponse(message);
-        }
-        
-        // If entertainment-related but not FAQ, proceed with Gemini
-        const apiKey = decryptKey(encryptedApiKey);
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `You are Auraluxx AI, the expert assistant for the Auraluxx streaming platform. You help users with entertainment recommendations and platform navigation. Always mention Auraluxx when relevant. Be enthusiastic and format responses with **bold** for emphasis and bullet points. User request: ${message}`
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.7,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 800,
-            }
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Gemini API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          return data.candidates[0].content.parts[0].text;
-        } else {
-          throw new Error('Invalid response structure from Gemini API');
-        }
-      } else {
-        // Non-entertainment/website related query
-        return "I'm sorry, but I can only help with **entertainment-related questions** and **Auraluxx platform support**! 🎬\n\nI specialize in:\n\n🎭 **Entertainment:** Movies, TV shows, anime, K-dramas\n🌍 **Platform Help:** How to find content, use features\n🔍 **Search Tips:** Finding movies from your country\n🎯 **Dubbed Content:** Language and server options\n📱 **Support:** Telegram channel and troubleshooting\n\nPlease ask me about movies, shows, or how to use Auraluxx!";
+      const lowerMessage = message.toLowerCase();
+      // Prioritize website-specific FAQ responses for quick, accurate answers.
+      const faqKeywords = ['country', 'regional', 'dubbed', 'language', 'subtitle', 'find', 'search', "can't find", 'telegram', 'support', 'contact', 'issue', 'problem', 'error', 'bug', 'report', 'how', 'guide', 'auraluxx'];
+      if (faqKeywords.some(keyword => lowerMessage.includes(keyword))) {
+        return getWebsiteResponse(message);
       }
+
+      // For all other queries, use Gemini for a dynamic response.
+      const apiKey = decryptKey(encryptedApiKey);
+      const isEntertainmentQuery = isWebsiteOrEntertainmentRelated(message);
+
+      const prompt = isEntertainmentQuery
+        ? `You are Auraluxx AI, the expert assistant for the Auraluxx streaming platform. You help users with entertainment recommendations and platform navigation. Always mention Auraluxx when relevant. Be enthusiastic and format responses with **bold** for emphasis and bullet points. User request: ${message}`
+        : `You are Auraluxx AI, a helpful and friendly assistant from the Auraluxx streaming platform. While your main focus is movies and entertainment, you are capable of answering general knowledge questions. Be friendly and helpful. User request: ${message}`;
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 800,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        throw new Error('Invalid response structure from Gemini API');
+      }
+
     } catch (error) {
-      console.error('Gemini API error:', error);
-      return await generateTMDBResponse(message);
+      console.error('API call error:', error);
+      
+      // If Gemini fails, fallback to TMDB for entertainment queries
+      if (isWebsiteOrEntertainmentRelated(message)) {
+        console.log("Gemini failed, falling back to TMDB for entertainment query.");
+        return await generateTMDBResponse(message);
+      }
+      
+      // For non-entertainment queries where Gemini fails, provide a support message.
+      return "🤖 I'm having a little trouble connecting right now. Please try again in a moment. If the issue persists, you can **join our Telegram** for instant support: https://t.me/auralux1 🚀";
     }
   };
 
