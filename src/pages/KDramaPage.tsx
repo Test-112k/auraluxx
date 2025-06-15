@@ -31,8 +31,22 @@ const KDramaPage = () => {
     try {
       setSlideshowLoading(true);
       const data = await getKDramaContent('recent', { page: 1 });
+      console.log('K-Drama slideshow data:', data);
       if (data?.results) {
-        setSlideshowContent(data.results.slice(0, 10)); // Show top 10 new arrivals
+        // Ensure we have proper data structure for MediaSlider
+        const formattedSlides = data.results.slice(0, 10).map((item: any) => ({
+          id: item.id,
+          title: item.name || item.title,
+          name: item.name || item.title,
+          poster_path: item.poster_path,
+          backdrop_path: item.backdrop_path,
+          first_air_date: item.first_air_date,
+          release_date: item.first_air_date,
+          vote_average: item.vote_average,
+          media_type: 'tv'
+        }));
+        console.log('Formatted slideshow content:', formattedSlides);
+        setSlideshowContent(formattedSlides);
       }
     } catch (error) {
       console.error('Error fetching K-Drama slideshow content:', error);
@@ -135,12 +149,14 @@ const KDramaPage = () => {
           )}
 
           {/* Slideshow - New Arrivals */}
-          <MediaSlider
-            title="New Arrivals"
-            items={slideshowContent}
-            loading={slideshowLoading}
-            mediaType="tv"
-          />
+          <div className="mb-8">
+            <MediaSlider
+              title="New K-Drama Arrivals"
+              items={slideshowContent}
+              loading={slideshowLoading}
+              mediaType="tv"
+            />
+          </div>
 
           {/* Category Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
