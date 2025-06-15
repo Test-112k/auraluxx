@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface SpeedTestResults {
   dl: string;
@@ -28,6 +29,8 @@ const getResolutionRecommendation = (speed: number): string => {
 
 const SpeedtestPage = () => {
   const [results, setResults] = useState<SpeedTestResults | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -45,6 +48,15 @@ const SpeedtestPage = () => {
       } catch (error) {
         // Silently ignore parsing errors, as other messages might be sent from browser extensions etc.
       }
+    };
+
+    const handleIframeLoad = () => {
+      setIsLoading(false);
+    };
+
+    const handleIframeError = () => {
+      setIsLoading(false);
+      setError('Failed to load speed test. Please check your internet connection and try again.');
     };
 
     window.addEventListener('message', handleMessage);
@@ -93,12 +105,38 @@ const SpeedtestPage = () => {
           </div>
         )}
         
-        <div className="flex-grow rounded-lg overflow-hidden border border-white/10 shadow-lg min-h-[60vh]">
+        <div className="flex-grow rounded-lg overflow-hidden border border-white/10 shadow-lg min-h-[60vh] relative">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+              <LoadingSpinner size="lg" text="Loading speed test..." />
+            </div>
+          )}
+          
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+              <div className="text-center p-8">
+                <p className="text-white/70 mb-4">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="px-4 py-2 bg-aura-purple hover:bg-aura-purple/80 text-white rounded-lg transition-colors"
+                >
+                  Reload Page
+                </button>
+              </div>
+            </div>
+          )}
+          
           <iframe
-            src="https://librespeed.org/iframe.html"
+            src="https://librespeed.org/"
             className="w-full h-full border-0"
             title="LibreSpeed Speed Test"
-            sandbox="allow-scripts allow-same-origin"
+            allow="geolocation"
+            referrerPolicy="no-referrer-when-downgrade"
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setIsLoading(false);
+              setError('Failed to load speed test. Please check your internet connection and try again.');
+            }}
           ></iframe>
         </div>
       </div>
