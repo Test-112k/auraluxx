@@ -7,19 +7,112 @@ import CategoryFilterBar from '@/components/common/CategoryFilterBar';
 import { getRegionalContent, countryToLanguagesMap } from '@/services/tmdbApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-const fetchUserCountry = async (): Promise<string | null> => {
+const fetchUserCountryWithFallback = async (): Promise<string | null> => {
+  // Primary method: ipinfo.io
   try {
-    const res = await fetch('https://ipinfo.io/json?token=2d947eab4e3ae4');
-    if (!res.ok) {
-      console.warn('Failed to fetch user country from ipinfo.io:', res.status);
-      return null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const res = await fetch('https://ipinfo.io/json?token=2d947eab4e3ae4', {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    clearTimeout(timeoutId);
+    
+    if (res.ok) {
+      const data = await res.json();
+      console.log('IP detection successful via ipinfo.io:', data.country);
+      return data && data.country ? data.country : null;
     }
-    const data = await res.json();
-    return data && data.country ? data.country : null;
   } catch (error) {
-    console.error('Error fetching user country:', error);
-    return null;
+    console.warn('ipinfo.io failed, trying fallback:', error);
   }
+
+  // Fallback method 1: ip-api.com
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const res = await fetch('http://ip-api.com/json/', {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    clearTimeout(timeoutId);
+    
+    if (res.ok) {
+      const data = await res.json();
+      console.log('IP detection successful via ip-api.com:', data.countryCode);
+      return data && data.countryCode ? data.countryCode : null;
+    }
+  } catch (error) {
+    console.warn('ip-api.com failed, trying another fallback:', error);
+  }
+
+  // Fallback method 2: ipapi.co
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    
+    const res = await fetch('https://ipapi.co/country/', {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'text/plain',
+      }
+    });
+    clearTimeout(timeoutId);
+    
+    if (res.ok) {
+      const countryCode = await res.text();
+      console.log('IP detection successful via ipapi.co:', countryCode.trim());
+      return countryCode.trim() || null;
+    }
+  } catch (error) {
+    console.warn('ipapi.co failed:', error);
+  }
+
+  // Fallback method 3: Browser geolocation + timezone approximation
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log('Trying timezone-based detection:', timezone);
+    
+    // Simple timezone to country mapping for common cases
+    const timezoneCountryMap: { [key: string]: string } = {
+      'America/New_York': 'US',
+      'America/Los_Angeles': 'US',
+      'America/Chicago': 'US',
+      'America/Denver': 'US',
+      'Europe/London': 'GB',
+      'Europe/Paris': 'FR',
+      'Europe/Berlin': 'DE',
+      'Europe/Rome': 'IT',
+      'Europe/Madrid': 'ES',
+      'Asia/Tokyo': 'JP',
+      'Asia/Seoul': 'KR',
+      'Asia/Shanghai': 'CN',
+      'Asia/Kolkata': 'IN',
+      'Asia/Karachi': 'PK',
+      'Australia/Sydney': 'AU',
+      'America/Toronto': 'CA',
+      'America/Mexico_City': 'MX',
+      'America/Sao_Paulo': 'BR',
+      'Europe/Moscow': 'RU',
+    };
+    
+    const detectedCountry = timezoneCountryMap[timezone];
+    if (detectedCountry) {
+      console.log('Country detected via timezone:', detectedCountry);
+      return detectedCountry;
+    }
+  } catch (error) {
+    console.warn('Timezone detection failed:', error);
+  }
+
+  console.log('All auto-detection methods failed');
+  return null;
 };
 
 const RegionalPage = () => {
@@ -30,35 +123,47 @@ const RegionalPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true); // Start loading immediately for IP detection.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [countryAutoDetected, setCountryAutoDetected] = useState(false);
+  const [autoDetectionStatus, setAutoDetectionStatus] = useState('Detecting your region...');
 
   // This effect runs only once on mount to detect the user's country via IP.
   useEffect(() => {
     const detectAndSetCountry = async () => {
       setError(null);
-      const ipCountry = await fetchUserCountry();
-
-      if (ipCountry && (countryToLanguagesMap[ipCountry] || ipCountry === 'PK')) {
-        setSelectedCountry(ipCountry);
-      } else {
-        if (ipCountry) {
-          console.log(`IP country ${ipCountry} detected but is not supported.`);
+      setAutoDetectionStatus('Detecting your region...');
+      
+      try {
+        const ipCountry = await fetchUserCountryWithFallback();
+        
+        if (ipCountry && (countryToLanguagesMap[ipCountry] || ipCountry === 'PK')) {
+          setSelectedCountry(ipCountry);
+          setAutoDetectionStatus(`Region detected: ${ipCountry}`);
+          console.log('Successfully auto-detected and set country:', ipCountry);
         } else {
-          console.log('Could not auto-detect country from IP.');
+          if (ipCountry) {
+            console.log(`IP country ${ipCountry} detected but is not supported.`);
+            setAutoDetectionStatus(`Detected ${ipCountry} but not supported`);
+          } else {
+            console.log('Could not auto-detect country from IP.');
+            setAutoDetectionStatus('Auto-detection failed');
+          }
         }
+      } catch (error) {
+        console.error('Error during country detection:', error);
+        setAutoDetectionStatus('Auto-detection failed');
+      } finally {
+        setCountryAutoDetected(true);
       }
-      setCountryAutoDetected(true);
     };
 
     detectAndSetCountry();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this runs only once on mount.
+  }, []);
 
   const fetchRegionalContent = useCallback(async (reset = false) => {
     if (!selectedCountry) {
-      setLoading(false); // Ensure loading stops if no country is selected
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -69,7 +174,7 @@ const RegionalPage = () => {
     if (!countryData) {
       setLoading(false);
       setError('Language mapping not found for selected country. Please select another country.');
-      setRegionalContent([]); // Clear content if mapping is missing
+      setRegionalContent([]);
       return;
     }
     const language = selectedLanguage || countryData.primary;
@@ -86,14 +191,14 @@ const RegionalPage = () => {
         } else {
           setRegionalContent(prev => [...prev, ...filteredResults]);
         }
-        setPage(currentPage + 1); // Always advance page after successful fetch
+        setPage(currentPage + 1);
         setTotalPages(data.total_pages);
         if (filteredResults.length === 0 && currentPage === 1) {
           setError('No content available for this region with current filters.');
         }
       } else {
         if (reset) setRegionalContent([]);
-        setPage(1); // Reset page if no results
+        setPage(1);
         setTotalPages(0);
         setError('No content available for this region with current filters.');
       }
@@ -107,21 +212,18 @@ const RegionalPage = () => {
   }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, page]);
 
   const loadMore = async () => {
-    if (loading || page > totalPages) return false; // Prevent multiple loads
+    if (loading || page > totalPages) return false;
     
-    // Check if we are at the last page already based on totalPages
-    // The API page numbers are 1-based.
     if (page > totalPages && totalPages > 0) return false;
 
-    await fetchRegionalContent(); // page state is managed internally by fetchRegionalContent
-    return true; // Indicate that loading more was attempted
+    await fetchRegionalContent();
+    return true;
   };
 
   const handleCountryChange = (countryCode: string) => {
     if (countryCode === selectedCountry) return;
     setSelectedCountry(countryCode);
-    setSelectedLanguage(''); // Reset language when country changes
-    // Resetting filters and page data will be handled by the useEffect below
+    setSelectedLanguage('');
     setPage(1);
     setRegionalContent([]);
     setTotalPages(0);
@@ -133,21 +235,18 @@ const RegionalPage = () => {
     setRegionalContent([]);
     setTotalPages(0);
     setError(null);
-    // fetchRegionalContent(true) will be called by useEffect
   };
 
   useEffect(() => {
-    if (selectedCountry && countryAutoDetected) { // Ensure auto-detection has run at least once
+    if (selectedCountry && countryAutoDetected) {
         fetchRegionalContent(true);
     } else if (!selectedCountry && countryAutoDetected) {
-        // If no country is selected after auto-detection (e.g. IP lookup failed or not in map)
-        // Ensure loading is false and content is cleared.
         setLoading(false);
         setRegionalContent([]);
         setPage(1);
         setTotalPages(0);
     }
-  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, countryAutoDetected]); // This effect remains largely the same
+  }, [selectedCountry, selectedGenre, selectedYear, selectedLanguage, countryAutoDetected]);
 
   return (
     <MainLayout>
@@ -171,6 +270,11 @@ const RegionalPage = () => {
                   </span>
                 )}
               </p>
+              {!countryAutoDetected && (
+                <div className="text-center text-white/70 text-sm mb-2">
+                  {autoDetectionStatus}
+                </div>
+              )}
               <ImprovedCountrySelector
                 selectedCountry={selectedCountry}
                 onCountryChange={handleCountryChange}
@@ -197,19 +301,19 @@ const RegionalPage = () => {
             selectedYear={selectedYear}
             selectedLanguage={selectedLanguage}
             selectedCountry={selectedCountry}
-            mediaType="movie" // Assuming regional content is primarily movies for now
+            mediaType="movie"
           />
         )}
         <div className="relative">
-          {loading && regionalContent.length === 0 ? ( // Show main loader if loading and no content yet
+          {loading && regionalContent.length === 0 ? (
             <div className="flex justify-center items-center py-20">
-              <LoadingSpinner size="lg" text={!countryAutoDetected ? "Detecting your region..." : "Loading regional content..."} />
+              <LoadingSpinner size="lg" text={!countryAutoDetected ? autoDetectionStatus : "Loading regional content..."} />
             </div>
           ) : regionalContent.length > 0 ? (
             <InfiniteScroll
               loadMore={loadMore}
               loading={loading}
-              hasMore={page <= totalPages && totalPages > 0} // Ensure totalPages is positive
+              hasMore={page <= totalPages && totalPages > 0}
               threshold={1000}
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
@@ -217,15 +321,15 @@ const RegionalPage = () => {
                   <MediaCard
                     key={item.id}
                     id={item.id}
-                    title={item.title || item.name} // Support for TV shows too if API returns them
-                    type="movie" // Defaulting to movie for card link type
+                    title={item.title || item.name}
+                    type="movie"
                     posterPath={item.poster_path}
                     releaseDate={item.release_date || item.first_air_date}
                     voteAverage={item.vote_average}
                   />
                 ))}
               </div>
-              {loading && regionalContent.length > 0 && ( // Show smaller loader when loading more
+              {loading && regionalContent.length > 0 && (
                 <div className="flex justify-center my-8">
                   <LoadingSpinner size="md" text="Loading more..." />
                 </div>
@@ -234,16 +338,21 @@ const RegionalPage = () => {
                  <div className="text-center text-white/70 py-8">All content loaded.</div>
                )}
             </InfiniteScroll>
-          ) : countryAutoDetected && !selectedCountry && !loading ? ( // After detection, if no country, prompt selection
+          ) : countryAutoDetected && !selectedCountry && !loading ? (
              <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
               <div className="bg-gradient-to-br from-aura-purple/15 to-aura-darkpurple/15 backdrop-blur-xl rounded-2xl p-8 text-center border border-aura-purple/30 shadow-lg max-w-md transition-all duration-300">
                 <div className="text-white/80 space-y-4">
                   <h3 className="text-2xl font-bold text-white">Select a Region</h3>
                   <p className="text-lg">Could not auto-detect your region or it's not supported. Please choose a country above to explore regional content.</p>
+                  <div className="bg-aura-darkpurple/40 text-aura-accent font-medium rounded-md px-4 py-2 mt-2 text-base">
+                    <span className="text-white/80">
+                      <b>Try searching for the movie</b> directly in the search bar above if you can't find it here.
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          ) : selectedCountry && !loading && !error ? ( // Selected country, not loading, no error, but no content
+          ) : selectedCountry && !loading && !error ? (
             <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
               <div className="bg-gradient-to-br from-aura-purple/15 to-aura-darkpurple/15 backdrop-blur-xl rounded-2xl p-8 text-center border border-aura-purple/30 shadow-lg max-w-md transition-all duration-300">
                 <div className="text-white/80 space-y-4">
@@ -256,7 +365,7 @@ const RegionalPage = () => {
                   <div className="bg-aura-darkpurple/40 text-aura-accent font-medium rounded-md px-4 py-2 mt-2 text-base">
                     Not all regional content is indexed.<br />
                     <span className="text-white/80">
-                      <b>Tip:</b> Try searching directly in the search bar above to find your favorite movies from this region!
+                      <b>Try searching for the movie</b> directly in the search bar above if you can't find it here.
                     </span>
                   </div>
                   <button
@@ -268,7 +377,7 @@ const RegionalPage = () => {
                 </div>
               </div>
             </div>
-          ) : error ? ( // If there's an error message
+          ) : error ? (
              <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
               <div className="bg-gradient-to-br from-aura-purple/15 to-aura-darkpurple/15 backdrop-blur-xl rounded-2xl p-8 text-center border border-aura-purple/30 shadow-lg max-w-md transition-all duration-300">
                 <div className="text-white/80 space-y-4">
@@ -292,7 +401,7 @@ const RegionalPage = () => {
                 </div>
               </div>
             </div>
-          ) : !countryAutoDetected && !loading ? ( // Initial state before any detection attempt
+          ) : !countryAutoDetected && !loading ? (
             <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
               <div className="bg-gradient-to-br from-aura-purple/15 to-aura-darkpurple/15 backdrop-blur-xl rounded-2xl p-8 text-center border border-aura-purple/30 shadow-lg max-w-md transition-all duration-300">
                 <div className="text-white/80 space-y-4">
