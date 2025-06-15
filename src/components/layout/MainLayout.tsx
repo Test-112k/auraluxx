@@ -27,8 +27,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             : 'bg-aura-dark text-white'
         }`}>
           <Navbar />
-          {/* Fixed header requires top padding for content - increased for better spacing */}
-          <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
+          {/* Fixed header requires top padding for content */}
+          <div className="flex flex-1 max-w-full mx-auto w-full">
             <main className="flex-grow w-full flex flex-col">
               {children}
             </main>
@@ -36,8 +36,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           </div>
           <ScrollToTop />
           <Footer />
-          {/* AI Chatbot - Always visible */}
-          <AIChatbot />
+          {/* AI Chatbot with higher z-index to ensure visibility */}
+          <div className="z-[99998]">
+            <AIChatbot />
+          </div>
         </div>
       </AdProvider>
     </SearchProvider>

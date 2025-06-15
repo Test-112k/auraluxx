@@ -96,7 +96,7 @@ const KDramaPage = () => {
 
   return (
     <MainLayout>
-      <div className={`min-h-screen pt-20 transition-colors duration-300 ${
+      <div className={`min-h-screen pt-16 transition-colors duration-300 ${
         theme === 'dark' 
           ? 'bg-black text-white' 
           : 'bg-aura-dark text-white'
