@@ -1,5 +1,7 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import MainLayout from '@/components/layout/MainLayout';
 import MediaCard from '@/components/common/MediaCard';
 import KDramaHeroSlideshow from '@/components/common/KDramaHeroSlideshow';
@@ -18,6 +20,7 @@ const KDramaPage = () => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const { isAdEnabled } = useAds();
+  const { theme } = useTheme();
 
   const filter = searchParams.get('filter') || 'popular';
   const genre = searchParams.get('genre') || '';
@@ -93,7 +96,11 @@ const KDramaPage = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-aura-dark pt-20">
+      <div className={`min-h-screen pt-20 transition-colors duration-300 ${
+        theme === 'dark' 
+          ? 'bg-black text-white' 
+          : 'bg-aura-dark text-white'
+      }`}>
         {/* Hero Slideshow */}
         <KDramaHeroSlideshow />
 
