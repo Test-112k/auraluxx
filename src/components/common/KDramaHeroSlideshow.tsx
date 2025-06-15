@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -202,7 +201,7 @@ const KDramaHeroSlideshow = () => {
   return (
     <div 
       ref={slideshowRef}
-      className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden select-none mb-8" 
+      className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden select-none mb-8" 
       onMouseEnter={() => setAutoplay(false)}
       onMouseLeave={() => setAutoplay(true)}
       onTouchStart={onTouchStart}
@@ -251,7 +250,7 @@ const KDramaHeroSlideshow = () => {
             {slide.name}
           </h1>
           <p className="text-white/90 text-sm sm:text-base md:text-lg lg:text-xl mb-4 md:mb-8 line-clamp-2 sm:line-clamp-3 md:line-clamp-4 animate-fade-in max-w-3xl leading-relaxed drop-shadow-xl">
-            {truncateText(slide.overview, window.innerWidth < 768 ? 120 : 200)}
+            {slide.overview}
           </p>
           <div className="flex flex-row items-center space-x-3 animate-fade-in pointer-events-auto">
             <Link to={`/watch/tv/${slide.id}`}>

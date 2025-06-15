@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, X, Bot, User } from 'lucide-react';
@@ -305,7 +304,7 @@ const AIChatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-28 left-6 w-96 h-[32rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 z-50 flex flex-col overflow-hidden">
+        <div className="fixed bottom-28 left-6 w-80 h-[28rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 z-50 flex flex-col overflow-hidden animate-fade-in">
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-5 relative">
             <div className="flex items-center justify-between">
@@ -369,16 +368,14 @@ const AIChatbot = () => {
             
             {isTyping && (
               <div className="flex justify-start animate-fade-in">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full p-1">
-                      <Bot size={14} className="text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 flex items-center space-x-2">
+                  <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full p-1.5 flex-shrink-0">
+                    <Bot size={16} className="text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
