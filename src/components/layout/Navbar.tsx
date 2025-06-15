@@ -1,95 +1,140 @@
-
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useSearch } from '@/contexts/SearchContext';
+import { Search, Menu, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import SimpleSearchBar from '@/components/common/SimpleSearchBar';
-import MobileMenu from '@/components/layout/MobileMenu';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
-const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const DesktopNavigation = () => {
+  return (
+    <div className="hidden md:flex items-center space-x-4">
+      <ThemeToggle />
+      <MobileMenu />
+    </div>
+  );
+};
 
-  // External link to Telegram
-  const telegramUrl = "https://t.me/auralux1";
+const MobileNavigation = () => {
+  return (
+    <div className="md:hidden flex items-center space-x-2">
+      <ThemeToggle />
+      <MobileMenu />
+    </div>
+  );
+};
 
-  const handleMobileMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+const Logo = () => (
+  <Link to="/" className="flex items-center font-bold text-xl md:text-2xl tracking-tight">
+    Auraluxx
+  </Link>
+);
+
+const SearchBar = () => {
+  const { setSearchTerm } = useSearch();
+  const location = useLocation();
+  const isSearchPage = location.pathname === '/search';
+  const [searchText, setSearchText] = useState('');
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    setSearchTerm(value);
   };
-
-  const handleMobileMenuClose = () => {
-    setIsMobileMenuOpen(false);
-  };
-  
-  const navLinkClasses = "text-sm font-medium text-white/80 hover:text-white transition-colors";
 
   return (
-    <>
-      <nav 
-        className="fixed top-0 left-0 right-0 z-[10000] w-full bg-aura-dark/98 shadow-lg backdrop-blur-md border-b border-white/10"
-      >
-        <div className="auraluxx-container">
-          <div className="flex items-center justify-between py-4">
-            {/* Logo & Desktop Nav */}
-            <div className="flex items-center gap-4 lg:gap-8">
-              <Link to="/" className="flex items-center flex-shrink-0">
-                <h1 className="text-xl md:text-3xl font-bold text-gradient">
-                  Auraluxx
-                </h1>
-              </Link>
-              <div className="hidden md:flex items-center gap-4 lg:gap-6">
-                <Link to="/movies" className={navLinkClasses}>Movies</Link>
-                <Link to="/tv-series" className={navLinkClasses}>TV Series</Link>
-                <Link to="/anime" className={navLinkClasses}>Anime</Link>
-                <Link to="/k-drama" className={navLinkClasses}>K-Drama</Link>
-                <Link to="/regional" className={navLinkClasses}>Regional</Link>
-              </div>
-            </div>
-
-            {/* Search Bar - centered and responsive */}
-            <div className="flex-1 max-w-sm lg:max-w-md mx-4">
-              <SimpleSearchBar />
-            </div>
-
-            {/* Right side icons */}
-            <div className="flex items-center gap-2">
-              <a
-                href={telegramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:flex text-white/80 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
-                aria-label="Join us on Telegram"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M20.665,3.717l-17.73,6.837c-1.21,0.486-1.203,1.161-0.222,1.462l4.552,1.42l10.532-6.645 c0.498-0.303,0.953-0.14,0.579,0.192l-8.533,7.701l0,0l0,0H9.84l0.002,0.001l-0.314,4.692c0.46,0,0.663-0.211,0.921-0.46 l2.211-2.15l4.599,3.397c0.848,0.467,1.457,0.227,1.668-0.785l3.019-14.228C22.256,3.912,21.474,3.351,20.665,3.717z"/>
-                </svg>
-              </a>
-              {/* Menu Button */}
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleMobileMenuToggle}
-                className="md:hidden text-white hover:bg-white/10 min-h-[44px] min-w-[44px] z-50"
-                aria-label="Open menu"
-              >
-                <Menu size={24} />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Menu */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        onClose={handleMobileMenuClose} 
-        telegramUrl={telegramUrl} 
+    <div className="flex-grow max-w-md md:max-w-lg lg:max-w-xl">
+      <Input
+        type="search"
+        placeholder="Search movies, TV shows..."
+        value={searchText}
+        onChange={handleSearchChange}
+        className="bg-aura-darkpurple border-gray-700 text-white focus:ring-aura-purple focus:border-aura-purple"
       />
-    </>
+      {!isSearchPage && (
+        <Link
+          to="/search"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white transition-colors duration-200"
+        >
+          <Search size={20} />
+        </Link>
+      )}
+    </div>
+  );
+};
+
+const MobileMenu = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-5 w-5 text-white" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="bg-aura-dark text-white w-64">
+        <SheetHeader>
+          <SheetTitle>Menu</SheetTitle>
+          <SheetDescription>
+            Navigate through Auraluxx
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid gap-4 py-4">
+          <Link to="/" className="hover:text-aura-purple transition-colors duration-200">
+            Home
+          </Link>
+          <Link to="/movies" className="hover:text-aura-purple transition-colors duration-200">
+            Movies
+          </Link>
+          <Link to="/tv-series" className="hover:text-aura-purple transition-colors duration-200">
+            TV Series
+          </Link>
+          <Link to="/anime" className="hover:text-aura-purple transition-colors duration-200">
+            Anime
+          </Link>
+          <Link to="/k-drama" className="hover:text-aura-purple transition-colors duration-200">
+            K-Drama
+          </Link>
+          <Link to="/regional" className="hover:text-aura-purple transition-colors duration-200">
+            Regional
+          </Link>
+          <Link to="/speedtest" className="hover:text-aura-purple transition-colors duration-200">
+            Speedtest
+          </Link>
+          <Link to="/contact" className="hover:text-aura-purple transition-colors duration-200">
+            Contact
+          </Link>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+const Navbar = () => {
+  const isMobile = useIsMobile();
+
+  return (
+    <nav className="fixed top-0 left-0 w-full bg-aura-dark dark:bg-black z-40">
+      <div className="auraluxx-container py-4">
+        <div className="flex items-center justify-between">
+          <Logo />
+          <SearchBar />
+          <DesktopNavigation />
+          <MobileNavigation />
+        </div>
+      </div>
+    </nav>
   );
 };
 

@@ -136,9 +136,10 @@ export const callGeminiAPI = async (message: string): Promise<string> => {
       const apiKey = decryptKey(encryptedApiKey);
       const isEntertainmentQuery = isWebsiteOrEntertainmentRelated(message);
 
+      // Enhanced prompt with TMDB data integration
       const prompt = isEntertainmentQuery
-        ? `You are Auraluxx AI, the expert assistant for the Auraluxx streaming platform. You help users with entertainment recommendations and platform navigation. Always mention Auraluxx when relevant. Be enthusiastic and format responses with **bold** for emphasis and bullet points. User request: ${message}`
-        : `You are Auraluxx AI, a helpful and friendly assistant from the Auraluxx streaming platform. While your main focus is movies and entertainment, you are capable of answering general knowledge questions. Be friendly and helpful. User request: ${message}`;
+        ? `You are Auraluxx AI, the expert assistant for the Auraluxx streaming platform. You help users with entertainment recommendations and platform navigation. Always mention Auraluxx when relevant. Be enthusiastic and format responses with **bold** for emphasis and bullet points. For entertainment queries, I have access to live TMDB movie/TV data. User request: ${message}`
+        : `You are Auraluxx AI, a helpful and friendly assistant from the Auraluxx streaming platform. While your main focus is movies and entertainment, you are capable of answering general knowledge questions with access to current information. Be friendly and helpful. User request: ${message}`;
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',

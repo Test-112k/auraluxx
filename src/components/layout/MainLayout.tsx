@@ -19,7 +19,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <SearchProvider>
       <AdProvider>
-        <div className="flex flex-col min-h-screen bg-aura-dark text-white">
+        <div className="flex flex-col min-h-screen bg-aura-dark dark:bg-black text-white transition-colors duration-300">
           <Navbar />
           {/* Fixed header requires top padding for content - increased for better spacing */}
           <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
