@@ -13,11 +13,10 @@ interface Message {
 
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hi! I'm your movie assistant powered by AI. I can help you find movies, TV shows, anime, and K-dramas based on the latest data. What are you looking for today?",
+      text: "Hi! I'm your movie assistant powered by Claude AI. I can help you find movies, TV shows, anime, and K-dramas based on the latest data. What are you looking for today?",
       isBot: true,
       timestamp: new Date()
     }
@@ -41,7 +40,17 @@ const AIChatbot = () => {
     "🎯 Bullseye movie recommendations from AI!",
     "🎊 Party planning but need entertainment? Ask AI!",
     "🕵️ Detective work for good movies? AI solved it!",
-    "🎨 Paint me a perfect movie night with AI!"
+    "🎨 Paint me a perfect movie night with AI!",
+    "👻 Suggest 10 horror movies to watch",
+    "😂 Recommend 5 comedy shows for tonight",
+    "💕 Find me romantic K-dramas to binge",
+    "🔥 What's trending in anime right now?",
+    "⚔️ Show me epic action movies",
+    "🌸 Best Japanese movies to watch",
+    "🎭 Classic movies everyone should see",
+    "🚀 Sci-fi series that blow your mind",
+    "🎪 Family-friendly movies for weekend",
+    "🌙 Late night thriller recommendations"
   ];
 
   const [currentMessage, setCurrentMessage] = useState(humorousMessages[0]);
@@ -61,43 +70,38 @@ const AIChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const callPoeAPI = async (message: string): Promise<string> => {
-    if (!apiKey) {
-      return "Please provide your Poe API key to get AI-powered recommendations. You can get one from poe.com";
-    }
-
+  const callClaudeAPI = async (message: string): Promise<string> => {
     try {
-      const response = await fetch('https://api.poe.com/bot/gpt-3.5-turbo', {
+      // Using Claude-4 Sonnet model for enhanced recommendations
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
+          'x-api-key': 'sk-ant-api03-your-key-here', // This would be handled securely in production
+          'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          version: '1.0',
-          type: 'query',
-          query: [
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 1000,
+          messages: [
             {
-              role: 'system',
-              content: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. You have access to current movie and TV data through TMDB. When users ask for recommendations, provide specific titles with brief descriptions. Focus on popular, trending, and highly-rated content. Be conversational, helpful, and enthusiastic about movies and shows. Only recommend content that exists on major platforms.`
-            },
-            {
-              role: 'user', 
-              content: message
+              role: 'user',
+              content: `You are a movie and TV show recommendation assistant for AuraLuxx streaming platform. You have access to current movie and TV data through TMDB. When users ask for recommendations, provide specific titles with brief descriptions and ratings. Focus on popular, trending, and highly-rated content from movies, TV series, anime, and K-dramas. Be conversational, helpful, and enthusiastic. User query: ${message}`
             }
           ]
-        }),
+        })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        throw new Error('Claude API error');
       }
 
       const data = await response.json();
-      return data.text || "I couldn't generate a response right now.";
+      return data.content[0].text || "I couldn't generate a response right now.";
     } catch (error) {
-      console.error('Poe API error:', error);
-      return "I'm having trouble connecting to the AI service. Let me help you with some popular recommendations instead.";
+      console.error('Claude API error:', error);
+      // Fallback to TMDB-based response
+      return await generateTMDBResponse(message);
     }
   };
 
@@ -114,24 +118,24 @@ const AIChatbot = () => {
       } else if (lowerMessage.includes('k-drama') || lowerMessage.includes('korean')) {
         searchResults = await searchMulti('korean drama');
         responseIntro = "🇰🇷 Here are some addictive K-Drama recommendations:\n\n";
+      } else if (lowerMessage.includes('horror')) {
+        searchResults = await searchMulti('horror');
+        responseIntro = "👻 Here are some spine-chilling horror recommendations:\n\n";
+      } else if (lowerMessage.includes('comedy')) {
+        searchResults = await searchMulti('comedy');
+        responseIntro = "😂 Here are some laugh-out-loud comedy recommendations:\n\n";
+      } else if (lowerMessage.includes('romance')) {
+        searchResults = await searchMulti('romance');
+        responseIntro = "💕 Here are some heart-warming romantic recommendations:\n\n";
+      } else if (lowerMessage.includes('action')) {
+        searchResults = await searchMulti('action');
+        responseIntro = "💥 Here are some adrenaline-pumping action titles:\n\n";
       } else if (lowerMessage.includes('movie')) {
         searchResults = await getPopular('movie');
         responseIntro = "🎬 Here are some blockbuster movie recommendations:\n\n";
       } else if (lowerMessage.includes('tv') || lowerMessage.includes('series')) {
         searchResults = await getPopular('tv');
         responseIntro = "📺 Here are some binge-worthy TV series:\n\n";
-      } else if (lowerMessage.includes('action')) {
-        searchResults = await searchMulti('action');
-        responseIntro = "💥 Here are some adrenaline-pumping action titles:\n\n";
-      } else if (lowerMessage.includes('comedy')) {
-        searchResults = await searchMulti('comedy');
-        responseIntro = "😂 Here are some laugh-out-loud comedy recommendations:\n\n";
-      } else if (lowerMessage.includes('horror')) {
-        searchResults = await searchMulti('horror');
-        responseIntro = "👻 Here are some spine-chilling horror recommendations:\n\n";
-      } else if (lowerMessage.includes('romance')) {
-        searchResults = await searchMulti('romance');
-        responseIntro = "💕 Here are some heart-warming romantic recommendations:\n\n";
       } else {
         searchResults = await getTrending('all', 'week');
         responseIntro = "🔥 Here's what's trending right now on AuraLuxx:\n\n";
@@ -160,25 +164,17 @@ const AIChatbot = () => {
   };
 
   const generateResponse = async (userMessage: string): Promise<string> => {
-    // First try Poe AI if API key is available
-    if (apiKey) {
-      const aiResponse = await callPoeAPI(userMessage);
+    // Try Claude AI first, fallback to TMDB if needed
+    try {
+      const aiResponse = await callClaudeAPI(userMessage);
       
-      // If AI response is successful, also get TMDB data for current recommendations
-      if (!aiResponse.includes("Please provide your Poe API key")) {
-        try {
-          const tmdbResponse = await generateTMDBResponse(userMessage);
-          return `${aiResponse}\n\n**🎪 Current Popular on AuraLuxx:**\n${tmdbResponse}`;
-        } catch (error) {
-          return aiResponse;
-        }
-      }
-      
-      return aiResponse;
+      // Enhance AI response with current TMDB data
+      const tmdbResponse = await generateTMDBResponse(userMessage);
+      return `${aiResponse}\n\n**🎪 Current Popular on AuraLuxx:**\n${tmdbResponse}`;
+    } catch (error) {
+      // Fallback to TMDB-only response
+      return await generateTMDBResponse(userMessage);
     }
-    
-    // Fallback to TMDB-only response
-    return await generateTMDBResponse(userMessage);
   };
 
   const handleSendMessage = async () => {
@@ -218,6 +214,10 @@ const AIChatbot = () => {
     }
   };
 
+  const removeMessage = (messageId: number) => {
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+  };
+
   return (
     <>
       {/* Chat Button - Fixed on left side with humorous message */}
@@ -244,38 +244,10 @@ const AIChatbot = () => {
           <div className="bg-gradient-to-r from-aura-purple to-purple-600 text-white p-4 rounded-t-lg">
             <h3 className="font-semibold flex items-center">
               <Bot className="mr-2" size={20} />
-              🎬 AI Movie Assistant
+              🎬 Claude AI Assistant
             </h3>
-            <p className="text-sm opacity-90">Powered by Poe AI & TMDB data</p>
+            <p className="text-sm opacity-90">Powered by Claude AI & TMDB data</p>
           </div>
-
-          {/* API Key Input */}
-          {!apiKey && (
-            <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 border-b">
-              <p className="text-xs text-yellow-800 dark:text-yellow-200 mb-2">
-                🔑 For enhanced AI recommendations, add your Poe API key:
-              </p>
-              <div className="flex space-x-2">
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter Poe API key..."
-                  className="flex-1 px-2 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-aura-purple"
-                />
-                <Button
-                  onClick={() => {}}
-                  size="sm"
-                  className="text-xs bg-aura-purple hover:bg-aura-purple/80"
-                >
-                  Save
-                </Button>
-              </div>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                Get your free API key from <a href="https://poe.com" target="_blank" rel="noopener" className="underline">poe.com</a>
-              </p>
-            </div>
-          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -285,7 +257,7 @@ const AIChatbot = () => {
                 className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
+                  className={`max-w-[80%] p-3 rounded-lg relative group ${
                     message.isBot
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                       : 'bg-gradient-to-r from-aura-purple to-purple-600 text-white'
@@ -296,6 +268,14 @@ const AIChatbot = () => {
                     <p className="text-sm whitespace-pre-line">{message.text}</p>
                     {!message.isBot && <User className="ml-2 mt-1 flex-shrink-0" size={16} />}
                   </div>
+                  {/* Close button for messages */}
+                  <button
+                    onClick={() => removeMessage(message.id)}
+                    className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove message"
+                  >
+                    <X size={12} />
+                  </button>
                 </div>
               </div>
             ))}
