@@ -23,26 +23,46 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('auraluxx-theme') as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
+    } else {
+      // Default to dark theme for better user experience
+      setTheme('dark');
     }
   }, []);
 
   useEffect(() => {
     localStorage.setItem('auraluxx-theme', theme);
     
-    // Apply theme to document root
+    // Apply theme to document root with smooth transition
+    const root = document.documentElement;
+    const body = document.body;
+    
+    // Add transition class for smooth color changes
+    root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#000000';
+      root.classList.add('dark');
+      body.classList.add('dark');
+      body.style.backgroundColor = '#000000';
+      body.style.color = '#ffffff';
     } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '';
+      root.classList.remove('dark');
+      body.classList.remove('dark');
+      body.style.backgroundColor = '#ffffff';
+      body.style.color = '#000000';
     }
+    
+    // Remove transition after theme change is complete
+    setTimeout(() => {
+      root.style.transition = '';
+      body.style.transition = '';
+    }, 300);
   }, [theme]);
 
   const toggleTheme = () => {
