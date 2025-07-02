@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -19,29 +18,44 @@ const SearchPage = () => {
     if (!query.trim()) return;
     
     setLoading(true);
+    console.log(`Fetching search results for "${query}", page ${currentPage}`);
+    
     try {
       const data = await searchMulti(query, currentPage);
+      console.log('Search API response:', data);
       
-      if (data) {
+      if (data && data.results) {
+        // Filter out person results and keep only movies and TV shows
+        const filteredResults = data.results.filter(
+          item => item.media_type === 'movie' || item.media_type === 'tv'
+        );
+        
+        console.log(`Filtered ${data.results.length} results to ${filteredResults.length} (movies/TV only)`);
+        
         if (isNewSearch) {
-          setResults(data.results);
+          setResults(filteredResults);
         } else {
-          setResults(prev => [...prev, ...data.results]);
+          setResults(prev => [...prev, ...filteredResults]);
         }
         
         setTotalPages(data.total_pages);
         setTotalResults(data.total_results);
+      } else {
+        console.log('No results found or invalid response');
+        setResults([]);
       }
     } catch (error) {
       console.error('Search error:', error);
+      setResults([]);
     } finally {
       setLoading(false);
     }
   };
 
   const loadMore = async () => {
-    if (page < totalPages) {
+    if (page < totalPages && !loading) {
       const nextPage = page + 1;
+      console.log(`Loading more results, page ${nextPage}`);
       setPage(nextPage);
       await fetchResults(nextPage, false);
       return true;
@@ -51,17 +65,21 @@ const SearchPage = () => {
 
   // Reset and fetch when query changes
   useEffect(() => {
-    if (query) {
+    console.log('Query changed to:', query);
+    if (query.trim()) {
       setPage(1);
       setResults([]);
+      setTotalPages(0);
+      setTotalResults(0);
       fetchResults(1, true);
+    } else {
+      setResults([]);
+      setTotalPages(0);
+      setTotalResults(0);
     }
   }, [query]);
 
-  // Filter out person results and keep only movies and TV shows
-  const filteredResults = results.filter(
-    item => item.media_type === 'movie' || item.media_type === 'tv'
-  );
+  console.log(`Current state: ${results.length} results, page ${page}/${totalPages}, loading: ${loading}`);
 
   return (
     <MainLayout>
@@ -89,16 +107,16 @@ const SearchPage = () => {
               </div>
             ))}
           </div>
-        ) : filteredResults.length > 0 ? (
+        ) : results.length > 0 ? (
           <InfiniteScroll
             loadMore={loadMore}
             loading={loading}
             hasMore={page < totalPages}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {filteredResults.map((item) => (
+              {results.map((item, index) => (
                 <MediaCard
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   id={item.id}
                   title={item.title || item.name}
                   type={item.media_type}
@@ -109,7 +127,7 @@ const SearchPage = () => {
               ))}
             </div>
           </InfiniteScroll>
-        ) : query ? (
+        ) : query && !loading ? (
           <div className="flex items-center justify-center h-64 text-center">
             <div className="text-white/60">
               <p className="text-lg mb-2">No results found</p>
