@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/contexts/SearchContext';
 import { Search, Menu, X } from 'lucide-react';
@@ -27,8 +27,17 @@ const Logo = () => (
 
 const SearchBar = () => {
   const { query, setQuery, isDropdownOpen, setIsDropdownOpen, clearSearch, results } = useSearch();
+  const navigate = useNavigate();
   const location = useLocation();
   const isSearchPage = location.pathname === '/search';
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      setIsDropdownOpen(false);
+    }
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -50,7 +59,7 @@ const SearchBar = () => {
 
   return (
     <div className="flex-1 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-2 sm:mx-4 md:mx-6 lg:mx-8 relative">
-      <div className="relative">
+      <form onSubmit={handleSearchSubmit} className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
         <Input
           type="search"
@@ -72,7 +81,7 @@ const SearchBar = () => {
             <X size={14} />
           </Button>
         )}
-      </div>
+      </form>
       
       {/* Search Dropdown */}
       {isDropdownOpen && results.length > 0 && (

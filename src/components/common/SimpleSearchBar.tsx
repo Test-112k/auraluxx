@@ -16,7 +16,7 @@ const SimpleSearchBar = () => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      clearSearch();
+      setIsDropdownOpen(false);
     }
   };
 

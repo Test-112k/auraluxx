@@ -89,8 +89,8 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
           src={iframeSrc}
           title={title}
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen; cast; display-capture; camera; microphone"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-presentation allow-top-navigation-by-user-activation"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
           loading="lazy"
