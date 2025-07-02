@@ -366,7 +366,7 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
       }
       
         if (searchResults?.results && searchResults.results.length > 0) {
-          const recommendations = searchResults.results.slice(0, 5);
+          const recommendations = searchResults.results.slice(0, 8); // Increased from 5 to 8
           let response = responseIntro;
           
           recommendations.forEach((item: any, index: number) => {
@@ -374,13 +374,23 @@ const generateTMDBResponse = async (userMessage: string): Promise<string> => {
             const year = item.release_date || item.first_air_date;
             const yearText = year ? ` *(${year.split('-')[0]})*` : '';
             const rating = item.vote_average ? ` - ⭐ **${item.vote_average.toFixed(1)}/10**` : '';
-            const overview = item.overview ? `\n   ${item.overview.slice(0, 100)}...` : '';
-            response += `**${index + 1}.** **${title}**${yearText}${rating}${overview}\n\n`;
+            const overview = item.overview ? `\n   *${item.overview.slice(0, 120)}...*` : ''; // Increased overview length
+          
+            // Add genre information if available
+            const genreInfo = item.genre_ids && item.genre_ids.length > 0 ? 
+              `\n   📂 **Genres:** ${item.genre_ids.slice(0, 3).map((id: number) => 
+                Object.keys(genreMap).find(key => genreMap[key] === id) || ''
+              ).filter(Boolean).join(', ')}` : '';
+          
+            response += `**${index + 1}.** **${title}**${yearText}${rating}${overview}${genreInfo}\n\n`;
           });
           
-          return response + "✨ **Find these on Auraluxx!** Use the search bar or browse categories for more!";
+          response += "✨ **Find these on Auraluxx!** Use the search bar or browse categories for more amazing content!\n\n";
+          response += "🎬 **Want more recommendations?** Just ask me for specific genres, years, or moods!";
+          
+          return response;
         } else {
-          return "🤖 I couldn't find specific results for that search on **Auraluxx**. Try:\n\n🔍 **Search directly** in the search bar\n📂 **Browse categories** (Movies, TV, Anime, K-Drama)\n🌍 **Check Regional** section for local content\n\n**Need help?** Ask me how to find specific content!";
+          return "🤖 I couldn't find specific results for that search on **Auraluxx**. Try:\n\n🔍 **Search directly** in the search bar\n📂 **Browse categories** (Movies, TV, Anime, K-Drama)\n🌍 **Check Regional** section for local content\n🎯 **Ask me differently** - try 'best action movies 2023' or 'funny romantic comedies'\n\n**Need help?** Ask me how to find specific content!";
         }
     } catch (error) {
       console.error('TMDB API error:', error);

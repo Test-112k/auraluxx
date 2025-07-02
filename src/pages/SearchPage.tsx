@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -14,15 +15,15 @@ const SearchPage = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchResults = useCallback(async () => {
+  const fetchResults = async (currentPage: number, isNewSearch = false) => {
     if (!query.trim()) return;
     
     setLoading(true);
     try {
-      const data = await searchMulti(query, page);
+      const data = await searchMulti(query, currentPage);
       
       if (data) {
-        if (page === 1) {
+        if (isNewSearch) {
           setResults(data.results);
         } else {
           setResults(prev => [...prev, ...data.results]);
@@ -30,18 +31,19 @@ const SearchPage = () => {
         
         setTotalPages(data.total_pages);
         setTotalResults(data.total_results);
-        setPage(prev => prev + 1);
       }
     } catch (error) {
       console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
-  }, [query, page]);
+  };
 
   const loadMore = async () => {
-    if (page <= totalPages) {
-      await fetchResults();
+    if (page < totalPages) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      await fetchResults(nextPage, false);
       return true;
     }
     return false;
@@ -49,9 +51,11 @@ const SearchPage = () => {
 
   // Reset and fetch when query changes
   useEffect(() => {
-    setPage(1);
-    setResults([]);
-    fetchResults();
+    if (query) {
+      setPage(1);
+      setResults([]);
+      fetchResults(1, true);
+    }
   }, [query]);
 
   // Filter out person results and keep only movies and TV shows
@@ -89,7 +93,7 @@ const SearchPage = () => {
           <InfiniteScroll
             loadMore={loadMore}
             loading={loading}
-            hasMore={page <= totalPages}
+            hasMore={page < totalPages}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredResults.map((item) => (

@@ -102,6 +102,9 @@ const DesktopNavigation = () => {
       <Link to="/regional" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
         Regional
       </Link>
+      <Link to="/speedtest" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
+        Speed Test
+      </Link>
       <div className="ml-2">
         <ThemeToggle />
       </div>
