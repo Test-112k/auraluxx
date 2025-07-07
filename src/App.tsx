@@ -19,6 +19,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import DmcaPage from "./pages/DmcaPage";
 import ContactPage from "./pages/ContactPage";
+import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/dmca" element={<DmcaPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
