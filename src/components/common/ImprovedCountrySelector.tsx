@@ -85,7 +85,7 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
       </PopoverTrigger>
       <PopoverContent
         className={cn(
-          "mt-2 w-[330px] max-w-full p-0 rounded-xl border border-white/15 shadow-2xl z-[80]",
+          "mt-2 w-[330px] max-w-full p-0 rounded-xl border border-white/15 shadow-2xl z-[200]",
           "bg-gradient-to-br from-[#1a1625] to-[#231c32] backdrop-blur-lg"
         )}
         align="start"
@@ -96,7 +96,7 @@ const ImprovedCountrySelector = ({ selectedCountry, onCountryChange, className }
         style={{
           boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)',
           borderRadius: 18,
-          zIndex: 80,
+          zIndex: 200,
         }}
       >
         <Command className="bg-transparent">
