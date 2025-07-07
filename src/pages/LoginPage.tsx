@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, Auth } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, Auth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXAljTKnDI7MfiuV7oCQx7UZ86GxeQAyc",
@@ -20,6 +22,8 @@ const auth: Auth = getAuth(app);
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
@@ -29,37 +33,62 @@ const LoginPage = () => {
     setIsVisible(true);
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
+    if (isSignUp && password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
       navigate('/');
     } catch (error: any) {
-      setError(error.message || 'Login failed');
+      setError(error.message || `${isSignUp ? 'Sign up' : 'Login'} failed`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
+    setConfirmPassword('');
+  };
+
+  const goBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="login-container">
       <div className="login-background"></div>
-      <div className="login-orbs">
-        <div className="orb orb-1"></div>
-        <div className="orb orb-2"></div>
-        <div className="orb orb-3"></div>
-      </div>
+      
+      <button 
+        onClick={goBack}
+        className="back-button"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </button>
       
       <div className={`login-card ${isVisible ? 'slide-in' : ''}`}>
         <div className="login-header">
-          <h1 className="login-title">Welcome Back</h1>
-          <p className="login-subtitle">Sign in to your account</p>
+          <h1 className="login-title">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
+          <p className="login-subtitle">
+            {isSignUp ? 'Sign up for a new account' : 'Sign in to your account'}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="login-form">
+        <form onSubmit={handleSubmit} className="login-form">
           <div className="input-group">
             <input
               type="email"
@@ -86,6 +115,21 @@ const LoginPage = () => {
             <label htmlFor="password" className="floating-label">Password</label>
           </div>
 
+          {isSignUp && (
+            <div className="input-group">
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="neon-input"
+                placeholder=" "
+              />
+              <label htmlFor="confirmPassword" className="floating-label">Confirm Password</label>
+            </div>
+          )}
+
           {error && <div className="error-message">{error}</div>}
 
           <button 
@@ -96,13 +140,22 @@ const LoginPage = () => {
             {isLoading ? (
               <span className="loading-spinner"></span>
             ) : (
-              'Sign In'
+              isSignUp ? 'Create Account' : 'Sign In'
             )}
           </button>
         </form>
 
         <div className="login-footer">
-          <a href="#" className="forgot-link">Forgot your password?</a>
+          <button 
+            type="button"
+            onClick={toggleMode}
+            className="toggle-mode-button"
+          >
+            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+          </button>
+          {!isSignUp && (
+            <a href="#" className="forgot-link">Forgot your password?</a>
+          )}
         </div>
       </div>
 
@@ -125,52 +178,36 @@ const LoginPage = () => {
           width: 100%;
           height: 100%;
           background: 
-            radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(255, 115, 200, 0.2) 0%, transparent 50%),
-            radial-gradient(circle at 40% 70%, rgba(0, 255, 180, 0.1) 0%, transparent 50%);
-          filter: blur(100px);
-          animation: backgroundShift 20s ease-in-out infinite;
+            radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 115, 200, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 70%, rgba(0, 255, 180, 0.05) 0%, transparent 50%);
+          filter: blur(60px);
         }
 
-        .login-orbs {
+        .back-button {
           position: absolute;
-          width: 100%;
-          height: 100%;
+          top: 20px;
+          left: 20px;
+          z-index: 20;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 12px;
+          padding: 12px;
+          color: white;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(2px);
-          animation: float 6s ease-in-out infinite;
+        .back-button:hover {
+          background: rgba(255, 255, 255, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .orb-1 {
-          width: 200px;
-          height: 200px;
-          background: linear-gradient(45deg, #ff6b9d, #c44569);
-          top: 10%;
-          left: 10%;
-          animation-delay: 0s;
-        }
-
-        .orb-2 {
-          width: 150px;
-          height: 150px;
-          background: linear-gradient(45deg, #4ecdc4, #44a08d);
-          top: 60%;
-          right: 10%;
-          animation-delay: 2s;
-        }
-
-        .orb-3 {
-          width: 100px;
-          height: 100px;
-          background: linear-gradient(45deg, #667eea, #764ba2);
-          bottom: 20%;
-          left: 60%;
-          animation-delay: 4s;
-        }
 
         .login-card {
           background: rgba(255, 255, 255, 0.05);
@@ -180,14 +217,12 @@ const LoginPage = () => {
           padding: 40px;
           width: 100%;
           max-width: 420px;
-          box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
           position: relative;
           z-index: 10;
           opacity: 0;
-          transform: translateY(50px);
-          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transform: translateY(30px);
+          transition: all 0.6s ease;
         }
 
         .login-card.slide-in {
@@ -208,7 +243,6 @@ const LoginPage = () => {
           -webkit-text-fill-color: transparent;
           background-clip: text;
           margin-bottom: 10px;
-          animation: titleGlow 3s ease-in-out infinite alternate;
         }
 
         .login-subtitle {
@@ -236,15 +270,13 @@ const LoginPage = () => {
           font-size: 16px;
           color: white;
           outline: none;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.3s ease;
           backdrop-filter: blur(10px);
         }
 
         .neon-input:focus {
           border-color: #667eea;
-          box-shadow: 
-            0 0 20px rgba(102, 126, 234, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
           background: rgba(255, 255, 255, 0.05);
         }
 
@@ -252,7 +284,6 @@ const LoginPage = () => {
         .neon-input:not(:placeholder-shown) + .floating-label {
           transform: translateY(-32px) scale(0.85);
           color: #667eea;
-          text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
 
         .floating-label {
@@ -265,7 +296,7 @@ const LoginPage = () => {
           -webkit-text-fill-color: transparent;
           background-clip: text;
           pointer-events: none;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.3s ease;
           font-weight: 500;
         }
 
@@ -280,10 +311,8 @@ const LoginPage = () => {
           cursor: pointer;
           position: relative;
           overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          box-shadow: 
-            0 4px 15px rgba(102, 126, 234, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
           min-height: 56px;
           display: flex;
           align-items: center;
@@ -292,9 +321,7 @@ const LoginPage = () => {
 
         .glow-button:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 
-            0 8px 25px rgba(102, 126, 234, 0.6),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         .glow-button:active {
@@ -329,6 +356,25 @@ const LoginPage = () => {
         .login-footer {
           text-align: center;
           margin-top: 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .toggle-mode-button {
+          background: none;
+          border: none;
+          color: #667eea;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          padding: 8px;
+          border-radius: 6px;
+        }
+
+        .toggle-mode-button:hover {
+          background: rgba(102, 126, 234, 0.1);
+          transform: translateY(-1px);
         }
 
         .forgot-link {
@@ -340,26 +386,8 @@ const LoginPage = () => {
 
         .forgot-link:hover {
           color: #667eea;
-          text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
 
-        @keyframes backgroundShift {
-          0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
-          25% { transform: translateX(-10px) translateY(-10px) rotate(1deg); }
-          50% { transform: translateX(10px) translateY(10px) rotate(-1deg); }
-          75% { transform: translateX(-5px) translateY(5px) rotate(0.5deg); }
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          33% { transform: translateY(-20px) rotate(120deg); }
-          66% { transform: translateY(10px) rotate(240deg); }
-        }
-
-        @keyframes titleGlow {
-          0% { text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
-          100% { text-shadow: 0 0 30px rgba(102, 126, 234, 0.8), 0 0 40px rgba(118, 75, 162, 0.6); }
-        }
 
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -375,6 +403,12 @@ const LoginPage = () => {
           .login-card {
             padding: 30px 25px;
             border-radius: 16px;
+          }
+
+          .back-button {
+            top: 15px;
+            left: 15px;
+            padding: 10px;
           }
 
           .login-title {
@@ -394,10 +428,6 @@ const LoginPage = () => {
             padding: 14px 20px;
             min-height: 52px;
           }
-
-          .orb-1 { width: 120px; height: 120px; }
-          .orb-2 { width: 100px; height: 100px; }
-          .orb-3 { width: 80px; height: 80px; }
         }
 
         @media (max-width: 360px) {
@@ -407,6 +437,10 @@ const LoginPage = () => {
 
           .login-title {
             font-size: 1.8rem;
+          }
+
+          .back-button {
+            padding: 8px;
           }
         }
       `}</style>
