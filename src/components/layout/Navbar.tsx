@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/contexts/SearchContext';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, LogIn } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -114,6 +114,10 @@ const DesktopNavigation = () => {
       <Link to="/speedtest" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
         Speed Test
       </Link>
+      <Link to="/login" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2">
+        <LogIn className="h-4 w-4" />
+        Login
+      </Link>
       <div className="ml-2">
         <ThemeToggle />
       </div>
@@ -211,6 +215,14 @@ const MobileMenu = () => {
             </div>
             Join Telegram
           </a>
+          <Link 
+            to="/login" 
+            className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium gap-3"
+            onClick={handleCloseMenu}
+          >
+            <LogIn className="h-5 w-5" />
+            Login
+          </Link>
         </div>
       </SheetContent>
     </Sheet>
