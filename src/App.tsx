@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdProvider } from "./contexts/AdContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/HomePage";
 import MoviePage from "./pages/MoviePage";
 import TvSeriesPage from "./pages/TvSeriesPage";
@@ -35,8 +36,9 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <AdProvider>
-        <TooltipProvider>
+      <AuthProvider>
+        <AdProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -61,7 +63,8 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AdProvider>
+        </AdProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

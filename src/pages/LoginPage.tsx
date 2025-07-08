@@ -1,25 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, Auth } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAXAljTKnDI7MfiuV7oCQx7UZ86GxeQAyc",
-  authDomain: "auraluxx-3d5c7.firebaseapp.com",
-  projectId: "auraluxx-3d5c7",
-  storageBucket: "auraluxx-3d5c7.firebasestorage.app",
-  messagingSenderId: "753111617143",
-  appId: "1:753111617143:web:4c7c750c4821ea68c04072",
-  measurementId: "G-751HDJH783"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth: Auth = getAuth(app);
+import { auth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LoginPage = () => {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,6 +15,13 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     setIsVisible(true);

@@ -1,5 +1,6 @@
 
-import { createContext, useContext, ReactNode, useState } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 
 interface AdContextType {
   isAdEnabled: boolean;
@@ -14,10 +15,14 @@ const AdContext = createContext<AdContextType>({
 export const useAds = () => useContext(AdContext);
 
 export const AdProvider = ({ children }: { children: ReactNode }) => {
-  const [isAdEnabled, setIsAdEnabled] = useState(true);
+  const { isAdFree } = useAuth();
+
+  // Ads are disabled when user has ad-free time
+  const isAdEnabled = !isAdFree;
 
   const toggleAds = () => {
-    setIsAdEnabled(prev => !prev);
+    // This function is kept for compatibility but doesn't do anything
+    // Ad state is now controlled by authentication system
   };
 
   return (

@@ -9,6 +9,7 @@ import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import SidebarAd from '@/components/ads/SidebarAd';
 import AIChatbot from '@/components/chatbot';
+import AdFreeTimer from '@/components/common/AdFreeTimer';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             : 'bg-aura-dark text-white'
         }`}>
           <Navbar />
+          <AdFreeTimer />
           {/* Fixed header requires top padding for content - increased for better spacing */}
           <div className="flex flex-1 max-w-full mx-auto w-full pt-24 md:pt-28">
             <main className="flex-grow w-full flex flex-col">

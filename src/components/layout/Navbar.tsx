@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/contexts/SearchContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Search, Menu, X, LogIn } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/sheet"
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import SearchDropdown from '@/components/common/SearchDropdown';
+import ProfileDropdown from '@/components/profile/ProfileDropdown';
 
 const Logo = () => (
   <Link to="/" className="flex items-center font-bold text-xl md:text-2xl tracking-tight">
@@ -94,6 +96,8 @@ const SearchBar = () => {
 };
 
 const DesktopNavigation = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
       <Link to="/movies" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
@@ -114,10 +118,16 @@ const DesktopNavigation = () => {
       <Link to="/speedtest" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
         Speed Test
       </Link>
-      <Link to="/login" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2">
-        <LogIn className="h-4 w-4" />
-        Login
-      </Link>
+      
+      {user ? (
+        <ProfileDropdown />
+      ) : (
+        <Link to="/login" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2">
+          <LogIn className="h-4 w-4" />
+          Login
+        </Link>
+      )}
+      
       <div className="ml-2">
         <ThemeToggle />
       </div>
@@ -126,6 +136,7 @@ const DesktopNavigation = () => {
 };
 
 const MobileMenu = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCloseMenu = () => {
@@ -215,14 +226,21 @@ const MobileMenu = () => {
             </div>
             Join Telegram
           </a>
-          <Link 
-            to="/login" 
-            className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium gap-3"
-            onClick={handleCloseMenu}
-          >
-            <LogIn className="h-5 w-5" />
-            Login
-          </Link>
+          
+          {user ? (
+            <div className="py-3 px-4">
+              <ProfileDropdown />
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium gap-3"
+              onClick={handleCloseMenu}
+            >
+              <LogIn className="h-5 w-5" />
+              Login
+            </Link>
+          )}
         </div>
       </SheetContent>
     </Sheet>
