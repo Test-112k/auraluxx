@@ -227,11 +227,14 @@ const MobileMenu = () => {
             Join Telegram
           </a>
           
-          {user ? (
-            <div className="py-3 px-4">
-              <ProfileDropdown />
+          <div className="py-3 px-4">
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <span className="text-white/60">Theme</span>
             </div>
-          ) : (
+          </div>
+          
+          {!user && (
             <Link 
               to="/login" 
               className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium gap-3"
@@ -248,9 +251,17 @@ const MobileMenu = () => {
 };
 
 const MobileNavigation = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="md:hidden flex items-center space-x-2">
-      <ThemeToggle />
+      {user ? (
+        <ProfileDropdown />
+      ) : (
+        <Link to="/login" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm flex items-center gap-1">
+          <LogIn className="h-4 w-4" />
+        </Link>
+      )}
       <MobileMenu />
     </div>
   );

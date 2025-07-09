@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { X, Eye, EyeOff } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { X, Eye, EyeOff, Palette, User, Mail, Lock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface ProfileSettingsProps {
   onClose: () => void;
@@ -18,6 +20,7 @@ interface ProfileSettingsProps {
 
 const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
   const { user, updateUserEmail, updateUserPassword } = useAuth();
+  const { theme } = useTheme();
   const { toast } = useToast();
   
   const [isEmailMode, setIsEmailMode] = useState(false);
@@ -120,33 +123,60 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
           <DialogTitle className="text-xl font-semibold text-white">Account Settings</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           {!isEmailMode && !isPasswordMode && (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="current-email" className="text-sm font-medium text-white/80">
-                  Current Email
-                </Label>
-                <div className="text-sm text-white bg-white/5 p-3 rounded-md">
-                  {user?.email}
+              {/* Account Information */}
+              <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-aura-purple" />
+                  <h3 className="font-semibold text-white">Account Information</h3>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white/80">Current Email</Label>
+                  <div className="text-white font-medium">{user?.email}</div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Button
-                  onClick={() => setIsEmailMode(true)}
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10"
-                >
-                  Change Email
-                </Button>
-                <Button
-                  onClick={() => setIsPasswordMode(true)}
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10"
-                >
-                  Change Password
-                </Button>
+              {/* Theme Settings */}
+              <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-aura-purple" />
+                  <h3 className="font-semibold text-white">Theme Settings</h3>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-white font-medium">Appearance</div>
+                    <div className="text-white/60 text-sm">Choose your preferred theme</div>
+                  </div>
+                  <ThemeToggle />
+                </div>
+              </div>
+
+              {/* Account Actions */}
+              <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-aura-purple" />
+                  <h3 className="font-semibold text-white">Security</h3>
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => setIsEmailMode(true)}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10 justify-start"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Change Email
+                  </Button>
+                  <Button
+                    onClick={() => setIsPasswordMode(true)}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10 justify-start"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                </div>
               </div>
             </>
           )}

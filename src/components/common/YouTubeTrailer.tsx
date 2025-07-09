@@ -49,7 +49,7 @@ const YouTubeTrailer = ({ videoKey, title }: YouTubeTrailerProps) => {
       <h3 className="text-xl font-semibold text-white mb-4">Official Trailer</h3>
       
       {!isPlaying ? (
-        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl">
+        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full max-w-full md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
           {isVisible && (
             <>
               <img
@@ -61,9 +61,9 @@ const YouTubeTrailer = ({ videoKey, title }: YouTubeTrailerProps) => {
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <Button
                   onClick={handlePlayTrailer}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 lg:px-8 lg:py-4 rounded-full flex items-center gap-2 text-lg lg:text-xl"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full flex items-center gap-2 text-base md:text-lg lg:text-xl"
                 >
-                  <Play size={28} fill="white" />
+                  <Play size={20} className="md:w-6 md:h-6 lg:w-7 lg:h-7" fill="white" />
                   Watch Trailer
                 </Button>
               </div>
@@ -80,12 +80,12 @@ const YouTubeTrailer = ({ videoKey, title }: YouTubeTrailerProps) => {
           )}
         </div>
       ) : (
-        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl">
+        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full max-w-full md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
           <Button
             onClick={handleCloseTrailer}
-            className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+            className="absolute top-2 right-2 md:top-4 md:right-4 z-10 bg-black/50 hover:bg-black/70 text-white p-1.5 md:p-2 rounded-full"
           >
-            <X size={20} />
+            <X size={16} className="md:w-5 md:h-5" />
           </Button>
           <iframe
             src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&rel=0`}

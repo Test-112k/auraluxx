@@ -45,32 +45,46 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
     
     setIsWatchingAd(true);
     
-    // Open the ad in a new tab
+    // Open the ad in a new tab with proper focus
     const newWindow = window.open(
       'https://bluetackclasp.com/x5972whr?key=9af361aa4bfff9436548dc8117c52c2a',
       '_blank',
-      'width=800,height=600,scrollbars=yes,resizable=yes'
+      'width=800,height=600,scrollbars=yes,resizable=yes,location=yes,menubar=no,toolbar=no'
     );
     
     if (newWindow) {
       setAdWindow(newWindow);
       
-      // Check if the window is closed
-      const checkClosed = setInterval(() => {
-        if (newWindow.closed) {
-          clearInterval(checkClosed);
-          handleAdWatched();
-        }
-      }, 1000);
+      // Add focus to the new window
+      newWindow.focus();
       
-      // Auto-close after 30 seconds if still open
-      setTimeout(() => {
-        if (!newWindow.closed) {
-          newWindow.close();
+      // Enhanced tracking with better intervals
+      const checkClosed = setInterval(() => {
+        try {
+          if (newWindow.closed) {
+            clearInterval(checkClosed);
+            handleAdWatched();
+          }
+        } catch (error) {
+          // Cross-origin error, window might be closed
           clearInterval(checkClosed);
           handleAdWatched();
         }
-      }, 30000);
+      }, 500); // Check more frequently
+      
+      // Auto-close after 45 seconds if still open (increased time)
+      setTimeout(() => {
+        try {
+          if (!newWindow.closed) {
+            newWindow.close();
+            clearInterval(checkClosed);
+            handleAdWatched();
+          }
+        } catch (error) {
+          clearInterval(checkClosed);
+          handleAdWatched();
+        }
+      }, 45000);
     } else {
       // Popup blocked
       toast({
