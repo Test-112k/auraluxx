@@ -12,6 +12,7 @@ import SidebarAd from '@/components/ads/SidebarAd';
 import AIChatbot from '@/components/chatbot';
 import AdFreeTimer from '@/components/common/AdFreeTimer';
 import AdFreeExpiredPopup from '@/components/common/AdFreeExpiredPopup';
+import SignupPromotionPopup from '@/components/common/SignupPromotionPopup';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   const { theme } = useTheme();
   const { user, isAdFree, adFreeTimeLeft } = useAuth();
   const [showExpiredPopup, setShowExpiredPopup] = useState(false);
+  const [showSignupPromotion, setShowSignupPromotion] = useState(false);
 
   // Check if user needs to see expired popup
   useEffect(() => {
@@ -42,6 +44,17 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       };
     }
   }, [user, isAdFree, adFreeTimeLeft]);
+
+  // Show signup promotion for non-logged users
+  useEffect(() => {
+    if (!user) {
+      const timer = setTimeout(() => {
+        setShowSignupPromotion(true);
+      }, 15000); // Show after 15 seconds for non-logged users
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
   
   return (
     <SearchProvider>
@@ -69,6 +82,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <AdFreeExpiredPopup 
             open={showExpiredPopup} 
             onClose={() => setShowExpiredPopup(false)} 
+          />
+          
+          {/* Signup Promotion Popup */}
+          <SignupPromotionPopup 
+            open={showSignupPromotion} 
+            onClose={() => setShowSignupPromotion(false)} 
           />
         </div>
       </AdProvider>

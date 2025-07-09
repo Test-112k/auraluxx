@@ -66,10 +66,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userDoc = await getDoc(userDocRef);
     
     if (!userDoc.exists()) {
+      // New user gets 1 hour of free ad-free time
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
       const initialData: UserData = {
         email: user.email || '',
         createdAt: new Date(),
         lastLogin: new Date(),
+        adFreeUntil: new Date(Date.now() + oneHour),
       };
       await setDoc(userDocRef, initialData);
       setUserData(initialData);
