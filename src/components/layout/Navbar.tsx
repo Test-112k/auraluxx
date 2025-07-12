@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/contexts/SearchContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Search, Menu, X, User, LogIn } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -98,26 +99,24 @@ const SearchBar = () => {
 
 const DesktopNavigation = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   
   return (
     <div className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
       <Link to="/movies" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        Movies
+        {t('Movies')}
       </Link>
       <Link to="/tv-series" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        TV Series
+        {t('TV Series')}
       </Link>
       <Link to="/anime" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        Anime
+        {t('Anime')}
       </Link>
       <Link to="/k-drama" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        K-Drama
+        {t('K-Drama')}
       </Link>
       <Link to="/regional" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        Regional
-      </Link>
-      <Link to="/speedtest" className="text-white hover:text-aura-purple transition-colors duration-200 font-medium text-sm lg:text-base whitespace-nowrap">
-        Speed Test
+        {t('Regional')}
       </Link>
       
       {user ? (
@@ -140,6 +139,7 @@ const DesktopNavigation = () => {
 
 const MobileMenu = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCloseMenu = () => {
@@ -166,49 +166,42 @@ const MobileMenu = () => {
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            Home
+            {t('Home')}
           </Link>
           <Link 
             to="/movies" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            Movies
+            {t('Movies')}
           </Link>
           <Link 
             to="/tv-series" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            TV Series
+            {t('TV Series')}
           </Link>
           <Link 
             to="/anime" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            Anime
+            {t('Anime')}
           </Link>
           <Link 
             to="/k-drama" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            K-Drama
+            {t('K-Drama')}
           </Link>
           <Link 
             to="/regional" 
             className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
             onClick={handleCloseMenu}
           >
-            Regional
-          </Link>
-          <Link 
-            to="/speedtest" 
-            className="flex items-center hover:text-aura-purple transition-colors duration-200 py-3 px-4 rounded-lg hover:bg-white/5 text-base font-medium"
-            onClick={handleCloseMenu}
-          >
-            Speed Test
+            {t('Regional')}
           </Link>
           <a 
             href="https://t.me/auralux1"
@@ -244,7 +237,7 @@ const MobileMenu = () => {
               onClick={handleCloseMenu}
             >
               <LogIn className="h-5 w-5" />
-              Login
+              {t('Login')}
             </Link>
           )}
         </div>

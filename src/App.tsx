@@ -15,7 +15,7 @@ import RegionalPage from "./pages/RegionalPage";
 import KDramaPage from "./pages/KDramaPage";
 import SearchPage from "./pages/SearchPage";
 import WatchPage from "./pages/WatchPage";
-import SpeedtestPage from "./pages/SpeedtestPage";
+
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import DmcaPage from "./pages/DmcaPage";
@@ -52,7 +52,7 @@ const App = () => (
               <Route path="/search" element={<SearchPage />} />
               <Route path="/watch/:type/:id" element={<WatchPage />} />
               <Route path="/watch/:type/:id/" element={<WatchPage />} />
-              <Route path="/speedtest" element={<SpeedtestPage />} />
+              
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/dmca" element={<DmcaPage />} />

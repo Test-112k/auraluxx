@@ -128,10 +128,10 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       
       console.log('Ad reward processed successfully');
       
-      // Force a re-render by closing and potentially reopening the dialog
+      // Close the dialog after a short delay
       setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+        onClose();
+      }, 2000);
       
     } catch (error: any) {
       console.error('Error adding ad-free time:', error);
