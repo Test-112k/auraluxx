@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/contexts/SearchContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, Menu, X, User } from 'lucide-react';
+import { Search, Menu, X, User, LogIn } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
