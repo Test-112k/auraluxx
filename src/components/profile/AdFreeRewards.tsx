@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Gift, Timer, ExternalLink } from 'lucide-react';
@@ -58,7 +59,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       // Add focus to the new window
       newWindow.focus();
       
-      // Enhanced tracking with better intervals
+      // Enhanced tracking with better intervals and cross-origin handling
       const checkClosed = setInterval(() => {
         try {
           if (newWindow.closed) {
@@ -66,25 +67,40 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             handleAdWatched();
           }
         } catch (error) {
-          // Cross-origin error, window might be closed
+          // Cross-origin error, assume window is closed
           clearInterval(checkClosed);
           handleAdWatched();
         }
       }, 500); // Check more frequently
       
-      // Auto-close after 45 seconds if still open (increased time)
+      // Minimum viewing time of 10 seconds before allowing reward
+      let hasMinViewTime = false;
+      setTimeout(() => {
+        hasMinViewTime = true;
+      }, 10000);
+      
+      // Auto-close after 60 seconds if still open (increased time for better ad viewing)
       setTimeout(() => {
         try {
-          if (!newWindow.closed) {
+          if (!newWindow.closed && hasMinViewTime) {
             newWindow.close();
             clearInterval(checkClosed);
             handleAdWatched();
           }
         } catch (error) {
           clearInterval(checkClosed);
-          handleAdWatched();
+          if (hasMinViewTime) {
+            handleAdWatched();
+          } else {
+            setIsWatchingAd(false);
+            toast({
+              title: 'Ad Not Watched Long Enough',
+              description: 'Please watch the ad for at least 10 seconds to earn rewards',
+              variant: 'destructive',
+            });
+          }
         }
-      }, 45000);
+      }, 60000);
     } else {
       // Popup blocked
       toast({
@@ -98,12 +114,15 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
 
   const handleAdWatched = async () => {
     try {
+      console.log('Processing ad reward...');
       await addAdFreeTime();
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added to your account!',
       });
+      console.log('Ad reward processed successfully');
     } catch (error: any) {
+      console.error('Error adding ad-free time:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to add ad-free time',
@@ -141,7 +160,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
               <span className="text-sm font-medium text-white/80">Current Status:</span>
               {isAdFree ? (
                 <span className="text-green-400 font-semibold flex items-center gap-1">
-                  <Timer className="h-4 w-4" />
+                  <Timer className="h-4 w-4 animate-pulse" />
                   Ad-Free Active
                 </span>
               ) : (
@@ -176,14 +195,14 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             <Button
               onClick={handleWatchAd}
               disabled={isWatchingAd}
-              className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg relative overflow-hidden group"
+              className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg relative overflow-hidden group disabled:opacity-50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center justify-center gap-2">
                 {isWatchingAd ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Opening Ad...</span>
+                    <span>Processing Ad...</span>
                   </>
                 ) : (
                   <>
@@ -200,7 +219,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
                 Click the button above to open an ad in a new tab.
               </p>
               <p className="text-xs text-white/50">
-                Close the ad tab when done to receive your reward automatically.
+                Watch for at least 10 seconds, then close the tab to receive your reward.
               </p>
             </div>
           </div>
@@ -211,6 +230,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             <ul className="text-sm text-white/70 space-y-1">
               <li>• Click the reward button to open an ad</li>
               <li>• The ad will open in a new tab</li>
+              <li>• Watch for at least 10 seconds</li>
               <li>• Close the tab when you're done viewing</li>
               <li>• Receive 30 minutes of ad-free browsing</li>
               <li>• Time stacks if you already have ad-free time remaining</li>

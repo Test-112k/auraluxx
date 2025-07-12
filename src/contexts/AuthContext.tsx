@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, User, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
@@ -76,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       await setDoc(userDocRef, initialData);
       setUserData(initialData);
+      console.log('New user initialized with 1 hour ad-free time');
     } else {
       const data = userDoc.data() as UserData;
       if (data.adFreeUntil) {
@@ -95,11 +97,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const adFreeTime = new Date(userData.adFreeUntil);
       const timeLeft = Math.max(0, adFreeTime.getTime() - now.getTime());
       
-      setIsAdFree(timeLeft > 0);
+      const hasAdFreeTime = timeLeft > 0;
+      setIsAdFree(hasAdFreeTime);
       setAdFreeTimeLeft(Math.floor(timeLeft / 1000)); // in seconds
+      
+      console.log('Ad-free status check:', { hasAdFreeTime, timeLeft: Math.floor(timeLeft / 1000) });
     } else {
       setIsAdFree(false);
       setAdFreeTimeLeft(0);
+      console.log('No ad-free time data available');
     }
   };
 
@@ -107,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUserData = async () => {
     if (!user) return;
     
+    console.log('Refreshing user data...');
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
     
@@ -116,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data.adFreeUntil = data.adFreeUntil instanceof Date ? data.adFreeUntil : new Date((data.adFreeUntil as any).seconds * 1000);
       }
       setUserData(data);
+      console.log('User data refreshed:', data);
     }
   };
 
@@ -123,6 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const addAdFreeTime = async () => {
     if (!user) throw new Error('User not logged in');
     
+    console.log('Adding 30 minutes of ad-free time...');
     const userDocRef = doc(db, 'users', user.uid);
     const now = new Date();
     const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -132,13 +141,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (userData?.adFreeUntil && new Date(userData.adFreeUntil) > now) {
       // Add 30 minutes to existing time
       newAdFreeUntil = new Date(new Date(userData.adFreeUntil).getTime() + thirtyMinutes);
+      console.log('Adding to existing time. New end time:', newAdFreeUntil);
     } else {
       // Set new 30 minutes from now
       newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
+      console.log('Setting new 30 minutes from now. End time:', newAdFreeUntil);
     }
     
-    await updateDoc(userDocRef, { adFreeUntil: newAdFreeUntil });
-    await refreshUserData();
+    try {
+      await updateDoc(userDocRef, { adFreeUntil: newAdFreeUntil });
+      console.log('Successfully updated adFreeUntil in Firestore');
+      await refreshUserData();
+    } catch (error) {
+      console.error('Error updating adFreeUntil:', error);
+      throw error;
+    }
   };
 
   // Logout function
@@ -170,6 +187,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user ? 'logged in' : 'logged out');
       setUser(user);
       if (user) {
         await initializeUserData(user);
@@ -195,6 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAdFreeTimeLeft((prev) => {
           if (prev <= 1) {
             setIsAdFree(false);
+            console.log('Ad-free time expired');
             return 0;
           }
           return prev - 1;
