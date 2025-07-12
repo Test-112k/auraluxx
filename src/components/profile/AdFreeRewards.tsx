@@ -115,12 +115,24 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   const handleAdWatched = async () => {
     try {
       console.log('Processing ad reward...');
-      await addAdFreeTime();
+      
+      // Call the function and wait for it to complete
+      const result = await addAdFreeTime();
+      console.log('Add ad-free time result:', result);
+      
+      // Show success message
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added to your account!',
       });
+      
       console.log('Ad reward processed successfully');
+      
+      // Force a re-render by closing and potentially reopening the dialog
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+      
     } catch (error: any) {
       console.error('Error adding ad-free time:', error);
       toast({

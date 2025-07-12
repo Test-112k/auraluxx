@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { X, Eye, EyeOff, Palette, User, Mail, Lock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { X, Eye, EyeOff, Palette, User, Mail, Lock, Globe } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,12 +22,15 @@ interface ProfileSettingsProps {
 const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
   const { user, updateUserEmail, updateUserPassword } = useAuth();
   const { theme } = useTheme();
+  const { currentLanguage, availableLanguages, changeLanguage, t } = useLanguage();
   const { toast } = useToast();
   
   const [isEmailMode, setIsEmailMode] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
+  const [isLanguageMode, setIsLanguageMode] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage.code);
   
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -107,13 +111,24 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
     }
   };
 
+  const handleLanguageUpdate = () => {
+    changeLanguage(selectedLanguage);
+    setIsLanguageMode(false);
+    toast({
+      title: t('Success'),
+      description: t('Language updated successfully'),
+    });
+  };
+
   const resetForm = () => {
     setIsEmailMode(false);
     setIsPasswordMode(false);
+    setIsLanguageMode(false);
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setNewEmail(user?.email || '');
+    setSelectedLanguage(currentLanguage.code);
   };
 
   return (
@@ -124,7 +139,7 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
         </DialogHeader>
         
         <div className="space-y-6">
-          {!isEmailMode && !isPasswordMode && (
+          {!isEmailMode && !isPasswordMode && !isLanguageMode && (
             <>
               {/* Account Information */}
               <div className="bg-white/5 rounded-lg p-4 space-y-4">
@@ -150,6 +165,27 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
                     <div className="text-white/60 text-sm">Choose your preferred theme</div>
                   </div>
                   <ThemeToggle />
+                </div>
+              </div>
+
+              {/* Language Settings */}
+              <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-aura-purple" />
+                  <h3 className="font-semibold text-white">{t('Language Settings')}</h3>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-white font-medium">{currentLanguage.name}</div>
+                    <div className="text-white/60 text-sm">{currentLanguage.nativeName}</div>
+                  </div>
+                  <Button
+                    onClick={() => setIsLanguageMode(true)}
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    {t('Change')}
+                  </Button>
                 </div>
               </div>
 
@@ -179,6 +215,57 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
                 </div>
               </div>
             </>
+          )}
+
+          {isLanguageMode && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/80">
+                  {t('Select Language')}
+                </Label>
+                <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                  {availableLanguages.map((language) => (
+                    <Button
+                      key={language.code}
+                      variant={selectedLanguage === language.code ? "default" : "outline"}
+                      className={`justify-start text-left h-auto p-3 ${
+                        selectedLanguage === language.code
+                          ? 'bg-aura-purple hover:bg-aura-purple/80'
+                          : 'border-white/20 text-white hover:bg-white/10'
+                      }`}
+                      onClick={() => setSelectedLanguage(language.code)}
+                    >
+                      <div>
+                        <div className="font-medium">{language.name}</div>
+                        <div className={`text-sm ${
+                          selectedLanguage === language.code ? 'text-white/80' : 'text-white/60'
+                        }`}>
+                          {language.nativeName}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsLanguageMode(false)}
+                  className="flex-1 border-white/20 text-white hover:bg-white/10"
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleLanguageUpdate}
+                  className="flex-1 bg-aura-purple hover:bg-aura-purple/80"
+                >
+                  {t('Apply')}
+                </Button>
+              </div>
+            </div>
           )}
 
           {isEmailMode && (

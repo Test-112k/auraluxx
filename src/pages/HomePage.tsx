@@ -3,8 +3,10 @@ import MainLayout from '@/components/layout/MainLayout';
 import HeroSlideshow from '@/components/common/HeroSlideshow';
 import MediaSlider from '@/components/common/MediaSlider';
 import CategoryButtons from '@/components/common/CategoryButtons';
+import ContinueWatching from '@/components/common/ContinueWatching';
 import { Button } from '@/components/ui/button';
 import { useAds } from '@/contexts/AdContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Ad from '@/components/ads/Ad';
 import { 
   getTrending, 
@@ -22,6 +24,7 @@ const HomePage = () => {
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [animeContent, setAnimeContent] = useState([]);
   const { isAdEnabled } = useAds();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState({
     trending: true,
     trendingShows: true,
@@ -137,12 +140,15 @@ const HomePage = () => {
         <CategoryButtons />
       </div>
       
+      {/* Continue Watching Section */}
+      <ContinueWatching />
+      
       <div className="auraluxx-container py-6">
         {/* Top banner ad */}
         <BannerAd size="728x90" />
         
         <MediaSlider
-          title="Trending Movies"
+          title={t("Trending Movies")}
           items={trendingMovies}
           loading={loading.trending}
           viewAllLink="/movies?filter=trending"
@@ -150,7 +156,7 @@ const HomePage = () => {
         />
         
         <MediaSlider
-          title="Trending TV Shows"
+          title={t("Trending TV Shows")}
           items={trendingShows}
           loading={loading.trendingShows}
           viewAllLink="/tv-series?filter=trending"
@@ -161,7 +167,7 @@ const HomePage = () => {
         <BannerAd size="300x250" />
         
         <MediaSlider
-          title="Now Playing"
+          title={t("Now Playing")}
           items={nowPlayingMovies}
           loading={loading.nowPlaying}
           viewAllLink="/movies?filter=now_playing"
@@ -169,7 +175,7 @@ const HomePage = () => {
         />
         
         <MediaSlider
-          title="Popular Movies"
+          title={t("Popular Movies")}
           items={popularMovies}
           loading={loading.popular}
           viewAllLink="/movies?filter=popular"
@@ -180,7 +186,7 @@ const HomePage = () => {
         <BannerAd size="728x90" />
         
         <MediaSlider
-          title="Top Rated Movies"
+          title={t("Top Rated Movies")}
           items={topRatedMovies}
           loading={loading.topRated}
           viewAllLink="/movies?filter=top_rated"
@@ -188,7 +194,7 @@ const HomePage = () => {
         />
         
         <MediaSlider
-          title="Popular Anime"
+          title={t("Popular Anime")}
           items={animeContent}
           loading={loading.anime}
           viewAllLink="/anime"
