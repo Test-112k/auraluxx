@@ -164,53 +164,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     let newAdFreeUntil: Date;
     
-    // Get current user data first
+    // Handle offline scenario - work with local data first
+    let currentData = userData;
+    
+    // Try to get fresh data from Firestore, but don't fail if offline
     try {
       const currentDoc = await getDoc(userDocRef);
-      const currentData = currentDoc.exists() ? currentDoc.data() as UserData : null;
-      
-      if (currentData?.adFreeUntil && new Date(currentData.adFreeUntil) > now) {
-        // Add 30 minutes to existing time, but cap at 3 hours from now
-        const currentEndTime = new Date(currentData.adFreeUntil);
-        const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
-        const maxAllowedTime = new Date(now.getTime() + maxTime);
-        
-        newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
-        console.log('AuthContext: Extending existing time from', currentEndTime, 'to', newAdFreeUntil);
-      } else {
-        // Set new 30 minutes from now
-        newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
-        console.log('AuthContext: Setting new 30 minutes from now:', newAdFreeUntil);
+      if (currentDoc.exists()) {
+        currentData = currentDoc.data() as UserData;
+        console.log('AuthContext: Got fresh data from Firestore');
       }
+    } catch (error: any) {
+      console.warn('AuthContext: Could not fetch fresh data, using local data:', error.message);
+      // Continue with local userData - don't throw error
+    }
       
-      // Update Firestore
+    if (currentData?.adFreeUntil && new Date(currentData.adFreeUntil) > now) {
+      // Add 30 minutes to existing time, but cap at 3 hours from now
+      const currentEndTime = new Date(currentData.adFreeUntil);
+      const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
+      const maxAllowedTime = new Date(now.getTime() + maxTime);
+      
+      newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
+      console.log('AuthContext: Extending existing time from', currentEndTime, 'to', newAdFreeUntil);
+    } else {
+      // Set new 30 minutes from now
+      newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
+      console.log('AuthContext: Setting new 30 minutes from now:', newAdFreeUntil);
+    }
+    
+    // Update local state immediately first
+    const updatedUserData = { 
+      ...userData, 
+      adFreeUntil: newAdFreeUntil 
+    };
+    setUserData(updatedUserData as UserData);
+    
+    // Force re-check of ad-free status immediately
+    const timeLeft = Math.max(0, Math.floor((newAdFreeUntil.getTime() - now.getTime()) / 1000));
+    setAdFreeTimeLeft(timeLeft);
+    setIsAdFree(timeLeft > 0);
+    setCanWatchAds(timeLeft < maxAdFreeTime);
+    
+    console.log('AuthContext: Local state updated immediately - timeLeft:', timeLeft, 'isAdFree:', timeLeft > 0);
+    
+    // Try to update Firestore, but don't fail if offline
+    try {
       await updateDoc(userDocRef, { 
         adFreeUntil: newAdFreeUntil,
         lastAdWatch: now 
       });
       console.log('AuthContext: Successfully updated Firestore with adFreeUntil:', newAdFreeUntil);
-      
-      // Update local state immediately
-      const updatedUserData = { 
-        ...userData, 
-        adFreeUntil: newAdFreeUntil 
-      };
-      setUserData(updatedUserData as UserData);
-      
-      // Force re-check of ad-free status
-      const timeLeft = Math.max(0, Math.floor((newAdFreeUntil.getTime() - now.getTime()) / 1000));
-      setAdFreeTimeLeft(timeLeft);
-      setIsAdFree(timeLeft > 0);
-      setCanWatchAds(timeLeft < maxAdFreeTime);
-      
-      console.log('AuthContext: Local state updated - timeLeft:', timeLeft, 'isAdFree:', timeLeft > 0);
-      
-      return { success: true, timeAdded: thirtyMinutes, newEndTime: newAdFreeUntil };
-      
-    } catch (error) {
-      console.error('AuthContext: Error in addAdFreeTime:', error);
-      throw new Error(`Failed to add ad-free time: ${error.message}`);
+    } catch (error: any) {
+      console.warn('AuthContext: Could not update Firestore (probably offline):', error.message);
+      // Still return success since local state is updated
     }
+    
+    return { success: true, timeAdded: thirtyMinutes, newEndTime: newAdFreeUntil };
   };
 
   // Logout function
