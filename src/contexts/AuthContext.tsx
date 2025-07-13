@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, User, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
@@ -36,7 +37,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUserEmail: (newEmail: string, currentPassword: string) => Promise<void>;
   updateUserPassword: (newPassword: string, currentPassword: string) => Promise<void>;
-  addAdFreeTime: () => Promise<void>;
+  addAdFreeTime: () => Promise<{ success: boolean; timeAdded: number; newEndTime: Date; }>;
   refreshUserData: () => Promise<void>;
 }
 
@@ -51,7 +52,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   updateUserEmail: async () => {},
   updateUserPassword: async () => {},
-  addAdFreeTime: async () => {},
+  addAdFreeTime: async () => ({ success: false, timeAdded: 0, newEndTime: new Date() }),
   refreshUserData: async () => {},
 });
 
