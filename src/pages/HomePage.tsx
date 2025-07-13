@@ -140,12 +140,12 @@ const HomePage = () => {
         <CategoryButtons />
       </div>
       
-      {/* Continue Watching Section */}
-      <ContinueWatching />
-      
       <div className="auraluxx-container py-6">
         {/* Top banner ad */}
         <BannerAd size="728x90" />
+        
+        {/* Continue Watching Section - Moved above trending movies */}
+        <ContinueWatching />
         
         <MediaSlider
           title={t("Trending Movies")}
@@ -163,7 +163,7 @@ const HomePage = () => {
           mediaType="tv"
         />
         
-        {/* Ad after trending sections - Fixed visibility */}
+        {/* Ad after trending sections */}
         <BannerAd size="300x250" />
         
         <MediaSlider
@@ -182,7 +182,7 @@ const HomePage = () => {
           mediaType="movie"
         />
         
-        {/* Ad after popular movies - Fixed visibility */}
+        {/* Ad after popular movies */}
         <BannerAd size="728x90" />
         
         <MediaSlider

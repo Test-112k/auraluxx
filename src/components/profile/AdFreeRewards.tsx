@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Gift, Timer, ExternalLink, Clock } from 'lucide-react';
+import { Gift, Timer, ExternalLink, Clock, CheckCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +19,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   const { toast } = useToast();
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [adWindow, setAdWindow] = useState<Window | null>(null);
+  const [processingReward, setProcessingReward] = useState(false);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -47,12 +47,12 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   };
 
   const handleWatchAd = () => {
-    if (isWatchingAd || !canWatchAds) return;
+    if (isWatchingAd || !canWatchAds || processingReward) return;
     
-    console.log('Starting ad watch process...');
+    console.log('AdFreeRewards: Starting ad watch process...');
     setIsWatchingAd(true);
     
-    // Open the new ad URL
+    // Open the ad URL
     const newWindow = window.open(
       'https://bluetackclasp.com/bqgss8fe?key=1bbd6028b3e0f20c631f53fe9c75cfc5',
       '_blank',
@@ -62,29 +62,31 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
     if (newWindow) {
       setAdWindow(newWindow);
       newWindow.focus();
-      console.log('Ad window opened successfully');
+      console.log('AdFreeRewards: Ad window opened successfully');
       
       let hasMinViewTime = false;
+      let rewardProcessed = false;
       
       // Minimum viewing time of 10 seconds
       const minTimeTimer = setTimeout(() => {
         hasMinViewTime = true;
-        console.log('Minimum view time reached (10 seconds)');
+        console.log('AdFreeRewards: Minimum view time reached (10 seconds)');
       }, 10000);
       
       // Check if window is closed every 500ms
       const checkClosed = setInterval(() => {
         try {
-          if (newWindow.closed) {
-            console.log('Ad window detected as closed');
+          if (newWindow.closed && !rewardProcessed) {
+            console.log('AdFreeRewards: Ad window detected as closed');
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
             
             if (hasMinViewTime) {
-              console.log('Ad window closed after minimum time, processing reward...');
+              console.log('AdFreeRewards: Processing reward - window closed after minimum time');
+              rewardProcessed = true;
               handleAdWatched();
             } else {
-              console.log('Ad window closed too early, no reward');
+              console.log('AdFreeRewards: Ad window closed too early, no reward');
               setIsWatchingAd(false);
               toast({
                 title: 'Ad Not Watched Long Enough',
@@ -95,52 +97,59 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
           }
         } catch (error) {
           // Cross-origin error means window is likely closed
-          console.log('Cross-origin error detected, assuming window closed');
-          clearInterval(checkClosed);
-          clearTimeout(minTimeTimer);
-          
-          if (hasMinViewTime) {
-            console.log('Processing reward due to cross-origin closure...');
-            handleAdWatched();
-          } else {
-            console.log('Too early for reward');
-            setIsWatchingAd(false);
-            toast({
-              title: 'Ad Not Watched Long Enough',
-              description: 'Please watch the ad for at least 10 seconds to earn rewards',
-              variant: 'destructive',
-            });
+          if (!rewardProcessed) {
+            console.log('AdFreeRewards: Cross-origin error detected, assuming window closed');
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            
+            if (hasMinViewTime) {
+              console.log('AdFreeRewards: Processing reward due to cross-origin closure');
+              rewardProcessed = true;
+              handleAdWatched();
+            } else {
+              console.log('AdFreeRewards: Too early for reward');
+              setIsWatchingAd(false);
+              toast({
+                title: 'Ad Not Watched Long Enough',
+                description: 'Please watch the ad for at least 10 seconds to earn rewards',
+                variant: 'destructive',
+              });
+            }
           }
         }
       }, 500);
       
       // Auto-close and reward after 60 seconds if still open
       setTimeout(() => {
-        try {
-          if (!newWindow.closed) {
-            console.log('Auto-closing ad window after 60 seconds');
-            newWindow.close();
+        if (!rewardProcessed) {
+          try {
+            if (!newWindow.closed) {
+              console.log('AdFreeRewards: Auto-closing ad window after 60 seconds');
+              newWindow.close();
+            }
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
             
             if (hasMinViewTime) {
-              console.log('Auto-closed after minimum time, processing reward...');
+              console.log('AdFreeRewards: Auto-reward after 60 seconds');
+              rewardProcessed = true;
               handleAdWatched();
             }
-          }
-        } catch (error) {
-          console.log('Error in auto-close, processing reward anyway');
-          clearInterval(checkClosed);
-          clearTimeout(minTimeTimer);
-          if (hasMinViewTime) {
-            handleAdWatched();
+          } catch (error) {
+            console.log('AdFreeRewards: Error in auto-close, processing reward anyway');
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime && !rewardProcessed) {
+              rewardProcessed = true;
+              handleAdWatched();
+            }
           }
         }
       }, 60000);
       
     } else {
       // Popup blocked
-      console.log('Popup was blocked');
+      console.log('AdFreeRewards: Popup was blocked');
       toast({
         title: 'Popup Blocked',
         description: 'Please allow popups for this site to earn ad-free time',
@@ -151,12 +160,18 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   };
 
   const handleAdWatched = async () => {
-    console.log('handleAdWatched called - processing reward...');
+    if (processingReward) {
+      console.log('AdFreeRewards: Reward already being processed, skipping...');
+      return;
+    }
+    
+    console.log('AdFreeRewards: Starting reward processing...');
+    setProcessingReward(true);
     
     try {
-      console.log('Calling addAdFreeTime...');
-      await addAdFreeTime();
-      console.log('addAdFreeTime completed successfully');
+      console.log('AdFreeRewards: Calling addAdFreeTime...');
+      const result = await addAdFreeTime();
+      console.log('AdFreeRewards: addAdFreeTime result:', result);
       
       toast({
         title: '🎉 Reward Earned!',
@@ -169,15 +184,16 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       }, 2000);
       
     } catch (error: any) {
-      console.error('Error in handleAdWatched:', error);
+      console.error('AdFreeRewards: Error processing reward:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to add ad-free time',
+        title: 'Error Processing Reward',
+        description: error.message || 'Failed to add ad-free time. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      console.log('Cleaning up ad watch state...');
+      console.log('AdFreeRewards: Cleaning up ad watch state...');
       setIsWatchingAd(false);
+      setProcessingReward(false);
       setAdWindow(null);
     }
   };
@@ -253,19 +269,37 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             </div>
           )}
 
+          {/* Processing Status */}
+          {processingReward && (
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2 text-blue-400">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <span className="font-semibold">Processing Reward...</span>
+              </div>
+              <p className="text-sm text-blue-300/80">
+                Please wait while we add your ad-free time.
+              </p>
+            </div>
+          )}
+
           {/* Reward Button */}
           <div className="space-y-4">
             <Button
               onClick={handleWatchAd}
-              disabled={isWatchingAd || !canWatchAds}
+              disabled={isWatchingAd || !canWatchAds || processingReward}
               className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg relative overflow-hidden group disabled:opacity-50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center justify-center gap-2">
-                {isWatchingAd ? (
+                {processingReward ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Processing Ad...</span>
+                    <span>Processing Reward...</span>
+                  </>
+                ) : isWatchingAd ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Watch Ad (Min 10s)...</span>
                   </>
                 ) : !canWatchAds ? (
                   <>

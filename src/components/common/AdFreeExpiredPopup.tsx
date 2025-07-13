@@ -20,14 +20,15 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
   const { addAdFreeTime } = useAuth();
   const { toast } = useToast();
   const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [processingReward, setProcessingReward] = useState(false);
 
   const handleWatchAd = () => {
-    if (isWatchingAd) return;
+    if (isWatchingAd || processingReward) return;
     
-    console.log('Expired popup: Starting ad watch process...');
+    console.log('AdFreeExpiredPopup: Starting ad watch process...');
     setIsWatchingAd(true);
     
-    // Open the new ad URL
+    // Open the ad URL
     const newWindow = window.open(
       'https://bluetackclasp.com/bqgss8fe?key=1bbd6028b3e0f20c631f53fe9c75cfc5',
       '_blank',
@@ -35,24 +36,26 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
     );
     
     if (newWindow) {
-      console.log('Expired popup: Ad window opened');
+      console.log('AdFreeExpiredPopup: Ad window opened');
       let hasMinViewTime = false;
+      let rewardProcessed = false;
       
       // Minimum viewing time of 10 seconds
       const minTimeTimer = setTimeout(() => {
         hasMinViewTime = true;
-        console.log('Expired popup: Minimum view time reached');
+        console.log('AdFreeExpiredPopup: Minimum view time reached');
       }, 10000);
       
       // Check if the window is closed
       const checkClosed = setInterval(() => {
         try {
-          if (newWindow.closed) {
-            console.log('Expired popup: Window closed detected');
+          if (newWindow.closed && !rewardProcessed) {
+            console.log('AdFreeExpiredPopup: Window closed detected');
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
             
             if (hasMinViewTime) {
+              rewardProcessed = true;
               handleAdWatched();
             } else {
               setIsWatchingAd(false);
@@ -65,32 +68,39 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
           }
         } catch (error) {
           // Cross-origin error, assume closed
-          clearInterval(checkClosed);
-          clearTimeout(minTimeTimer);
-          if (hasMinViewTime) {
-            handleAdWatched();
-          } else {
-            setIsWatchingAd(false);
+          if (!rewardProcessed) {
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime) {
+              rewardProcessed = true;
+              handleAdWatched();
+            } else {
+              setIsWatchingAd(false);
+            }
           }
         }
       }, 500);
       
       // Auto-close after 60 seconds if still open
       setTimeout(() => {
-        try {
-          if (!newWindow.closed) {
-            newWindow.close();
+        if (!rewardProcessed) {
+          try {
+            if (!newWindow.closed) {
+              newWindow.close();
+            }
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
             if (hasMinViewTime) {
+              rewardProcessed = true;
               handleAdWatched();
             }
-          }
-        } catch (error) {
-          clearInterval(checkClosed);
-          clearTimeout(minTimeTimer);
-          if (hasMinViewTime) {
-            handleAdWatched();
+          } catch (error) {
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime && !rewardProcessed) {
+              rewardProcessed = true;
+              handleAdWatched();
+            }
           }
         }
       }, 60000);
@@ -106,24 +116,32 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
   };
 
   const handleAdWatched = async () => {
-    console.log('Expired popup: Processing ad reward...');
+    if (processingReward) {
+      console.log('AdFreeExpiredPopup: Reward already being processed, skipping...');
+      return;
+    }
+    
+    console.log('AdFreeExpiredPopup: Processing ad reward...');
+    setProcessingReward(true);
+    
     try {
       await addAdFreeTime();
-      console.log('Expired popup: Reward processed successfully');
+      console.log('AdFreeExpiredPopup: Reward processed successfully');
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added!',
       });
       onClose();
     } catch (error: any) {
-      console.error('Expired popup: Error processing reward:', error);
+      console.error('AdFreeExpiredPopup: Error processing reward:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to add ad-free time',
+        title: 'Error Processing Reward',
+        description: error.message || 'Failed to add ad-free time. Please try again.',
         variant: 'destructive',
       });
     } finally {
       setIsWatchingAd(false);
+      setProcessingReward(false);
     }
   };
 
@@ -157,15 +175,32 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
             </div>
           </div>
 
+          {processingReward && (
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2 text-blue-400">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <span className="font-semibold">Processing Reward...</span>
+              </div>
+              <p className="text-sm text-blue-300/80">
+                Please wait while we add your ad-free time.
+              </p>
+            </div>
+          )}
+
           <Button
             onClick={handleWatchAd}
-            disabled={isWatchingAd}
+            disabled={isWatchingAd || processingReward}
             className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg"
           >
-            {isWatchingAd ? (
+            {processingReward ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Opening Ad...</span>
+                <span>Processing Reward...</span>
+              </div>
+            ) : isWatchingAd ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Watch Ad (Min 10s)...</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">

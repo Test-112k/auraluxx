@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('User not logged in');
     }
     
-    console.log('AuthContext: Adding 30 minutes of ad-free time...');
+    console.log('AuthContext: Starting addAdFreeTime process...');
     const userDocRef = doc(db, 'users', user.uid);
     const now = new Date();
     const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -163,39 +163,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     let newAdFreeUntil: Date;
     
-    if (userData?.adFreeUntil && new Date(userData.adFreeUntil) > now) {
-      // Add 30 minutes to existing time, but cap at 3 hours
-      const currentEndTime = new Date(userData.adFreeUntil);
-      const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
-      const maxAllowedTime = new Date(now.getTime() + maxTime);
-      
-      // Use the earlier of the two: potential new time or max allowed time
-      newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
-      
-      console.log('AuthContext: Adding to existing time. Current end:', currentEndTime, 'New end time:', newAdFreeUntil);
-    } else {
-      // Set new 30 minutes from now
-      newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
-      console.log('AuthContext: Setting new 30 minutes from now. End time:', newAdFreeUntil);
-    }
-    
+    // Get current user data first
     try {
-      console.log('AuthContext: Updating Firestore with new adFreeUntil:', newAdFreeUntil);
-      await updateDoc(userDocRef, { adFreeUntil: newAdFreeUntil });
-      console.log('AuthContext: Successfully updated adFreeUntil in Firestore');
+      const currentDoc = await getDoc(userDocRef);
+      const currentData = currentDoc.exists() ? currentDoc.data() as UserData : null;
       
-      // Immediately update local state
-      const updatedUserData = { ...userData, adFreeUntil: newAdFreeUntil };
+      if (currentData?.adFreeUntil && new Date(currentData.adFreeUntil) > now) {
+        // Add 30 minutes to existing time, but cap at 3 hours from now
+        const currentEndTime = new Date(currentData.adFreeUntil);
+        const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
+        const maxAllowedTime = new Date(now.getTime() + maxTime);
+        
+        newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
+        console.log('AuthContext: Extending existing time from', currentEndTime, 'to', newAdFreeUntil);
+      } else {
+        // Set new 30 minutes from now
+        newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
+        console.log('AuthContext: Setting new 30 minutes from now:', newAdFreeUntil);
+      }
+      
+      // Update Firestore
+      await updateDoc(userDocRef, { 
+        adFreeUntil: newAdFreeUntil,
+        lastAdWatch: now 
+      });
+      console.log('AuthContext: Successfully updated Firestore with adFreeUntil:', newAdFreeUntil);
+      
+      // Update local state immediately
+      const updatedUserData = { 
+        ...userData, 
+        adFreeUntil: newAdFreeUntil 
+      };
       setUserData(updatedUserData as UserData);
-      console.log('AuthContext: Local state updated');
       
-      // Refresh to ensure consistency
-      await refreshUserData();
-      console.log('AuthContext: Data refresh completed');
+      // Force re-check of ad-free status
+      const timeLeft = Math.max(0, Math.floor((newAdFreeUntil.getTime() - now.getTime()) / 1000));
+      setAdFreeTimeLeft(timeLeft);
+      setIsAdFree(timeLeft > 0);
+      setCanWatchAds(timeLeft < maxAdFreeTime);
+      
+      console.log('AuthContext: Local state updated - timeLeft:', timeLeft, 'isAdFree:', timeLeft > 0);
+      
+      return { success: true, timeAdded: thirtyMinutes, newEndTime: newAdFreeUntil };
       
     } catch (error) {
-      console.error('AuthContext: Error updating adFreeUntil:', error);
-      throw error;
+      console.error('AuthContext: Error in addAdFreeTime:', error);
+      throw new Error(`Failed to add ad-free time: ${error.message}`);
     }
   };
 
