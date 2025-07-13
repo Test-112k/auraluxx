@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, User, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
@@ -32,6 +31,8 @@ interface AuthContextType {
   loading: boolean;
   isAdFree: boolean;
   adFreeTimeLeft: number;
+  canWatchAds: boolean;
+  maxAdFreeTime: number;
   logout: () => Promise<void>;
   updateUserEmail: (newEmail: string, currentPassword: string) => Promise<void>;
   updateUserPassword: (newPassword: string, currentPassword: string) => Promise<void>;
@@ -45,6 +46,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAdFree: false,
   adFreeTimeLeft: 0,
+  canWatchAds: true,
+  maxAdFreeTime: 0,
   logout: async () => {},
   updateUserEmail: async () => {},
   updateUserPassword: async () => {},
@@ -60,6 +63,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isAdFree, setIsAdFree] = useState(false);
   const [adFreeTimeLeft, setAdFreeTimeLeft] = useState(0);
+  const [canWatchAds, setCanWatchAds] = useState(true);
+  
+  const maxAdFreeTime = 3 * 60 * 60; // 3 hours in seconds
 
   // Initialize user data in Firestore
   const initializeUserData = async (user: User) => {
@@ -96,15 +102,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const now = new Date();
       const adFreeTime = new Date(userData.adFreeUntil);
       const timeLeft = Math.max(0, adFreeTime.getTime() - now.getTime());
+      const timeLeftSeconds = Math.floor(timeLeft / 1000);
       
-      const hasAdFreeTime = timeLeft > 0;
+      const hasAdFreeTime = timeLeftSeconds > 0;
       setIsAdFree(hasAdFreeTime);
-      setAdFreeTimeLeft(Math.floor(timeLeft / 1000)); // in seconds
+      setAdFreeTimeLeft(timeLeftSeconds);
       
-      console.log('Ad-free status check:', { hasAdFreeTime, timeLeft: Math.floor(timeLeft / 1000) });
+      // Check if user can watch more ads (under 3 hour limit)
+      setCanWatchAds(timeLeftSeconds < maxAdFreeTime);
+      
+      console.log('Ad-free status check:', { 
+        hasAdFreeTime, 
+        timeLeftSeconds,
+        canWatchAds: timeLeftSeconds < maxAdFreeTime,
+        maxTimeReached: timeLeftSeconds >= maxAdFreeTime
+      });
     } else {
       setIsAdFree(false);
       setAdFreeTimeLeft(0);
+      setCanWatchAds(true);
       console.log('No ad-free time data available');
     }
   };
@@ -127,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Add 30 minutes of ad-free time
+  // Add 30 minutes of ad-free time with maximum 3 hour limit
   const addAdFreeTime = async () => {
     if (!user) throw new Error('User not logged in');
     
@@ -135,13 +151,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = doc(db, 'users', user.uid);
     const now = new Date();
     const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const maxTime = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
     
     let newAdFreeUntil: Date;
     
     if (userData?.adFreeUntil && new Date(userData.adFreeUntil) > now) {
-      // Add 30 minutes to existing time
-      newAdFreeUntil = new Date(new Date(userData.adFreeUntil).getTime() + thirtyMinutes);
-      console.log('Adding to existing time. New end time:', newAdFreeUntil);
+      // Add 30 minutes to existing time, but cap at 3 hours
+      const currentEndTime = new Date(userData.adFreeUntil);
+      const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
+      const maxAllowedTime = new Date(now.getTime() + maxTime);
+      
+      // Use the earlier of the two: potential new time or max allowed time
+      newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
+      
+      console.log('Adding to existing time. Current end:', currentEndTime, 'New end time:', newAdFreeUntil);
     } else {
       // Set new 30 minutes from now
       newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
@@ -150,8 +173,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       await updateDoc(userDocRef, { adFreeUntil: newAdFreeUntil });
-      console.log('Successfully updated adFreeUntil in Firestore');
+      console.log('Successfully updated adFreeUntil in Firestore to:', newAdFreeUntil);
       await refreshUserData();
+      console.log('User data refreshed after ad reward');
     } catch (error) {
       console.error('Error updating adFreeUntil:', error);
       throw error;
@@ -195,6 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(null);
         setIsAdFree(false);
         setAdFreeTimeLeft(0);
+        setCanWatchAds(true);
       }
       setLoading(false);
     });
@@ -213,6 +238,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAdFreeTimeLeft((prev) => {
           if (prev <= 1) {
             setIsAdFree(false);
+            setCanWatchAds(true);
             console.log('Ad-free time expired');
             return 0;
           }
@@ -230,6 +256,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     isAdFree,
     adFreeTimeLeft,
+    canWatchAds,
+    maxAdFreeTime,
     logout,
     updateUserEmail,
     updateUserPassword,

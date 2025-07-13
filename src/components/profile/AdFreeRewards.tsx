@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Gift, Timer, ExternalLink } from 'lucide-react';
+import { Gift, Timer, ExternalLink, Clock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,14 +16,19 @@ interface AdFreeRewardsProps {
 }
 
 const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
-  const { isAdFree, adFreeTimeLeft, addAdFreeTime } = useAuth();
+  const { isAdFree, adFreeTimeLeft, addAdFreeTime, canWatchAds, maxAdFreeTime } = useAuth();
   const { toast } = useToast();
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [adWindow, setAdWindow] = useState<Window | null>(null);
 
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -42,7 +47,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   };
 
   const handleWatchAd = () => {
-    if (isWatchingAd) return;
+    if (isWatchingAd || !canWatchAds) return;
     
     setIsWatchingAd(true);
     
@@ -55,49 +60,74 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
     
     if (newWindow) {
       setAdWindow(newWindow);
-      
-      // Add focus to the new window
       newWindow.focus();
       
-      // Enhanced tracking with better intervals and cross-origin handling
+      let hasMinViewTime = false;
+      
+      // Minimum viewing time of 10 seconds
+      const minTimeTimer = setTimeout(() => {
+        hasMinViewTime = true;
+        console.log('Minimum view time reached (10 seconds)');
+      }, 10000);
+      
+      // Check if window is closed
       const checkClosed = setInterval(() => {
         try {
           if (newWindow.closed) {
             clearInterval(checkClosed);
-            handleAdWatched();
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime) {
+              console.log('Ad window closed after minimum time, processing reward...');
+              handleAdWatched();
+            } else {
+              console.log('Ad window closed too early, no reward');
+              setIsWatchingAd(false);
+              toast({
+                title: 'Ad Not Watched Long Enough',
+                description: 'Please watch the ad for at least 10 seconds to earn rewards',
+                variant: 'destructive',
+              });
+            }
           }
         } catch (error) {
           // Cross-origin error, assume window is closed
           clearInterval(checkClosed);
-          handleAdWatched();
+          clearTimeout(minTimeTimer);
+          if (hasMinViewTime) {
+            console.log('Ad assumed closed (cross-origin), processing reward...');
+            handleAdWatched();
+          } else {
+            setIsWatchingAd(false);
+          }
         }
-      }, 500); // Check more frequently
+      }, 500);
       
-      // Minimum viewing time of 10 seconds before allowing reward
-      let hasMinViewTime = false;
-      setTimeout(() => {
-        hasMinViewTime = true;
-      }, 10000);
-      
-      // Auto-close after 60 seconds if still open (increased time for better ad viewing)
+      // Auto-close after 60 seconds if still open
       setTimeout(() => {
         try {
-          if (!newWindow.closed && hasMinViewTime) {
+          if (!newWindow.closed) {
             newWindow.close();
             clearInterval(checkClosed);
-            handleAdWatched();
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime) {
+              console.log('Ad auto-closed after 60 seconds, processing reward...');
+              handleAdWatched();
+            } else {
+              setIsWatchingAd(false);
+              toast({
+                title: 'Ad Not Watched Long Enough',
+                description: 'Please watch the ad for at least 10 seconds to earn rewards',
+                variant: 'destructive',
+              });
+            }
           }
         } catch (error) {
           clearInterval(checkClosed);
+          clearTimeout(minTimeTimer);
           if (hasMinViewTime) {
             handleAdWatched();
           } else {
             setIsWatchingAd(false);
-            toast({
-              title: 'Ad Not Watched Long Enough',
-              description: 'Please watch the ad for at least 10 seconds to earn rewards',
-              variant: 'destructive',
-            });
           }
         }
       }, 60000);
@@ -114,21 +144,16 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
 
   const handleAdWatched = async () => {
     try {
-      console.log('Processing ad reward...');
+      console.log('Processing ad reward - calling addAdFreeTime...');
+      await addAdFreeTime();
+      console.log('Ad reward processed successfully');
       
-      // Call the function and wait for it to complete
-      const result = await addAdFreeTime();
-      console.log('Add ad-free time result:', result);
-      
-      // Show success message
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added to your account!',
       });
       
-      console.log('Ad reward processed successfully');
-      
-      // Close the dialog after a short delay
+      // Close the dialog after showing success
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -154,6 +179,9 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       }
     };
   }, [adWindow]);
+
+  const timeUntilCanWatch = maxAdFreeTime - adFreeTimeLeft;
+  const progressPercentage = isAdFree ? (adFreeTimeLeft / maxAdFreeTime) * 100 : 0;
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -193,20 +221,31 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-1000"
-                    style={{ 
-                      width: `${Math.min(100, (adFreeTimeLeft / (30 * 60)) * 100)}%` 
-                    }}
+                    style={{ width: `${Math.min(100, progressPercentage)}%` }}
                   />
                 </div>
               </div>
             )}
           </div>
 
+          {/* Maximum Limit Warning */}
+          {!canWatchAds && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Clock className="h-4 w-4" />
+                <span className="font-semibold">Maximum Limit Reached</span>
+              </div>
+              <p className="text-sm text-yellow-300/80">
+                You've reached the 3-hour maximum ad-free time. You can watch more ads after your current time expires.
+              </p>
+            </div>
+          )}
+
           {/* Reward Button */}
           <div className="space-y-4">
             <Button
               onClick={handleWatchAd}
-              disabled={isWatchingAd}
+              disabled={isWatchingAd || !canWatchAds}
               className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg relative overflow-hidden group disabled:opacity-50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -215,6 +254,11 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Processing Ad...</span>
+                  </>
+                ) : !canWatchAds ? (
+                  <>
+                    <Clock className="h-4 w-4" />
+                    <span>Maximum Time Reached</span>
                   </>
                 ) : (
                   <>
@@ -226,26 +270,27 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
               </div>
             </Button>
 
-            <div className="text-center space-y-2">
-              <p className="text-sm text-white/70">
-                Click the button above to open an ad in a new tab.
-              </p>
-              <p className="text-xs text-white/50">
-                Watch for at least 10 seconds, then close the tab to receive your reward.
-              </p>
-            </div>
+            {canWatchAds && (
+              <div className="text-center space-y-2">
+                <p className="text-sm text-white/70">
+                  Click the button above to open an ad in a new tab.
+                </p>
+                <p className="text-xs text-white/50">
+                  Watch for at least 10 seconds, then close the tab to receive your reward.
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* How it works */}
+          {/* Limits Information */}
           <div className="bg-white/5 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold text-white">How it works:</h3>
+            <h3 className="font-semibold text-white">Limits & Rules:</h3>
             <ul className="text-sm text-white/70 space-y-1">
-              <li>• Click the reward button to open an ad</li>
-              <li>• The ad will open in a new tab</li>
-              <li>• Watch for at least 10 seconds</li>
-              <li>• Close the tab when you're done viewing</li>
-              <li>• Receive 30 minutes of ad-free browsing</li>
+              <li>• Each ad watched gives 30 minutes of ad-free time</li>
+              <li>• Maximum ad-free time limit: 3 hours</li>
+              <li>• Watch ads for at least 10 seconds to earn rewards</li>
               <li>• Time stacks if you already have ad-free time remaining</li>
+              <li>• Once 3-hour limit is reached, wait for current time to expire</li>
             </ul>
           </div>
         </div>

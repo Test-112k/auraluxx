@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { User as UserIcon, LogOut as LogoutIcon, Timer } from 'lucide-react';
+import { User as UserIcon, LogOut as LogoutIcon, Timer, Clock } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +15,20 @@ import ProfileSettings from './ProfileSettings';
 import AdFreeRewards from './AdFreeRewards';
 
 const ProfileDropdown = () => {
-  const { user, logout, userData, isAdFree, adFreeTimeLeft } = useAuth();
+  const { user, logout, isAdFree, adFreeTimeLeft, canWatchAds } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showAdFree, setShowAdFree] = useState(false);
 
   if (!user) return null;
 
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -70,6 +76,12 @@ const ProfileDropdown = () => {
                   </span>
                 </div>
               )}
+              {!canWatchAds && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-yellow-400" />
+                  <span className="text-xs text-yellow-400">Max Time Reached</span>
+                </div>
+              )}
             </div>
           </div>
           <DropdownMenuSeparator className="bg-white/10" />
@@ -87,12 +99,19 @@ const ProfileDropdown = () => {
             className="text-white hover:bg-white/10 focus:bg-white/10"
           >
             <div className="mr-2 text-lg">🎁</div>
-            <span>Ad-Free Time</span>
-            {isAdFree && (
-              <span className="ml-auto text-xs text-green-400 font-mono">
-                {formatTime(adFreeTimeLeft)}
-              </span>
-            )}
+            <div className="flex flex-col flex-1">
+              <span>Ad-Free Time</span>
+              {isAdFree && (
+                <span className="text-xs text-green-400 font-mono">
+                  {formatTime(adFreeTimeLeft)} remaining
+                </span>
+              )}
+              {!canWatchAds && (
+                <span className="text-xs text-yellow-400">
+                  Max limit reached
+                </span>
+              )}
+            </div>
           </DropdownMenuItem>
           
           <DropdownMenuSeparator className="bg-white/10" />
