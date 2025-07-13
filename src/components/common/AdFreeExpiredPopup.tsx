@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Gift, X, Timer } from 'lucide-react';
@@ -23,32 +24,76 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
   const handleWatchAd = () => {
     if (isWatchingAd) return;
     
+    console.log('Expired popup: Starting ad watch process...');
     setIsWatchingAd(true);
     
-    // Open the ad in a new tab
+    // Open the new ad URL
     const newWindow = window.open(
-      'https://bluetackclasp.com/x5972whr?key=9af361aa4bfff9436548dc8117c52c2a',
+      'https://bluetackclasp.com/bqgss8fe?key=1bbd6028b3e0f20c631f53fe9c75cfc5',
       '_blank',
       'width=800,height=600,scrollbars=yes,resizable=yes'
     );
     
     if (newWindow) {
+      console.log('Expired popup: Ad window opened');
+      let hasMinViewTime = false;
+      
+      // Minimum viewing time of 10 seconds
+      const minTimeTimer = setTimeout(() => {
+        hasMinViewTime = true;
+        console.log('Expired popup: Minimum view time reached');
+      }, 10000);
+      
       // Check if the window is closed
       const checkClosed = setInterval(() => {
-        if (newWindow.closed) {
+        try {
+          if (newWindow.closed) {
+            console.log('Expired popup: Window closed detected');
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            
+            if (hasMinViewTime) {
+              handleAdWatched();
+            } else {
+              setIsWatchingAd(false);
+              toast({
+                title: 'Ad Not Watched Long Enough',
+                description: 'Please watch the ad for at least 10 seconds to earn rewards',
+                variant: 'destructive',
+              });
+            }
+          }
+        } catch (error) {
+          // Cross-origin error, assume closed
           clearInterval(checkClosed);
-          handleAdWatched();
+          clearTimeout(minTimeTimer);
+          if (hasMinViewTime) {
+            handleAdWatched();
+          } else {
+            setIsWatchingAd(false);
+          }
         }
-      }, 1000);
+      }, 500);
       
-      // Auto-close after 30 seconds if still open
+      // Auto-close after 60 seconds if still open
       setTimeout(() => {
-        if (!newWindow.closed) {
-          newWindow.close();
+        try {
+          if (!newWindow.closed) {
+            newWindow.close();
+            clearInterval(checkClosed);
+            clearTimeout(minTimeTimer);
+            if (hasMinViewTime) {
+              handleAdWatched();
+            }
+          }
+        } catch (error) {
           clearInterval(checkClosed);
-          handleAdWatched();
+          clearTimeout(minTimeTimer);
+          if (hasMinViewTime) {
+            handleAdWatched();
+          }
         }
-      }, 30000);
+      }, 60000);
     } else {
       // Popup blocked
       toast({
@@ -61,14 +106,17 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
   };
 
   const handleAdWatched = async () => {
+    console.log('Expired popup: Processing ad reward...');
     try {
       await addAdFreeTime();
+      console.log('Expired popup: Reward processed successfully');
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added!',
       });
       onClose();
     } catch (error: any) {
+      console.error('Expired popup: Error processing reward:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to add ad-free time',

@@ -49,11 +49,12 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   const handleWatchAd = () => {
     if (isWatchingAd || !canWatchAds) return;
     
+    console.log('Starting ad watch process...');
     setIsWatchingAd(true);
     
-    // Open the ad in a new tab with proper focus
+    // Open the new ad URL
     const newWindow = window.open(
-      'https://bluetackclasp.com/x5972whr?key=9af361aa4bfff9436548dc8117c52c2a',
+      'https://bluetackclasp.com/bqgss8fe?key=1bbd6028b3e0f20c631f53fe9c75cfc5',
       '_blank',
       'width=800,height=600,scrollbars=yes,resizable=yes,location=yes,menubar=no,toolbar=no'
     );
@@ -61,6 +62,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
     if (newWindow) {
       setAdWindow(newWindow);
       newWindow.focus();
+      console.log('Ad window opened successfully');
       
       let hasMinViewTime = false;
       
@@ -70,12 +72,14 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
         console.log('Minimum view time reached (10 seconds)');
       }, 10000);
       
-      // Check if window is closed
+      // Check if window is closed every 500ms
       const checkClosed = setInterval(() => {
         try {
           if (newWindow.closed) {
+            console.log('Ad window detected as closed');
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
+            
             if (hasMinViewTime) {
               console.log('Ad window closed after minimum time, processing reward...');
               handleAdWatched();
@@ -90,49 +94,53 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             }
           }
         } catch (error) {
-          // Cross-origin error, assume window is closed
+          // Cross-origin error means window is likely closed
+          console.log('Cross-origin error detected, assuming window closed');
           clearInterval(checkClosed);
           clearTimeout(minTimeTimer);
+          
           if (hasMinViewTime) {
-            console.log('Ad assumed closed (cross-origin), processing reward...');
+            console.log('Processing reward due to cross-origin closure...');
             handleAdWatched();
           } else {
+            console.log('Too early for reward');
             setIsWatchingAd(false);
+            toast({
+              title: 'Ad Not Watched Long Enough',
+              description: 'Please watch the ad for at least 10 seconds to earn rewards',
+              variant: 'destructive',
+            });
           }
         }
       }, 500);
       
-      // Auto-close after 60 seconds if still open
+      // Auto-close and reward after 60 seconds if still open
       setTimeout(() => {
         try {
           if (!newWindow.closed) {
+            console.log('Auto-closing ad window after 60 seconds');
             newWindow.close();
             clearInterval(checkClosed);
             clearTimeout(minTimeTimer);
+            
             if (hasMinViewTime) {
-              console.log('Ad auto-closed after 60 seconds, processing reward...');
+              console.log('Auto-closed after minimum time, processing reward...');
               handleAdWatched();
-            } else {
-              setIsWatchingAd(false);
-              toast({
-                title: 'Ad Not Watched Long Enough',
-                description: 'Please watch the ad for at least 10 seconds to earn rewards',
-                variant: 'destructive',
-              });
             }
           }
         } catch (error) {
+          console.log('Error in auto-close, processing reward anyway');
           clearInterval(checkClosed);
           clearTimeout(minTimeTimer);
           if (hasMinViewTime) {
             handleAdWatched();
-          } else {
-            setIsWatchingAd(false);
           }
         }
       }, 60000);
+      
     } else {
       // Popup blocked
+      console.log('Popup was blocked');
       toast({
         title: 'Popup Blocked',
         description: 'Please allow popups for this site to earn ad-free time',
@@ -143,10 +151,12 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   };
 
   const handleAdWatched = async () => {
+    console.log('handleAdWatched called - processing reward...');
+    
     try {
-      console.log('Processing ad reward - calling addAdFreeTime...');
+      console.log('Calling addAdFreeTime...');
       await addAdFreeTime();
-      console.log('Ad reward processed successfully');
+      console.log('addAdFreeTime completed successfully');
       
       toast({
         title: '🎉 Reward Earned!',
@@ -159,13 +169,14 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       }, 2000);
       
     } catch (error: any) {
-      console.error('Error adding ad-free time:', error);
+      console.error('Error in handleAdWatched:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to add ad-free time',
         variant: 'destructive',
       });
     } finally {
+      console.log('Cleaning up ad watch state...');
       setIsWatchingAd(false);
       setAdWindow(null);
     }
@@ -175,6 +186,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
   useEffect(() => {
     return () => {
       if (adWindow && !adWindow.closed) {
+        console.log('Cleaning up ad window on unmount');
         adWindow.close();
       }
     };

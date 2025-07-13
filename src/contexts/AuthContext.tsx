@@ -129,25 +129,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUserData = async () => {
     if (!user) return;
     
-    console.log('Refreshing user data...');
+    console.log('AuthContext: Refreshing user data...');
     const userDocRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
     
-    if (userDoc.exists()) {
-      const data = userDoc.data() as UserData;
-      if (data.adFreeUntil) {
-        data.adFreeUntil = data.adFreeUntil instanceof Date ? data.adFreeUntil : new Date((data.adFreeUntil as any).seconds * 1000);
+    try {
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const data = userDoc.data() as UserData;
+        if (data.adFreeUntil) {
+          data.adFreeUntil = data.adFreeUntil instanceof Date ? data.adFreeUntil : new Date((data.adFreeUntil as any).seconds * 1000);
+        }
+        setUserData(data);
+        console.log('AuthContext: User data refreshed:', data);
       }
-      setUserData(data);
-      console.log('User data refreshed:', data);
+    } catch (error) {
+      console.error('AuthContext: Error refreshing user data:', error);
     }
   };
 
   // Add 30 minutes of ad-free time with maximum 3 hour limit
   const addAdFreeTime = async () => {
-    if (!user) throw new Error('User not logged in');
+    if (!user) {
+      console.error('AuthContext: No user logged in');
+      throw new Error('User not logged in');
+    }
     
-    console.log('Adding 30 minutes of ad-free time...');
+    console.log('AuthContext: Adding 30 minutes of ad-free time...');
     const userDocRef = doc(db, 'users', user.uid);
     const now = new Date();
     const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -164,20 +172,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Use the earlier of the two: potential new time or max allowed time
       newAdFreeUntil = potentialNewTime < maxAllowedTime ? potentialNewTime : maxAllowedTime;
       
-      console.log('Adding to existing time. Current end:', currentEndTime, 'New end time:', newAdFreeUntil);
+      console.log('AuthContext: Adding to existing time. Current end:', currentEndTime, 'New end time:', newAdFreeUntil);
     } else {
       // Set new 30 minutes from now
       newAdFreeUntil = new Date(now.getTime() + thirtyMinutes);
-      console.log('Setting new 30 minutes from now. End time:', newAdFreeUntil);
+      console.log('AuthContext: Setting new 30 minutes from now. End time:', newAdFreeUntil);
     }
     
     try {
+      console.log('AuthContext: Updating Firestore with new adFreeUntil:', newAdFreeUntil);
       await updateDoc(userDocRef, { adFreeUntil: newAdFreeUntil });
-      console.log('Successfully updated adFreeUntil in Firestore to:', newAdFreeUntil);
+      console.log('AuthContext: Successfully updated adFreeUntil in Firestore');
+      
+      // Immediately update local state
+      const updatedUserData = { ...userData, adFreeUntil: newAdFreeUntil };
+      setUserData(updatedUserData as UserData);
+      console.log('AuthContext: Local state updated');
+      
+      // Refresh to ensure consistency
       await refreshUserData();
-      console.log('User data refreshed after ad reward');
+      console.log('AuthContext: Data refresh completed');
+      
     } catch (error) {
-      console.error('Error updating adFreeUntil:', error);
+      console.error('AuthContext: Error updating adFreeUntil:', error);
       throw error;
     }
   };
