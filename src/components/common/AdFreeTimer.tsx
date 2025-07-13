@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Timer } from 'lucide-react';
+import { Timer, X } from 'lucide-react';
 
 const AdFreeTimer = () => {
   const { isAdFree, adFreeTimeLeft } = useAuth();
+  const [isHidden, setIsHidden] = useState(false);
 
-  if (!isAdFree || adFreeTimeLeft <= 0) return null;
+  if (!isAdFree || adFreeTimeLeft <= 0 || isHidden) return null;
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -28,7 +29,14 @@ const AdFreeTimer = () => {
 
   return (
     <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-30 animate-fade-in">
-      <div className={`bg-gradient-to-r ${getTimeColor()}/90 backdrop-blur-md border border-white/30 rounded-full px-6 py-3 shadow-xl ${getPulseIntensity()}`}>
+      <div className={`bg-gradient-to-r ${getTimeColor()}/90 backdrop-blur-md border border-white/30 rounded-full px-6 py-3 shadow-xl ${getPulseIntensity()} relative`}>
+        <button
+          onClick={() => setIsHidden(true)}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+          title="Hide timer"
+        >
+          <X className="h-3 w-3 text-white" />
+        </button>
         <div className="flex items-center gap-3 text-white text-sm font-medium">
           <div className="relative">
             <Timer className="h-5 w-5 animate-spin" style={{ animationDuration: '3s' }} />

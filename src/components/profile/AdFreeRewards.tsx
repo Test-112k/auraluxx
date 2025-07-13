@@ -178,10 +178,8 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
         description: '30 minutes of ad-free time has been added to your account!',
       });
       
-      // Close the dialog after showing success
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      // Don't close dialog automatically - let user watch more ads
+      console.log('AdFreeRewards: Reward processed successfully');
       
     } catch (error: any) {
       console.error('AdFreeRewards: Error processing reward:', error);

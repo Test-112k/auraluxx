@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Refresh user data from Firestore
+  // Refresh user data from Firestore with real-time listener
   const refreshUserData = async () => {
     if (!user) return;
     
