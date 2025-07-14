@@ -32,10 +32,10 @@ const AdFreeTimer = () => {
       <div className={`bg-gradient-to-r ${getTimeColor()}/90 backdrop-blur-md border border-white/30 rounded-full px-6 py-3 shadow-xl ${getPulseIntensity()} relative`}>
         <button
           onClick={() => setIsHidden(true)}
-          className="absolute -top-2 -right-2 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+          className="absolute -top-3 -right-3 w-8 h-8 bg-white/90 hover:bg-white text-gray-800 hover:text-gray-900 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg border-2 border-white z-10"
           title="Hide timer"
         >
-          <X className="h-3 w-3 text-white" />
+          <X className="h-4 w-4 font-bold" />
         </button>
         <div className="flex items-center gap-3 text-white text-sm font-medium">
           <div className="relative">

@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, User, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXAljTKnDI7MfiuV7oCQx7UZ86GxeQAyc",
@@ -95,6 +94,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Update last login
       await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
     }
+    
+    // Set up real-time listener for user data
+    const unsubscribe = onSnapshot(userDocRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data() as UserData;
+        if (data.adFreeUntil) {
+          data.adFreeUntil = data.adFreeUntil instanceof Date ? data.adFreeUntil : new Date((data.adFreeUntil as any).seconds * 1000);
+        }
+        setUserData(data);
+        console.log('Real-time user data update:', data);
+      }
+    });
+    
+    return unsubscribe;
   };
 
   // Check ad-free status
@@ -149,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Add 30 minutes of ad-free time with maximum 3 hour limit
+  // Add 30 minutes of ad-free time with maximum 3 hour limit and immediate local update
   const addAdFreeTime = async () => {
     if (!user) {
       console.error('AuthContext: No user logged in');
@@ -164,24 +177,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     let newAdFreeUntil: Date;
     
-    // Handle offline scenario - work with local data first
-    let currentData = userData;
-    
-    // Try to get fresh data from Firestore, but don't fail if offline
-    try {
-      const currentDoc = await getDoc(userDocRef);
-      if (currentDoc.exists()) {
-        currentData = currentDoc.data() as UserData;
-        console.log('AuthContext: Got fresh data from Firestore');
-      }
-    } catch (error: any) {
-      console.warn('AuthContext: Could not fetch fresh data, using local data:', error.message);
-      // Continue with local userData - don't throw error
-    }
-      
-    if (currentData?.adFreeUntil && new Date(currentData.adFreeUntil) > now) {
+    // Work with current local data for immediate response
+    if (userData?.adFreeUntil && new Date(userData.adFreeUntil) > now) {
       // Add 30 minutes to existing time, but cap at 3 hours from now
-      const currentEndTime = new Date(currentData.adFreeUntil);
+      const currentEndTime = new Date(userData.adFreeUntil);
       const potentialNewTime = new Date(currentEndTime.getTime() + thirtyMinutes);
       const maxAllowedTime = new Date(now.getTime() + maxTime);
       
@@ -193,14 +192,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('AuthContext: Setting new 30 minutes from now:', newAdFreeUntil);
     }
     
-    // Update local state immediately first
+    // Update local state IMMEDIATELY for instant UI response
     const updatedUserData = { 
       ...userData, 
       adFreeUntil: newAdFreeUntil 
     };
     setUserData(updatedUserData as UserData);
     
-    // Force re-check of ad-free status immediately
+    // Calculate and set new values immediately
     const timeLeft = Math.max(0, Math.floor((newAdFreeUntil.getTime() - now.getTime()) / 1000));
     setAdFreeTimeLeft(timeLeft);
     setIsAdFree(timeLeft > 0);
@@ -208,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     console.log('AuthContext: Local state updated immediately - timeLeft:', timeLeft, 'isAdFree:', timeLeft > 0);
     
-    // Try to update Firestore, but don't fail if offline
+    // Update Firestore in the background (for multi-device sync)
     try {
       await updateDoc(userDocRef, { 
         adFreeUntil: newAdFreeUntil,
@@ -216,8 +215,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       console.log('AuthContext: Successfully updated Firestore with adFreeUntil:', newAdFreeUntil);
     } catch (error: any) {
-      console.warn('AuthContext: Could not update Firestore (probably offline):', error.message);
-      // Still return success since local state is updated
+      console.warn('AuthContext: Could not update Firestore:', error.message);
+      // Don't throw error since local state is updated - this ensures offline functionality
     }
     
     return { success: true, timeAdded: thirtyMinutes, newEndTime: newAdFreeUntil };
@@ -251,12 +250,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeSnapshot: (() => void) | null = null;
+    
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       console.log('Auth state changed:', user ? 'logged in' : 'logged out');
       setUser(user);
+      
       if (user) {
-        await initializeUserData(user);
+        unsubscribeSnapshot = await initializeUserData(user);
       } else {
+        if (unsubscribeSnapshot) {
+          unsubscribeSnapshot();
+          unsubscribeSnapshot = null;
+        }
         setUserData(null);
         setIsAdFree(false);
         setAdFreeTimeLeft(0);
@@ -265,7 +271,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+    };
   }, []);
 
   useEffect(() => {

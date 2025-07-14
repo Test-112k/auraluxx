@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Gift, Timer, ExternalLink, Clock, CheckCircle } from 'lucide-react';
@@ -173,12 +174,12 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
       const result = await addAdFreeTime();
       console.log('AdFreeRewards: addAdFreeTime result:', result);
       
+      // Show success toast
       toast({
         title: '🎉 Reward Earned!',
         description: '30 minutes of ad-free time has been added to your account!',
       });
       
-      // Don't close dialog automatically - let user watch more ads
       console.log('AdFreeRewards: Reward processed successfully');
       
     } catch (error: any) {
@@ -189,9 +190,10 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
         variant: 'destructive',
       });
     } finally {
-      console.log('AdFreeRewards: Cleaning up ad watch state...');
-      setIsWatchingAd(false);
+      console.log('AdFreeRewards: Cleaning up processing state...');
+      // Clear all states immediately
       setProcessingReward(false);
+      setIsWatchingAd(false);
       setAdWindow(null);
     }
   };
@@ -267,15 +269,15 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
             </div>
           )}
 
-          {/* Processing Status */}
-          {processingReward && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
-              <div className="flex items-center gap-2 text-blue-400">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                <span className="font-semibold">Processing Reward...</span>
+          {/* Success Message */}
+          {!processingReward && !isWatchingAd && canWatchAds && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2 text-green-400">
+                <CheckCircle className="h-4 w-4" />
+                <span className="font-semibold">Ready to Watch More Ads!</span>
               </div>
-              <p className="text-sm text-blue-300/80">
-                Please wait while we add your ad-free time.
+              <p className="text-sm text-green-300/80">
+                You can continue watching ads to extend your ad-free time.
               </p>
             </div>
           )}
@@ -292,7 +294,7 @@ const AdFreeRewards = ({ onClose }: AdFreeRewardsProps) => {
                 {processingReward ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Processing Reward...</span>
+                    <span>Adding Time...</span>
                   </>
                 ) : isWatchingAd ? (
                   <>
