@@ -9,7 +9,11 @@ export type AdSize =
   | '468x60'
   | '320x50'
   | 'social-bar'
-  | 'native';
+  | 'native'
+  | '728x90-new'
+  | '160x600-new'
+  | 'social-bar-new'
+  | 'native-new';
 
 interface AdProps {
   size: AdSize;
@@ -54,6 +58,19 @@ const Ad = ({ size, className = '' }: AdProps) => {
             </script>
             <script type="text/javascript" src="//bluetackclasp.com/df6b2b6f28880a51e25db732f7816d06/invoke.js"></script>
           `;
+        case '728x90-new':
+          return `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '9d5ea7156e620d00943d4c5b282de9cf',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//esteemcountryside.com/9d5ea7156e620d00943d4c5b282de9cf/invoke.js"></script>
+          `;
         case '160x600':
           return `
             <script type="text/javascript">
@@ -66,6 +83,19 @@ const Ad = ({ size, className = '' }: AdProps) => {
               };
             </script>
             <script type="text/javascript" src="//bluetackclasp.com/b98c5b7929b95d5f7d290198fcf7ddaa/invoke.js"></script>
+          `;
+        case '160x600-new':
+          return `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '8b22b67d3d07ac77c8e6d2433c7ea72d',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//esteemcountryside.com/8b22b67d3d07ac77c8e6d2433c7ea72d/invoke.js"></script>
           `;
         case '160x300':
           return `
@@ -97,6 +127,10 @@ const Ad = ({ size, className = '' }: AdProps) => {
           return `
             <script type='text/javascript' src='//bluetackclasp.com/65/ae/89/65ae89355595f1693dbba515d5ec23d8.js'></script>
           `;
+        case 'social-bar-new':
+          return `
+            <script type='text/javascript' src='//esteemcountryside.com/ab/3e/db/ab3edbee4e41066448bdd58ac668a95e.js'></script>
+          `;
         case '320x50':
           return `
             <script type="text/javascript">
@@ -114,6 +148,11 @@ const Ad = ({ size, className = '' }: AdProps) => {
           return `
             <script async="async" data-cfasync="false" src="//bluetackclasp.com/0ba6cc252e3f9c90d0f068a3f1982fcc/invoke.js"></script>
             <div id="container-0ba6cc252e3f9c90d0f068a3f1982fcc"></div>
+          `;
+        case 'native-new':
+          return `
+            <script async="async" data-cfasync="false" src="//esteemcountryside.com/80a77afeb9df5dfe320bded029910320/invoke.js"></script>
+            <div id="container-80a77afeb9df5dfe320bded029910320"></div>
           `;
         default:
           return '';
@@ -163,8 +202,10 @@ const Ad = ({ size, className = '' }: AdProps) => {
       case '300x250':
         return 'w-[300px] h-[250px]';
       case '728x90':
+      case '728x90-new':
         return 'w-full max-w-[728px] h-[90px]';
       case '160x600':
+      case '160x600-new':
         return 'w-[160px] h-[600px]';
       case '160x300':
         return 'w-[160px] h-[300px]';
@@ -173,8 +214,10 @@ const Ad = ({ size, className = '' }: AdProps) => {
       case '320x50':
         return 'w-full max-w-[320px] h-[50px]';
       case 'social-bar':
-        return 'w-full min-h-[70px]'; // Added minimum height for social bar
+      case 'social-bar-new':
+        return 'w-full min-h-[70px]';
       case 'native':
+      case 'native-new':
         return 'w-full';
       default:
         return '';
