@@ -71,10 +71,16 @@ const HomePage = () => {
       }
       setLoading(prev => ({ ...prev, nowPlaying: false }));
 
-      // Fetch anime content
-      const animeData = await getAnimeContent();
+      // Fetch trending anime instead of popular anime
+      const animeData = await getTrending('tv', 'week');
       if (animeData?.results) {
-        setAnimeContent(animeData.results);
+        // Filter for anime content (you can adjust this filter as needed)
+        const animeResults = animeData.results.filter((item: any) => 
+          item.genre_ids?.includes(16) || // Animation genre ID
+          item.origin_country?.includes('JP') || // Japanese content
+          item.original_language === 'ja' // Japanese language
+        );
+        setAnimeContent(animeResults.length > 0 ? animeResults : animeData.results.slice(0, 10));
       }
       setLoading(prev => ({ ...prev, anime: false }));
     } catch (error) {
@@ -194,7 +200,7 @@ const HomePage = () => {
         />
         
         <MediaSlider
-          title={t("Popular Anime")}
+          title={t("Trending Anime")}
           items={animeContent}
           loading={loading.anime}
           viewAllLink="/anime"
