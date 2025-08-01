@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Gift, X, Timer } from 'lucide-react';
+import { Gift, Timer } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -149,20 +149,10 @@ const AdFreeExpiredPopup = ({ open, onClose }: AdFreeExpiredPopupProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-aura-dark border-white/10 text-white max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold text-white flex items-center gap-2">
-              <Timer className="h-5 w-5 text-red-400" />
-              Ad-Free Time Expired
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="text-white hover:bg-white/10 h-8 w-8"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-semibold text-white flex items-center gap-2">
+            <Timer className="h-5 w-5 text-red-400" />
+            Ad-Free Time Expired
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
