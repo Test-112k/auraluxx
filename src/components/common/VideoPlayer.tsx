@@ -89,11 +89,12 @@ const VideoPlayer = ({ id, type, title, season, episode, apiType }: VideoPlayerP
           src={iframeSrc}
           title={title}
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture; fullscreen; cast; display-capture; camera; microphone"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-presentation allow-top-navigation-by-user-activation"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen; cast; display-capture; camera; microphone; geolocation; midi; payment; usb; xr-spatial-tracking; screen-wake-lock"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-presentation allow-top-navigation-by-user-activation allow-storage-access-by-user-activation"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
           loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
         ></iframe>
       </div>
       
