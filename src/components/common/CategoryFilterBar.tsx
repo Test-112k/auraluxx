@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Filter, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -137,7 +136,7 @@ const CategoryFilterBar = ({
   };
 
   return (
-    <div className="sticky top-16 z-[150] bg-aura-dark/95 backdrop-blur-sm border-b border-white/10 py-4">
+    <div className="sticky top-16 z-[200] bg-aura-dark/95 backdrop-blur-sm border-b border-white/10 py-4">
       <div className="auraluxx-container">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-white/70">
@@ -158,7 +157,7 @@ const CategoryFilterBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[250]"
               align="start"
             >
               {genres.map((genre) => (
@@ -185,7 +184,7 @@ const CategoryFilterBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[250]"
               align="start"
             >
               {years.map((year) => (
@@ -212,7 +211,7 @@ const CategoryFilterBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[160]"
+              className="bg-aura-dark/95 backdrop-blur-sm border-white/10 text-white max-h-60 overflow-y-auto z-[250]"
               align="start"
             >
               {languages.map((language) => (
